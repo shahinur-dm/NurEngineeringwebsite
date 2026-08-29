@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { BlogPost } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
@@ -56,6 +57,14 @@ export async function PUT(
       },
     });
 
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/blog");
+      if (updated.slug) revalidatePath(`/blog/${updated.slug}`);
+    } catch {
+      // ignore
+    }
+
     return NextResponse.json({ success: true, post: updated });
   } catch (err) {
     console.error("Update blog post error:", err);
@@ -91,6 +100,13 @@ export async function DELETE(
         role: admin.role,
       },
     });
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/blog");
+    } catch {
+      // ignore
+    }
 
     return NextResponse.json({ success: true, message: "Post deleted" });
   } catch (err) {

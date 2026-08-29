@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { BlogPost } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
@@ -102,6 +103,14 @@ export async function POST(req: Request) {
         role: admin.role,
       },
     });
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/blog");
+      revalidatePath(`/blog/${slug}`);
+    } catch {
+      // ignore
+    }
 
     return NextResponse.json({ success: true, post });
   } catch (err) {

@@ -11,11 +11,13 @@ export interface ISiteSettings {
   hours: string;
   mapEmbedUrl: string;
   logoUrl?: string;
+  favicon?: string;
   social: {
     facebook?: string;
     linkedin?: string;
     instagram?: string;
     youtube?: string;
+    whatsapp?: string;
   };
   seo: {
     defaultTitle: string;
@@ -40,11 +42,13 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     hours: { type: String, default: "Sat–Thu 9:00–18:00" },
     mapEmbedUrl: { type: String, default: "" },
     logoUrl: String,
+    favicon: String,
     social: {
       facebook: String,
       linkedin: String,
       instagram: String,
       youtube: String,
+      whatsapp: String,
     },
     seo: {
       defaultTitle: { type: String, required: true },

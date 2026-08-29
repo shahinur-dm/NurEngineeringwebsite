@@ -103,43 +103,50 @@ function getMockPopulatedServices(): PopulatedService[] {
 }
 
 export async function getSettings(): Promise<ISiteSettings> {
+  let doc: Record<string, unknown> | null = null;
   try {
-    await connectDB();
-    const doc = await SiteSettings.findOne().lean<ISiteSettings | null>();
-    const base = serialize(doc ?? fallbackSettings);
-    return {
-      ...base,
-      analytics: {
-        gaMeasurementId:
-          base.analytics?.gaMeasurementId ||
-          process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
-          "",
-        googleSiteVerification:
-          base.analytics?.googleSiteVerification ||
-          process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
-          "",
-      },
-    };
-  } catch {
-    return {
-      ...fallbackSettings,
-      analytics: {
-        gaMeasurementId: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "",
-        googleSiteVerification:
-          process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "",
-      },
-    };
+    const db = await connectDB();
+    if (db) {
+      const found = await SiteSettings.findOne().lean<ISiteSettings | null>();
+      if (found) doc = serialize(found) as unknown as Record<string, unknown>;
+    }
+  } catch (err) {
+    console.warn("getSettings DB error:", err);
   }
+
+  const mem = (global as unknown as { inMemorySettingsCache?: Record<string, unknown> }).inMemorySettingsCache;
+  const merged = {
+    ...fallbackSettings,
+    ...(doc || {}),
+    ...(mem || {}),
+  } as unknown as ISiteSettings;
+
+  return {
+    ...merged,
+    analytics: {
+      gaMeasurementId:
+        merged.analytics?.gaMeasurementId ||
+        process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
+        "",
+      googleSiteVerification:
+        merged.analytics?.googleSiteVerification ||
+        process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+        "",
+    },
+  };
 }
 
 export async function getCompany(): Promise<ICompanyProfile | null> {
   try {
-    await connectDB();
-    const doc = await CompanyProfile.findOne().lean<ICompanyProfile | null>();
-    return doc ? serialize(doc) : null;
-  } catch {
-    return null;
+    const db = await connectDB();
+    if (db) {
+      const doc = await CompanyProfile.findOne().lean<ICompanyProfile | null>();
+      if (doc) return serialize(doc);
+    }
+  } catch (err) {
+    console.warn("getCompany DB error:", err);
   }
+  return null;
 }
 
 export async function getCategories(

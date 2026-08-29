@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { SiteSettings, CompanyProfile } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
@@ -81,6 +82,15 @@ export async function PUT(req: Request) {
         role: admin.role,
       },
     });
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/about");
+      revalidatePath("/contact");
+    } catch {
+      // ignore in environments without active cache context
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { Product } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
@@ -63,6 +64,15 @@ export async function PUT(
       },
     });
 
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/products");
+      if (updated.slug) revalidatePath(`/products/${updated.slug}`);
+    } catch {
+      // ignore
+    }
+
     return NextResponse.json({ success: true, product: updated });
   } catch (err) {
     console.error("Update product error:", err);
@@ -100,6 +110,14 @@ export async function DELETE(
         role: admin.role,
       },
     });
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/products");
+    } catch {
+      // ignore
+    }
 
     return NextResponse.json({ success: true, message: "Product deleted" });
   } catch (err) {
