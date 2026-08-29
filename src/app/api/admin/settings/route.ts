@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db";
 import { SiteSettings, CompanyProfile } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
 import { fallbackSettings } from "@/lib/data";
+import { serialize } from "@/lib/serialize";
 
 export const dynamic = "force-dynamic";
 
@@ -15,23 +16,46 @@ export async function GET() {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  let doc: Record<string, unknown> | null = null;
+  let profile: Record<string, unknown> | null = null;
+
   try {
     const db = await connectDB();
     if (db) {
-      const [settings, profile] = await Promise.all([
+      const [settingsDoc, profileDoc] = await Promise.all([
         SiteSettings.findOne().lean(),
         CompanyProfile.findOne().lean(),
       ]);
-
-      const merged = settings || global.inMemorySettingsCache || fallbackSettings;
-      return NextResponse.json({ settings: merged, profile });
+      if (settingsDoc) doc = serialize(settingsDoc) as unknown as Record<string, unknown>;
+      if (profileDoc) profile = serialize(profileDoc) as unknown as Record<string, unknown>;
     }
   } catch (err) {
-    console.warn("Get settings DB error, using fallback settings:", err);
+    console.warn("Get settings DB warning:", err);
   }
 
-  const merged = global.inMemorySettingsCache || fallbackSettings;
-  return NextResponse.json({ settings: merged, profile: null });
+  const mem = global.inMemorySettingsCache || {};
+  const merged = {
+    ...fallbackSettings,
+    ...(doc || {}),
+    ...mem,
+    social: {
+      ...fallbackSettings.social,
+      ...((doc?.social as Record<string, string>) || {}),
+      ...((mem.social as Record<string, string>) || {}),
+    },
+    seo: {
+      ...fallbackSettings.seo,
+      ...((doc?.seo as Record<string, unknown>) || {}),
+      ...((mem.seo as Record<string, unknown>) || {}),
+    },
+    analytics: {
+      ...fallbackSettings.analytics,
+      ...((doc?.analytics as Record<string, string>) || {}),
+      ...((mem.analytics as Record<string, string>) || {}),
+    },
+  };
+
+  return NextResponse.json({ settings: merged, profile });
 }
 
 export async function PUT(req: Request) {
@@ -47,24 +71,43 @@ export async function PUT(req: Request) {
     let updatedProfile = null;
 
     if (settings) {
-      global.inMemorySettingsCache = { ...fallbackSettings, ...global.inMemorySettingsCache, ...settings };
+      global.inMemorySettingsCache = {
+        ...fallbackSettings,
+        ...(global.inMemorySettingsCache || {}),
+        ...settings,
+        social: {
+          ...fallbackSettings.social,
+          ...((global.inMemorySettingsCache?.social as Record<string, string>) || {}),
+          ...(settings.social || {}),
+        },
+        seo: {
+          ...fallbackSettings.seo,
+          ...((global.inMemorySettingsCache?.seo as Record<string, unknown>) || {}),
+          ...(settings.seo || {}),
+        },
+        analytics: {
+          ...fallbackSettings.analytics,
+          ...((global.inMemorySettingsCache?.analytics as Record<string, string>) || {}),
+          ...(settings.analytics || {}),
+        },
+      };
     }
 
     try {
       const db = await connectDB();
       if (db) {
         if (settings) {
-          updatedSettings = await SiteSettings.findOneAndUpdate({}, settings, {
+          updatedSettings = await SiteSettings.findOneAndUpdate({}, { $set: settings }, {
             new: true,
             upsert: true,
-          });
+          }).lean();
         }
 
         if (profile) {
-          updatedProfile = await CompanyProfile.findOneAndUpdate({}, profile, {
+          updatedProfile = await CompanyProfile.findOneAndUpdate({}, { $set: profile }, {
             new: true,
             upsert: true,
-          });
+          }).lean();
         }
       }
     } catch (dbErr) {
@@ -89,13 +132,13 @@ export async function PUT(req: Request) {
       revalidatePath("/about");
       revalidatePath("/contact");
     } catch {
-      // ignore in environments without active cache context
+      // ignore
     }
 
     return NextResponse.json({
       success: true,
-      settings: updatedSettings || global.inMemorySettingsCache || settings,
-      profile: updatedProfile || profile,
+      settings: updatedSettings ? serialize(updatedSettings) : global.inMemorySettingsCache || settings,
+      profile: updatedProfile ? serialize(updatedProfile) : profile,
     });
   } catch (err) {
     console.error("Update settings error:", err);

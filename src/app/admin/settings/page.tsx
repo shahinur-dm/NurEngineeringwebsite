@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
 import {
   PaletteIcon,
@@ -14,30 +14,54 @@ import {
 
 export default function AdminSettingsPage() {
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get("tab") || "branding";
-  const [tab, setTab] = useState(initialTab);
+  const router = useRouter();
+  const tabParam = searchParams.get("tab") || "branding";
+  const [tab, setTab] = useState(tabParam);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerField, setPickerField] = useState<string>("");
+  const [pickerField, setPickerField] = useState<"logo" | "favicon">("logo");
 
-  // Settings state
-  const [brandName, setBrandName] = useState("NUR ENGINEERING SOLUTION");
-  const [tagline, setTagline] = useState("Machine, Spare Parts & Technical Service");
+  // Settings state across all 5 tabs
+  const [brandName, setBrandName] = useState("Nur Engineering Solution");
+  const [tagline, setTagline] = useState("Machine, spare parts and Technical service provider");
   const [description, setDescription] = useState("");
   const [logo, setLogo] = useState("");
   const [favicon, setFavicon] = useState("");
   const [phone, setPhone] = useState("+880 1700-000000");
   const [email, setEmail] = useState("info@nurengineering.com");
-  const [hours, setHours] = useState("Sat-Thu 9:00-18:00");
+  const [hours, setHours] = useState("Sat–Thu 9:00–18:00");
   const [address, setAddress] = useState("Dhaka, Bangladesh");
   const [mapsEmbed, setMapsEmbed] = useState("");
-  const [facebook, setFacebook] = useState("https://facebook.com");
-  const [linkedin, setLinkedin] = useState("https://linkedin.com");
-  const [youtube, setYoutube] = useState("https://youtube.com");
+  const [facebook, setFacebook] = useState("https://www.facebook.com/");
+  const [linkedin, setLinkedin] = useState("https://www.linkedin.com/");
+  const [youtube, setYoutube] = useState("https://www.youtube.com/");
   const [whatsapp, setWhatsapp] = useState("+880170000000");
 
+  // SEO & Analytics state
+  const [seoTitle, setSeoTitle] = useState("Nur Engineering Solution | Machine Parts & Technical Service");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [seoKeywords, setSeoKeywords] = useState("PLC Bangladesh, machine parts, VFD, motors, sensors, EEE spare parts");
+  const [gaMeasurementId, setGaMeasurementId] = useState("");
+  const [googleSiteVerification, setGoogleSiteVerification] = useState("");
+
+  // Sync active tab with URL query parameter
+  useEffect(() => {
+    if (tabParam && tabParam !== tab) {
+      setTab(tabParam);
+    }
+  }, [tabParam, tab]);
+
+  function handleTabClick(newTab: string) {
+    setTab(newTab);
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", newTab);
+    router.replace(`/admin/settings?${params.toString()}`);
+  }
+
+  // Load existing saved settings from API
   useEffect(() => {
     fetch("/api/admin/settings")
       .then((res) => res.json())
@@ -58,9 +82,20 @@ export default function AdminSettingsPage() {
           if (s.social?.linkedin) setLinkedin(s.social.linkedin);
           if (s.social?.youtube) setYoutube(s.social.youtube);
           if (s.social?.whatsapp) setWhatsapp(s.social.whatsapp);
+
+          if (s.seo?.defaultTitle) setSeoTitle(s.seo.defaultTitle);
+          if (s.seo?.defaultDescription) setSeoDescription(s.seo.defaultDescription);
+          if (Array.isArray(s.seo?.keywords)) {
+            setSeoKeywords(s.seo.keywords.join(", "));
+          } else if (typeof s.seo?.keywords === "string") {
+            setSeoKeywords(s.seo.keywords);
+          }
+
+          if (s.analytics?.gaMeasurementId) setGaMeasurementId(s.analytics.gaMeasurementId);
+          if (s.analytics?.googleSiteVerification) setGoogleSiteVerification(s.analytics.googleSiteVerification);
         }
       })
-      .catch((err) => console.error(err))
+      .catch((err) => console.error("Error fetching settings:", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -69,12 +104,18 @@ export default function AdminSettingsPage() {
     if (pickerField === "favicon") setFavicon(url);
   }
 
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSave(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     setSaving(true);
     setSavedSuccess(false);
+    setErrorMessage("");
 
     try {
+      const keywordsArray = seoKeywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter(Boolean);
+
       const payload = {
         settings: {
           brandName,
@@ -94,6 +135,15 @@ export default function AdminSettingsPage() {
             youtube,
             whatsapp,
           },
+          seo: {
+            defaultTitle: seoTitle,
+            defaultDescription: seoDescription || description,
+            keywords: keywordsArray,
+          },
+          analytics: {
+            gaMeasurementId,
+            googleSiteVerification,
+          },
         },
       };
 
@@ -103,12 +153,17 @@ export default function AdminSettingsPage() {
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
+      const data = await res.json();
+
+      if (res.ok && data.success) {
         setSavedSuccess(true);
-        setTimeout(() => setSavedSuccess(false), 3000);
+        setTimeout(() => setSavedSuccess(false), 4000);
+      } else {
+        setErrorMessage(data.error || "Failed to save settings. Please try again.");
       }
     } catch (err) {
       console.error(err);
+      setErrorMessage("Network error while saving settings.");
     } finally {
       setSaving(false);
     }
@@ -137,7 +192,7 @@ export default function AdminSettingsPage() {
 
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={saving}
           className="btn-orange px-5 sm:px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50 w-full sm:w-auto text-center"
         >
@@ -148,6 +203,12 @@ export default function AdminSettingsPage() {
       {savedSuccess && (
         <div className="rounded border border-emerald-500/30 bg-emerald-50 p-3 text-xs font-bold text-emerald-700">
           ✓ Website settings successfully updated and published to the live frontend!
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="rounded border border-red-500/30 bg-red-50 p-3 text-xs font-bold text-red-700">
+          ✕ {errorMessage}
         </div>
       )}
 
@@ -165,7 +226,7 @@ export default function AdminSettingsPage() {
             <button
               key={t.id}
               type="button"
-              onClick={() => setTab(t.id)}
+              onClick={() => handleTabClick(t.id)}
               className={`flex items-center gap-2 rounded px-3 sm:px-4 py-2 text-xs font-bold transition flex-1 sm:flex-none justify-center ${
                 tab === t.id
                   ? "bg-navy text-white shadow-xs"
@@ -256,6 +317,48 @@ export default function AdminSettingsPage() {
                 </div>
               )}
             </div>
+
+            <div className="border-t border-line pt-4">
+              <label className="block text-xs font-bold uppercase text-navy">Favicon Icon (Optional)</label>
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 mt-1">
+                <input
+                  type="text"
+                  value={favicon}
+                  onChange={(e) => setFavicon(e.target.value)}
+                  placeholder="Paste favicon URL or select from Media Library..."
+                  className="flex-1 min-w-0 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono text-[11px]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPickerField("favicon");
+                    setPickerOpen(true);
+                  }}
+                  className="btn-navy px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5"
+                >
+                  <ImageIcon size={16} />
+                  <span>Media Library</span>
+                </button>
+              </div>
+              {favicon && (
+                <div className="mt-3 flex items-center gap-3 p-2.5 rounded border border-line bg-paper/30">
+                  <div className="relative h-8 w-8 shrink-0 rounded border border-line bg-white p-1 shadow-xs overflow-hidden flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={favicon} alt="Favicon Preview" className="max-h-full max-w-full object-contain" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-navy">Favicon Preview</p>
+                    <button
+                      type="button"
+                      onClick={() => setFavicon("")}
+                      className="text-[10.5px] font-bold text-red-600 hover:underline"
+                    >
+                      Remove Favicon
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -319,14 +422,17 @@ export default function AdminSettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-navy">Google Maps Link / Coordinates</label>
+              <label className="block text-xs font-bold uppercase text-navy">Google Maps Link / Embed URL</label>
               <input
                 type="text"
                 value={mapsEmbed}
                 onChange={(e) => setMapsEmbed(e.target.value)}
                 placeholder="https://maps.google.com/..."
-                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none"
+                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none font-mono text-[11px]"
               />
+              <p className="mt-1 text-[10.5px] text-mist">
+                Provide a Google Maps iframe embed URL or location link for the contact section map.
+              </p>
             </div>
           </div>
         )}
@@ -393,12 +499,70 @@ export default function AdminSettingsPage() {
             <div>
               <label className="block text-xs font-bold uppercase text-navy">Company Bio & Overview</label>
               <textarea
-                rows={4}
+                rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Comprehensive overview of company services and offerings..."
                 className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none leading-relaxed"
               />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Default Meta Title</label>
+                <input
+                  type="text"
+                  value={seoTitle}
+                  onChange={(e) => setSeoTitle(e.target.value)}
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Meta Keywords (Comma separated)</label>
+                <input
+                  type="text"
+                  value={seoKeywords}
+                  onChange={(e) => setSeoKeywords(e.target.value)}
+                  placeholder="PLC, Motors, VFD, Sensors"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-navy">Default Meta Description</label>
+              <textarea
+                rows={2}
+                value={seoDescription}
+                onChange={(e) => setSeoDescription(e.target.value)}
+                placeholder="Meta description for search engines..."
+                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none leading-relaxed"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 border-t border-line pt-4">
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Google Analytics 4 Measurement ID</label>
+                <input
+                  type="text"
+                  value={gaMeasurementId}
+                  onChange={(e) => setGaMeasurementId(e.target.value)}
+                  placeholder="G-XXXXXXXXXX"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Google Search Console Verification</label>
+                <input
+                  type="text"
+                  value={googleSiteVerification}
+                  onChange={(e) => setGoogleSiteVerification(e.target.value)}
+                  placeholder="google-site-verification token"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none font-mono"
+                />
+              </div>
             </div>
           </div>
         )}

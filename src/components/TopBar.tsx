@@ -4,7 +4,7 @@ import { useSite } from "@/components/SiteProvider";
 
 export function TopBar() {
   const site = useSite();
-  const rawPhone = site.phone || "+880 1700-000000";
+  const rawPhone = site.social?.whatsapp || site.phone || "+880 1700-000000";
   const cleanPhone = rawPhone.replace(/[^\d]/g, "");
   const whatsappUrl = `https://wa.me/${cleanPhone}`;
 

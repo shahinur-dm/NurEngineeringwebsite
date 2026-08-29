@@ -4,9 +4,11 @@ import { useSite } from "@/components/SiteProvider";
 
 export function GoogleMap() {
   const site = useSite();
-  const src =
-    site.mapEmbedUrl ||
-    "https://maps.google.com/maps?q=Dhaka%2C%20Bangladesh&t=&z=13&ie=UTF8&iwloc=&output=embed";
+  let src = site.mapEmbedUrl?.trim();
+  if (!src) {
+    const q = encodeURIComponent(site.address || "Dhaka, Bangladesh");
+    src = `https://maps.google.com/maps?q=${q}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+  }
 
   return (
     <div className="relative w-full overflow-hidden border border-line bg-paper">
