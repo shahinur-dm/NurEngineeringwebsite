@@ -5,7 +5,8 @@ type Props = Omit<ImageProps, "alt"> & {
   className?: string;
 };
 
-export function Img({ className, alt, priority, sizes, ...props }: Props) {
+export function Img({ className, alt, priority, sizes, unoptimized, ...props }: Props) {
+  const isDataUrl = typeof props.src === "string" && props.src.startsWith("data:");
   return (
     <Image
       alt={alt}
@@ -17,6 +18,7 @@ export function Img({ className, alt, priority, sizes, ...props }: Props) {
       priority={priority}
       loading={priority ? undefined : "lazy"}
       quality={priority ? 82 : 75}
+      unoptimized={unoptimized !== undefined ? unoptimized : isDataUrl}
       {...props}
     />
   );

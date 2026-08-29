@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Img } from "@/components/Img";
+import { ImageIcon, TrashIcon, SearchIcon } from "@/components/admin/AdminIcons";
 
 interface MediaItem {
   _id: string;
@@ -96,7 +97,8 @@ export default function AdminMediaPage() {
           </p>
         </div>
 
-        <label className="btn-orange cursor-pointer px-4 py-2 text-xs font-bold uppercase shrink-0 shadow-sm">
+        <label className="btn-orange cursor-pointer px-4 py-2 text-xs font-bold uppercase shrink-0 shadow-sm flex items-center gap-1.5">
+          <ImageIcon size={16} />
           <span>{uploading ? "Uploading..." : "+ Upload New Asset"}</span>
           <input
             type="file"
@@ -110,13 +112,16 @@ export default function AdminMediaPage() {
 
       {/* Search & Stats Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-line bg-white p-4 shadow-xs">
-        <input
-          type="search"
-          placeholder="Search by file name or title..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
-        />
+        <div className="relative w-full max-w-sm">
+          <input
+            type="search"
+            placeholder="Search by file name or title..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded border border-line pl-8 pr-3 py-2 text-xs outline-none focus:border-orange"
+          />
+          <SearchIcon size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-mist" />
+        </div>
         <p className="text-xs font-semibold text-steel">
           Total Assets: <span className="font-bold text-navy">{items.length}</span>
         </p>
@@ -128,7 +133,7 @@ export default function AdminMediaPage() {
           <div className="py-16 text-center text-xs text-mist">Loading media library...</div>
         ) : items.length === 0 ? (
           <div className="py-16 text-center">
-            <span className="text-3xl">🖼️</span>
+            <ImageIcon size={36} className="mx-auto text-mist mb-2" />
             <p className="mt-2 text-sm font-bold text-navy">No media files uploaded yet</p>
             <p className="text-xs text-mist mt-1">Upload your first product photo or banner above.</p>
           </div>
@@ -232,9 +237,10 @@ export default function AdminMediaPage() {
                   <button
                     type="button"
                     onClick={() => handleDelete(selectedItem._id, selectedItem.filename)}
-                    className="rounded border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition w-full"
+                    className="rounded border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-100 transition w-full flex items-center justify-center gap-1.5"
                   >
-                    🗑️ Delete Asset Permanently
+                    <TrashIcon size={14} />
+                    <span>Delete Asset Permanently</span>
                   </button>
                 </div>
               </div>

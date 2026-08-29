@@ -470,9 +470,9 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               <button
                 type="button"
                 onClick={() => openMediaPicker("main")}
-                className="text-xs font-bold text-orange hover:underline"
+                className="text-xs font-bold text-orange hover:underline flex items-center gap-1"
               >
-                Change Image 🖼️
+                <span>Change Image</span>
               </button>
             </div>
 
@@ -504,9 +504,9 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               <button
                 type="button"
                 onClick={() => openMediaPicker("gallery")}
-                className="text-xs font-bold text-orange hover:underline"
+                className="text-xs font-bold text-orange hover:underline flex items-center gap-1"
               >
-                + Add Image 🖼️
+                <span>+ Add Image</span>
               </button>
             </div>
 

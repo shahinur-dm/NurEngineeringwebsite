@@ -15,7 +15,7 @@ export function Footer() {
       <div className="shell grid gap-8 sm:gap-10 md:gap-12 py-10 sm:py-14 grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.35fr_.7fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-3.5">
-            <Logo size={54} />
+            <Logo size={54} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
             <div>
               <p className="font-display text-lg font-bold uppercase tracking-[0.08em]">
                 {site.brandName}

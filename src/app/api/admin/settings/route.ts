@@ -6,6 +6,10 @@ import { fallbackSettings } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
+declare global {
+  var inMemorySettingsCache: Record<string, unknown> | undefined;
+}
+
 export async function GET() {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -18,13 +22,15 @@ export async function GET() {
         CompanyProfile.findOne().lean(),
       ]);
 
-      return NextResponse.json({ settings: settings || fallbackSettings, profile });
+      const merged = settings || global.inMemorySettingsCache || fallbackSettings;
+      return NextResponse.json({ settings: merged, profile });
     }
   } catch (err) {
     console.warn("Get settings DB error, using fallback settings:", err);
   }
 
-  return NextResponse.json({ settings: fallbackSettings, profile: null });
+  const merged = global.inMemorySettingsCache || fallbackSettings;
+  return NextResponse.json({ settings: merged, profile: null });
 }
 
 export async function PUT(req: Request) {
@@ -36,23 +42,32 @@ export async function PUT(req: Request) {
 
   try {
     const { settings, profile } = await req.json();
-    await connectDB();
-
     let updatedSettings = null;
     let updatedProfile = null;
 
     if (settings) {
-      updatedSettings = await SiteSettings.findOneAndUpdate({}, settings, {
-        new: true,
-        upsert: true,
-      });
+      global.inMemorySettingsCache = { ...fallbackSettings, ...global.inMemorySettingsCache, ...settings };
     }
 
-    if (profile) {
-      updatedProfile = await CompanyProfile.findOneAndUpdate({}, profile, {
-        new: true,
-        upsert: true,
-      });
+    try {
+      const db = await connectDB();
+      if (db) {
+        if (settings) {
+          updatedSettings = await SiteSettings.findOneAndUpdate({}, settings, {
+            new: true,
+            upsert: true,
+          });
+        }
+
+        if (profile) {
+          updatedProfile = await CompanyProfile.findOneAndUpdate({}, profile, {
+            new: true,
+            upsert: true,
+          });
+        }
+      }
+    } catch (dbErr) {
+      console.warn("Database save warning in settings:", dbErr);
     }
 
     await logActivity({
@@ -69,8 +84,8 @@ export async function PUT(req: Request) {
 
     return NextResponse.json({
       success: true,
-      settings: updatedSettings,
-      profile: updatedProfile,
+      settings: updatedSettings || global.inMemorySettingsCache || settings,
+      profile: updatedProfile || profile,
     });
   } catch (err) {
     console.error("Update settings error:", err);

@@ -73,7 +73,7 @@ export function NavBar() {
         {/* Left: Logo & Company Name Branding */}
         <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group min-w-0">
           <div className="shrink-0 scale-90 sm:scale-100 origin-left">
-            <Logo size={46} />
+            <Logo size={46} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
           </div>
           <div className="flex flex-col justify-center min-w-0">
             <div className="font-display text-[17px] sm:text-[21px] md:text-[23px] font-extrabold uppercase leading-none tracking-[0.03em] sm:tracking-[0.04em] truncate">

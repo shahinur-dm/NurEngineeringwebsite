@@ -1,64 +1,109 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import {
+  DashboardIcon,
+  ProductsIcon,
+  PlusCircleIcon,
+  FolderIcon,
+  TagIcon,
+  NewspaperIcon,
+  EditPenIcon,
+  BookmarkIcon,
+  ImageIcon,
+  SettingsIcon,
+  PaletteIcon,
+  PhoneIcon,
+  MapPinIcon,
+  GlobeIcon,
+  SlidersIcon,
+  UsersIcon,
+  ActivityIcon,
+  ChevronDownIcon,
+  ExternalLinkIcon,
+} from "@/components/admin/AdminIcons";
+
+interface NavSingleItem {
+  type: "link";
+  label: string;
+  href: string;
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+}
+
+interface NavAccordionItem {
+  type: "accordion";
+  label: string;
+  baseHref: string;
+  Icon: React.ComponentType<{ size?: number; className?: string }>;
+  children: {
+    label: string;
+    href: string;
+    Icon: React.ComponentType<{ size?: number; className?: string }>;
+  }[];
+}
+
+type NavEntry = NavSingleItem | NavAccordionItem;
 
 interface NavGroup {
   title: string;
-  items: {
-    label: string;
-    href: string;
-    icon: string;
-    badge?: number;
-  }[];
+  entries: NavEntry[];
 }
 
 const navGroups: NavGroup[] = [
   {
-    title: "MAIN",
-    items: [
-      { label: "Dashboard", href: "/admin/dashboard", icon: "📊" },
+    title: "OVERVIEW",
+    entries: [
+      { type: "link", label: "Dashboard", href: "/admin/dashboard", Icon: DashboardIcon },
     ],
   },
   {
-    title: "PRODUCT MANAGEMENT",
-    items: [
-      { label: "All Products", href: "/admin/products", icon: "📦" },
-      { label: "Add Product", href: "/admin/products/new", icon: "➕" },
-      { label: "Categories", href: "/admin/categories", icon: "📁" },
-      { label: "Brands", href: "/admin/brands", icon: "🏷️" },
+    title: "PRODUCT CATALOG",
+    entries: [
+      { type: "link", label: "All Products", href: "/admin/products", Icon: ProductsIcon },
+      { type: "link", label: "Add Product", href: "/admin/products/new", Icon: PlusCircleIcon },
+      { type: "link", label: "Categories", href: "/admin/categories", Icon: FolderIcon },
+      { type: "link", label: "Brands", href: "/admin/brands", Icon: TagIcon },
     ],
   },
   {
     title: "CONTENT & BLOG",
-    items: [
-      { label: "Blog Posts", href: "/admin/blogs", icon: "📝" },
-      { label: "Add Blog Post", href: "/admin/blogs/new", icon: "✍️" },
-      { label: "Blog Categories", href: "/admin/blogs/categories", icon: "📑" },
+    entries: [
+      { type: "link", label: "Blog Posts", href: "/admin/blogs", Icon: NewspaperIcon },
+      { type: "link", label: "Add Blog Post", href: "/admin/blogs/new", Icon: EditPenIcon },
+      { type: "link", label: "Blog Categories", href: "/admin/blogs/categories", Icon: BookmarkIcon },
     ],
   },
   {
     title: "ASSETS & MEDIA",
-    items: [
-      { label: "Media Library", href: "/admin/media", icon: "🖼️" },
+    entries: [
+      { type: "link", label: "Media Library", href: "/admin/media", Icon: ImageIcon },
     ],
   },
   {
-    title: "WEBSITE SETTINGS",
-    items: [
-      { label: "General Settings", href: "/admin/settings?tab=general", icon: "⚙️" },
-      { label: "Logo & Branding", href: "/admin/settings?tab=branding", icon: "🎨" },
-      { label: "Header & Contacts", href: "/admin/settings?tab=header", icon: "📞" },
-      { label: "Location & Maps", href: "/admin/settings?tab=location", icon: "📍" },
-      { label: "Social Links", href: "/admin/settings?tab=social", icon: "🌐" },
+    title: "SETTINGS & CONFIG",
+    entries: [
+      {
+        type: "accordion",
+        label: "Website Settings",
+        baseHref: "/admin/settings",
+        Icon: SettingsIcon,
+        children: [
+          { label: "Logo & Branding", href: "/admin/settings?tab=branding", Icon: PaletteIcon },
+          { label: "Header & Contacts", href: "/admin/settings?tab=header", Icon: PhoneIcon },
+          { label: "Location & Maps", href: "/admin/settings?tab=location", Icon: MapPinIcon },
+          { label: "Social Links", href: "/admin/settings?tab=social", Icon: GlobeIcon },
+          { label: "General & SEO", href: "/admin/settings?tab=general", Icon: SlidersIcon },
+        ],
+      },
     ],
   },
   {
     title: "ADMINISTRATION",
-    items: [
-      { label: "User Management", href: "/admin/users", icon: "👥" },
-      { label: "Activity Logs", href: "/admin/logs", icon: "📜" },
+    entries: [
+      { type: "link", label: "User Management", href: "/admin/users", Icon: UsersIcon },
+      { type: "link", label: "Activity Logs", href: "/admin/logs", Icon: ActivityIcon },
     ],
   },
 ];
@@ -75,6 +120,18 @@ export function AdminSidebar({
   onMobileClose: () => void;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab") || "branding";
+
+  // Auto-expand settings accordion if user is currently on settings page
+  const isSettingsActive = pathname.startsWith("/admin/settings");
+  const [settingsOpen, setSettingsOpen] = useState(true);
+
+  useEffect(() => {
+    if (isSettingsActive) {
+      setSettingsOpen(true);
+    }
+  }, [isSettingsActive]);
 
   return (
     <>
@@ -107,7 +164,7 @@ export function AdminSidebar({
                 <span className="font-display text-sm font-bold tracking-wider text-white">
                   NUR CMS
                 </span>
-                <span className="text-[10px] text-white/50">Admin Panel</span>
+                <span className="text-[10px] text-white/50 tracking-wide">ADMIN PANEL</span>
               </div>
             )}
           </Link>
@@ -123,7 +180,7 @@ export function AdminSidebar({
         </div>
 
         {/* Navigation List */}
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-5 scrollbar-thin">
           {navGroups.map((group) => (
             <div key={group.title}>
               {!collapsed && (
@@ -131,31 +188,126 @@ export function AdminSidebar({
                   {group.title}
                 </p>
               )}
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const active =
-                    item.href === "/admin/dashboard"
-                      ? pathname === "/admin/dashboard" || pathname === "/admin"
-                      : pathname.startsWith(item.href.split("?")[0]);
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={onMobileClose}
-                      className={`group flex items-center gap-3 rounded px-3 py-2 text-xs font-medium transition ${
-                        active
-                          ? "bg-orange text-white font-semibold shadow-xs"
-                          : "text-white/75 hover:bg-white/10 hover:text-white"
-                      } ${collapsed ? "justify-center" : ""}`}
-                      title={collapsed ? item.label : undefined}
-                    >
-                      <span className="text-base shrink-0">{item.icon}</span>
-                      {!collapsed && (
-                        <span className="truncate">{item.label}</span>
-                      )}
-                    </Link>
-                  );
+              <div className="space-y-1">
+                {group.entries.map((entry) => {
+                  if (entry.type === "link") {
+                    const ItemIcon = entry.Icon;
+                    const active =
+                      entry.href === "/admin/dashboard"
+                        ? pathname === "/admin/dashboard" || pathname === "/admin"
+                        : pathname === entry.href ||
+                          (entry.href !== "/admin/products/new" &&
+                            entry.href !== "/admin/blogs/new" &&
+                            entry.href !== "/admin/blogs/categories" &&
+                            pathname.startsWith(entry.href));
+
+                    return (
+                      <Link
+                        key={entry.href}
+                        href={entry.href}
+                        onClick={onMobileClose}
+                        className={`group flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition ${
+                          active
+                            ? "bg-orange text-white font-semibold shadow-xs"
+                            : "text-white/75 hover:bg-white/10 hover:text-white"
+                        } ${collapsed ? "justify-center" : ""}`}
+                        title={collapsed ? entry.label : undefined}
+                      >
+                        <ItemIcon
+                          size={18}
+                          className={`shrink-0 transition ${
+                            active ? "text-white" : "text-white/70 group-hover:text-white"
+                          }`}
+                        />
+                        {!collapsed && <span className="truncate">{entry.label}</span>}
+                      </Link>
+                    );
+                  }
+
+                  // Accordion Menu (Website Settings)
+                  if (entry.type === "accordion") {
+                    const GroupIcon = entry.Icon;
+                    const isGroupActive = pathname.startsWith(entry.baseHref);
+
+                    return (
+                      <div key={entry.label} className="space-y-1">
+                        <button
+                          type="button"
+                          onClick={() => setSettingsOpen((prev) => !prev)}
+                          className={`group flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition ${
+                            isGroupActive && !settingsOpen
+                              ? "bg-orange/20 text-orange font-semibold border border-orange/40"
+                              : isGroupActive
+                              ? "bg-white/10 text-white font-semibold"
+                              : "text-white/75 hover:bg-white/10 hover:text-white"
+                          } ${collapsed ? "justify-center" : ""}`}
+                          title={collapsed ? entry.label : undefined}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <GroupIcon
+                              size={18}
+                              className={`shrink-0 transition ${
+                                isGroupActive ? "text-orange" : "text-white/70 group-hover:text-white"
+                              }`}
+                            />
+                            {!collapsed && (
+                              <span className="truncate font-semibold">{entry.label}</span>
+                            )}
+                          </div>
+
+                          {!collapsed && (
+                            <ChevronDownIcon
+                              size={14}
+                              className={`shrink-0 text-white/50 transition-transform duration-200 ${
+                                settingsOpen ? "rotate-180 text-white" : ""
+                              }`}
+                            />
+                          )}
+                        </button>
+
+                        {/* Collapsible Submenu */}
+                        {!collapsed && settingsOpen && (
+                          <div className="ml-3.5 space-y-0.5 border-l border-white/15 pl-2.5 pt-1">
+                            {entry.children.map((child) => {
+                              const ChildIcon = child.Icon;
+                              const targetTab = new URL(
+                                child.href,
+                                "http://local"
+                              ).searchParams.get("tab");
+                              const isChildActive =
+                                isSettingsActive && currentTab === targetTab;
+
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  onClick={onMobileClose}
+                                  className={`group flex items-center gap-2.5 rounded px-2.5 py-1.5 text-[11.5px] transition ${
+                                    isChildActive
+                                      ? "bg-orange text-white font-semibold shadow-xs"
+                                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                                  }`}
+                                >
+                                  <ChildIcon
+                                    size={15}
+                                    className={`shrink-0 ${
+                                      isChildActive
+                                        ? "text-white"
+                                        : "text-white/50 group-hover:text-white"
+                                    }`}
+                                  />
+                                  <span className="truncate">{child.label}</span>
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return null;
                 })}
               </div>
             </div>
@@ -168,12 +320,12 @@ export function AdminSidebar({
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-center gap-2.5 rounded bg-white/5 px-3 py-2 text-xs text-white/70 hover:bg-orange hover:text-white transition ${
+            className={`flex items-center gap-2.5 rounded bg-white/5 px-3 py-2 text-xs font-medium text-white/70 hover:bg-orange hover:text-white transition ${
               collapsed ? "justify-center" : ""
             }`}
-            title="View Public Website"
+            title="View Live Public Website"
           >
-            <span>↗</span>
+            <ExternalLinkIcon size={16} className="shrink-0" />
             {!collapsed && <span>View Live Site</span>}
           </Link>
         </div>

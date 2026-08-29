@@ -5,6 +5,7 @@ export interface IMediaItem {
   title: string;
   filename: string;
   url: string;
+  data?: string;
   mimeType: string;
   size: number;
   width?: number;
@@ -20,6 +21,7 @@ const MediaItemSchema = new Schema<IMediaItem>(
     title: { type: String, required: true },
     filename: { type: String, required: true },
     url: { type: String, required: true },
+    data: { type: String },
     mimeType: { type: String, required: true },
     size: { type: Number, required: true },
     width: Number,

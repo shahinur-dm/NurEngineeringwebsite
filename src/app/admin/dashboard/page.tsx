@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  ProductsIcon,
+  FolderIcon,
+  NewspaperIcon,
+  SettingsIcon,
+  SlidersIcon,
+  ActivityIcon,
+} from "@/components/admin/AdminIcons";
 
 interface DashboardData {
   stats: {
@@ -90,8 +98,9 @@ export default function AdminDashboardPage() {
           <Link href="/admin/blogs/new" className="btn-navy px-3.5 py-2 text-xs font-bold uppercase flex-1 sm:flex-none text-center">
             + Add Blog
           </Link>
-          <Link href="/admin/settings" className="border border-line bg-paper px-3.5 py-2 text-xs font-bold uppercase text-navy hover:bg-white transition flex-1 sm:flex-none text-center">
-            ⚙️ Settings
+          <Link href="/admin/settings" className="border border-line bg-paper px-3.5 py-2 text-xs font-bold uppercase text-navy hover:bg-white transition flex-1 sm:flex-none text-center flex items-center justify-center gap-1.5">
+            <SettingsIcon size={14} className="text-steel" />
+            <span>Settings</span>
           </Link>
         </div>
       </div>
@@ -102,7 +111,9 @@ export default function AdminDashboardPage() {
         <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-mist">Total Products</p>
-            <span className="text-lg sm:text-xl">📦</span>
+            <div className="grid h-8 w-8 place-items-center rounded bg-navy/5 text-navy">
+              <ProductsIcon size={18} />
+            </div>
           </div>
           <p className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-3xl font-bold text-navy">{stats?.totalProducts ?? 0}</p>
           <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-[11px] text-steel">
@@ -116,7 +127,9 @@ export default function AdminDashboardPage() {
         <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-mist">Availability</p>
-            <span className="text-lg sm:text-xl">⚡</span>
+            <div className="grid h-8 w-8 place-items-center rounded bg-emerald-50 text-emerald-600">
+              <SlidersIcon size={18} />
+            </div>
           </div>
           <p className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-3xl font-bold text-emerald-600">{stats?.inStockProducts ?? 0}</p>
           <p className="mt-2 text-[10.5px] sm:text-[11px] text-steel">
@@ -128,7 +141,9 @@ export default function AdminDashboardPage() {
         <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-mist">Categories</p>
-            <span className="text-lg sm:text-xl">📁</span>
+            <div className="grid h-8 w-8 place-items-center rounded bg-navy/5 text-navy">
+              <FolderIcon size={18} />
+            </div>
           </div>
           <p className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-3xl font-bold text-navy">{stats?.totalCategories ?? 0}</p>
           <p className="mt-2 text-[10.5px] sm:text-[11px] text-steel">Machine & parts groups</p>
@@ -138,7 +153,9 @@ export default function AdminDashboardPage() {
         <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-mist">Blog Posts</p>
-            <span className="text-lg sm:text-xl">📝</span>
+            <div className="grid h-8 w-8 place-items-center rounded bg-orange/10 text-orange">
+              <NewspaperIcon size={18} />
+            </div>
           </div>
           <p className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-3xl font-bold text-orange">{stats?.totalBlogs ?? 0}</p>
           <p className="mt-2 text-[10.5px] sm:text-[11px] text-steel">Articles & technical notes</p>
@@ -193,8 +210,9 @@ export default function AdminDashboardPage() {
         {/* Recent Activity Log */}
         <div className="rounded-lg border border-line bg-white shadow-xs overflow-hidden">
           <div className="flex items-center justify-between border-b border-line px-5 py-4 bg-paper/40">
-            <h3 className="font-display text-sm font-bold uppercase tracking-wide text-navy">
-              Audit Activity Log
+            <h3 className="font-display text-sm font-bold uppercase tracking-wide text-navy flex items-center gap-2">
+              <ActivityIcon size={16} className="text-orange" />
+              <span>Audit Activity Log</span>
             </h3>
             <Link href="/admin/logs" className="text-xs font-semibold text-orange hover:underline">
               View All Logs →

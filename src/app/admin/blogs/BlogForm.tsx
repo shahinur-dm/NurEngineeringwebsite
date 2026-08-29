@@ -298,7 +298,7 @@ export function BlogForm({ initialData, isEdit }: BlogFormProps) {
                 onClick={() => setPickerOpen(true)}
                 className="text-xs font-bold text-orange hover:underline"
               >
-                Choose 🖼️
+                Choose Image
               </button>
             </div>
 

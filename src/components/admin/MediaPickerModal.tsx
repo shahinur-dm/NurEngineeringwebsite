@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Img } from "@/components/Img";
+import { ImageIcon } from "@/components/admin/AdminIcons";
 
 interface MediaItem {
   _id: string;
@@ -24,6 +25,7 @@ export function MediaPickerModal({
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [customUrl, setCustomUrl] = useState("");
 
@@ -31,7 +33,7 @@ export function MediaPickerModal({
     if (isOpen) {
       loadMedia();
     }
-  }, [isOpen]);
+  }, [isOpen, search]);
 
   async function loadMedia() {
     try {
@@ -52,6 +54,7 @@ export function MediaPickerModal({
 
     try {
       setUploading(true);
+      setUploadError(null);
       const formData = new FormData();
       formData.append("file", file);
       formData.append("title", file.name);
@@ -65,9 +68,13 @@ export function MediaPickerModal({
         setItems((prev) => [data.item, ...prev]);
         onSelect(data.item.url);
         onClose();
+      } else {
+        setUploadError(data.error || "Failed to upload image.");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Upload error:", err);
+      const msg = err instanceof Error ? err.message : "Network error during upload.";
+      setUploadError(msg);
     } finally {
       setUploading(false);
     }
@@ -80,8 +87,8 @@ export function MediaPickerModal({
       <div className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-lg border border-line bg-white shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line px-5 py-3.5 bg-paper/40">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🖼️</span>
+          <div className="flex items-center gap-2 text-navy">
+            <ImageIcon size={18} className="text-orange" />
             <h3 className="font-display text-sm font-bold uppercase tracking-wide text-navy">
               Select or Upload Image
             </h3>
@@ -120,7 +127,8 @@ export function MediaPickerModal({
           </div>
 
           {/* Upload Button */}
-          <label className="btn-navy cursor-pointer px-4 py-1.5 text-xs font-bold shrink-0 w-full sm:w-auto text-center">
+          <label className="btn-navy cursor-pointer px-4 py-1.5 text-xs font-bold shrink-0 w-full sm:w-auto text-center flex items-center justify-center gap-1.5">
+            <ImageIcon size={14} />
             <span>{uploading ? "Uploading..." : "+ Upload New"}</span>
             <input
               type="file"
@@ -130,6 +138,23 @@ export function MediaPickerModal({
               disabled={uploading}
             />
           </label>
+        </div>
+
+        {uploadError && (
+          <div className="bg-red-50 border-b border-red-200 px-4 py-2 text-xs font-semibold text-red-600">
+            {uploadError}
+          </div>
+        )}
+
+        {/* Search Bar */}
+        <div className="px-4 py-2 bg-paper/20 border-b border-line">
+          <input
+            type="search"
+            placeholder="Search media files..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded border border-line px-2.5 py-1 text-xs outline-none focus:border-orange"
+          />
         </div>
 
         {/* Media Grid */}

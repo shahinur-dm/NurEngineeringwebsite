@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
+import {
+  PaletteIcon,
+  PhoneIcon,
+  MapPinIcon,
+  GlobeIcon,
+  SettingsIcon,
+  ImageIcon,
+} from "@/components/admin/AdminIcons";
 
 export default function AdminSettingsPage() {
   const searchParams = useSearchParams();
@@ -39,10 +47,13 @@ export default function AdminSettingsPage() {
           if (s.brandName) setBrandName(s.brandName);
           if (s.tagline) setTagline(s.tagline);
           if (s.description) setDescription(s.description);
+          if (s.logoUrl || s.logo) setLogo(s.logoUrl || s.logo);
+          if (s.favicon) setFavicon(s.favicon);
           if (s.phone) setPhone(s.phone);
           if (s.email) setEmail(s.email);
           if (s.hours) setHours(s.hours);
           if (s.address) setAddress(s.address);
+          if (s.mapEmbedUrl) setMapsEmbed(s.mapEmbedUrl);
           if (s.social?.facebook) setFacebook(s.social.facebook);
           if (s.social?.linkedin) setLinkedin(s.social.linkedin);
           if (s.social?.youtube) setYoutube(s.social.youtube);
@@ -69,10 +80,14 @@ export default function AdminSettingsPage() {
           brandName,
           tagline,
           description,
+          logoUrl: logo,
+          logo,
+          favicon,
           phone,
           email,
           hours,
           address,
+          mapEmbedUrl: mapsEmbed,
           social: {
             facebook,
             linkedin,
@@ -99,6 +114,14 @@ export default function AdminSettingsPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-xs font-bold uppercase tracking-wider text-mist">Loading website settings...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -118,7 +141,7 @@ export default function AdminSettingsPage() {
           disabled={saving}
           className="btn-orange px-5 sm:px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50 w-full sm:w-auto text-center"
         >
-          {saving ? "Saving Settings..." : "Save All Settings"}
+          {saving ? "Saving Settings..." : "Save & Update Live Site"}
         </button>
       </div>
 
@@ -131,26 +154,29 @@ export default function AdminSettingsPage() {
       {/* Tabs */}
       <div className="flex flex-wrap gap-1.5 sm:gap-2 border-b border-line pb-2">
         {[
-          { id: "branding", label: "Logo & Branding", icon: "🎨" },
-          { id: "header", label: "Header & Contacts", icon: "📞" },
-          { id: "location", label: "Location & Maps", icon: "📍" },
-          { id: "social", label: "Social Links", icon: "🌐" },
-          { id: "general", label: "General & SEO", icon: "⚙️" },
-        ].map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 sm:gap-2 rounded px-3 sm:px-4 py-2 text-xs font-bold transition flex-1 sm:flex-none justify-center ${
-              tab === t.id
-                ? "bg-navy text-white shadow-xs"
-                : "bg-white text-navy hover:bg-paper border border-line"
-            }`}
-          >
-            <span>{t.icon}</span>
-            <span className="truncate">{t.label}</span>
-          </button>
-        ))}
+          { id: "branding", label: "Logo & Branding", Icon: PaletteIcon },
+          { id: "header", label: "Header & Contacts", Icon: PhoneIcon },
+          { id: "location", label: "Location & Maps", Icon: MapPinIcon },
+          { id: "social", label: "Social Links", Icon: GlobeIcon },
+          { id: "general", label: "General & SEO", Icon: SettingsIcon },
+        ].map((t) => {
+          const ActiveIcon = t.Icon;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 rounded px-3 sm:px-4 py-2 text-xs font-bold transition flex-1 sm:flex-none justify-center ${
+                tab === t.id
+                  ? "bg-navy text-white shadow-xs"
+                  : "bg-white text-navy hover:bg-paper border border-line"
+              }`}
+            >
+              <ActiveIcon size={16} className={tab === t.id ? "text-orange" : "text-steel"} />
+              <span className="truncate">{t.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
@@ -184,14 +210,14 @@ export default function AdminSettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-navy">Custom Logo URL (Optional)</label>
-              <div className="flex gap-2 mt-1">
+              <label className="block text-xs font-bold uppercase text-navy">Custom Logo Image (Optional)</label>
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 mt-1">
                 <input
                   type="text"
                   value={logo}
                   onChange={(e) => setLogo(e.target.value)}
-                  placeholder="Uses signature circular NES emblem if left blank"
-                  className="flex-1 rounded border border-line px-3 py-2 text-xs outline-none"
+                  placeholder="Paste URL or select from Media Library..."
+                  className="flex-1 min-w-0 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono text-[11px]"
                 />
                 <button
                   type="button"
@@ -199,14 +225,36 @@ export default function AdminSettingsPage() {
                     setPickerField("logo");
                     setPickerOpen(true);
                   }}
-                  className="btn-navy px-3 py-2 text-xs font-bold shrink-0"
+                  className="btn-navy px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5"
                 >
-                  Media Library 🖼️
+                  <ImageIcon size={16} />
+                  <span>Media Library</span>
                 </button>
               </div>
-              <p className="mt-1 text-[10.5px] text-mist">
-                If blank, the default classic NES emblem displays cleanly.
+              <p className="mt-1.5 text-[10.5px] text-mist">
+                If blank, the default classic circular NES emblem displays cleanly.
               </p>
+
+              {/* Live Preview */}
+              {logo && (
+                <div className="mt-3 flex items-center gap-3 p-3 rounded border border-line bg-paper/30">
+                  <div className="relative h-14 w-14 shrink-0 rounded-full border-2 border-orange/40 bg-white p-1 shadow-sm overflow-hidden flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logo} alt="Logo Preview" className="max-h-full max-w-full object-contain" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-navy">Active Logo Preview</p>
+                    <p className="text-[10.5px] text-steel">This logo is live on your header and footer.</p>
+                    <button
+                      type="button"
+                      onClick={() => setLogo("")}
+                      className="mt-1 text-[10.5px] font-bold text-red-600 hover:underline"
+                    >
+                      Reset to Default Badge
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
