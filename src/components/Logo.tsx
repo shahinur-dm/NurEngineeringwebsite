@@ -1,12 +1,16 @@
 import Link from "next/link";
 
-export function Logo({ size = 72 }: { size?: number }) {
+export function Logo({
+  size = 72,
+  asLink = false,
+}: {
+  size?: number;
+  asLink?: boolean;
+}) {
   const ring = Math.max(2, Math.round(size * 0.04));
-  return (
-    <Link
-      href="/"
-      aria-label="Nur Engineering Solution home"
-      className="relative grid shrink-0 place-items-center rounded-full bg-navy text-white"
+  const badge = (
+    <span
+      className="relative grid shrink-0 place-items-center rounded-full bg-navy text-white select-none"
       style={{
         width: size,
         height: size,
@@ -19,6 +23,16 @@ export function Logo({ size = 72 }: { size?: number }) {
       >
         NES
       </span>
-    </Link>
+    </span>
   );
+
+  if (asLink) {
+    return (
+      <Link href="/" aria-label="Nur Engineering Solution home" className="inline-block">
+        {badge}
+      </Link>
+    );
+  }
+
+  return badge;
 }

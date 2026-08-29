@@ -92,7 +92,7 @@ export function ProductGallery({
         ) : (
           <>
             <Img
-              src={current.kind === "video" ? current.thumb || images[0] : current.src}
+              src={current.thumb || images[0]}
               alt={`${name} video`}
               fill
               className="object-cover"

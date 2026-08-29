@@ -1,8 +1,5 @@
 export function formatPrice(price?: number, currency = "BDT") {
-  if (price == null) return "Ask for quote";
-  return new Intl.NumberFormat("en-BD", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(price);
+  if (price == null || isNaN(price)) return "Ask for quote";
+  const num = Math.round(price).toLocaleString("en-US");
+  return `${currency} ${num}`;
 }

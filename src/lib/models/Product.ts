@@ -12,12 +12,13 @@ export interface IProduct {
   price?: number;
   currency: string;
   image: string;
-  gallery: string[];
+  gallery?: string[];
   specs: string[];
-  relatedServices: (Types.ObjectId | string)[];
+  relatedServices?: (Types.ObjectId | string)[];
   inStock: boolean;
   featured: boolean;
   published: boolean;
+  order?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -45,6 +46,7 @@ const ProductSchema = new Schema<IProduct>(
     inStock: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
     published: { type: Boolean, default: true },
+    order: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

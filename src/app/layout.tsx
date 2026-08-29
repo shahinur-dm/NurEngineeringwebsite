@@ -3,7 +3,6 @@ import { Barlow_Condensed, IBM_Plex_Sans } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { TopBar } from "@/components/TopBar";
-import { Header } from "@/components/Header";
 import { NavBar } from "@/components/NavBar";
 import { Footer } from "@/components/Footer";
 import { SiteProvider } from "@/components/SiteProvider";
@@ -73,7 +72,6 @@ export default async function RootLayout({
           <JsonLd />
           <Analytics gaId={gaId} />
           <TopBar />
-          <Header />
           <Suspense fallback={<div className="h-11 bg-navy" />}>
             <NavBar />
           </Suspense>

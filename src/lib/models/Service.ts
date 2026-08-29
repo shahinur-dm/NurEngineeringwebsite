@@ -9,7 +9,7 @@ export interface IService {
   image?: string;
   features: string[];
   category?: Types.ObjectId | string;
-  relatedProducts: (Types.ObjectId | string)[];
+  relatedProducts?: (Types.ObjectId | string)[];
   order: number;
   featured: boolean;
   published: boolean;

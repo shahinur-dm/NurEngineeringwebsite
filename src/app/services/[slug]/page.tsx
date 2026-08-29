@@ -32,7 +32,7 @@ export default async function ServiceDetailPage({
   const service = await getServiceBySlug(slug);
   if (!service) notFound();
   const categories = await getCategories("product");
-  const related = (service.relatedProducts || []) as PopulatedProduct[];
+  const related = (service.relatedProducts || []) as unknown as PopulatedProduct[];
 
   return (
     <CatalogShell categories={categories}>

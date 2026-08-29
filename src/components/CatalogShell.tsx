@@ -7,7 +7,6 @@ export function CatalogShell({
   categories,
   activeSlug,
   children,
-  showSearch = true,
 }: {
   categories: ICategory[];
   activeSlug?: string;
@@ -20,11 +19,6 @@ export function CatalogShell({
         <CategorySidebar categories={categories} activeSlug={activeSlug} />
       </div>
       <div className="min-w-0 space-y-6">
-        {showSearch && (
-          <Suspense fallback={<div className="h-12 border border-line bg-white" />}>
-            <SearchBar />
-          </Suspense>
-        )}
         {children}
       </div>
     </div>

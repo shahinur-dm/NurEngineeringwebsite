@@ -443,4 +443,5 @@ export const navLinks = [
   { href: "/services", label: "Services", order: 4 },
   { href: "/about", label: "About", order: 5 },
   { href: "/contact", label: "Contact", order: 6 },
+  { href: "/blog", label: "Blog", order: 7 },
 ];
