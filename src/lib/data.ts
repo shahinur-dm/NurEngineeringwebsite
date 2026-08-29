@@ -111,28 +111,66 @@ export async function getSettings(): Promise<ISiteSettings> {
       if (found) doc = serialize(found) as unknown as Record<string, unknown>;
     }
   } catch (err) {
-    console.warn("getSettings DB error:", err);
+    console.warn("getSettings DB warning:", err);
   }
 
   const mem = (global as unknown as { inMemorySettingsCache?: Record<string, unknown> }).inMemorySettingsCache;
-  const merged = {
+  const merged: Record<string, unknown> = {
     ...fallbackSettings,
     ...(doc || {}),
     ...(mem || {}),
-  } as unknown as ISiteSettings;
+  };
+
+  const rawSocial = ((doc?.social as Record<string, string>) ||
+    (mem?.social as Record<string, string>) ||
+    fallbackSettings.social ||
+    {}) as Record<string, string>;
+
+  const rawSeo = ((doc?.seo as Record<string, unknown>) ||
+    (mem?.seo as Record<string, unknown>) ||
+    fallbackSettings.seo ||
+    {}) as Record<string, unknown>;
+
+  const rawAnalytics = ((doc?.analytics as Record<string, string>) ||
+    (mem?.analytics as Record<string, string>) ||
+    fallbackSettings.analytics ||
+    {}) as Record<string, string>;
 
   return {
-    ...merged,
+    _id: (merged._id as string) || "site-settings",
+    brandName: (merged.brandName as string) || fallbackSettings.brandName,
+    tagline: (merged.tagline as string) || fallbackSettings.tagline,
+    description: (merged.description as string) || fallbackSettings.description,
+    email: (merged.email as string) || fallbackSettings.email,
+    phone: (merged.phone as string) || fallbackSettings.phone,
+    address: (merged.address as string) || fallbackSettings.address,
+    hours: (merged.hours as string) || fallbackSettings.hours,
+    mapEmbedUrl: (merged.mapEmbedUrl as string) || fallbackSettings.mapEmbedUrl,
+    logoUrl: ((merged.logoUrl || merged.logo) as string) || "",
+    favicon: (merged.favicon as string) || "",
+    social: {
+      facebook: rawSocial.facebook || fallbackSettings.social.facebook || "",
+      linkedin: rawSocial.linkedin || fallbackSettings.social.linkedin || "",
+      instagram: rawSocial.instagram || fallbackSettings.social.instagram || "",
+      youtube: rawSocial.youtube || fallbackSettings.social.youtube || "",
+      whatsapp: rawSocial.whatsapp || "+880170000000",
+    },
+    seo: {
+      defaultTitle: (rawSeo.defaultTitle as string) || fallbackSettings.seo.defaultTitle,
+      defaultDescription: (rawSeo.defaultDescription as string) || fallbackSettings.seo.defaultDescription,
+      keywords: Array.isArray(rawSeo.keywords) ? (rawSeo.keywords as string[]) : fallbackSettings.seo.keywords,
+    },
     analytics: {
       gaMeasurementId:
-        merged.analytics?.gaMeasurementId ||
+        rawAnalytics.gaMeasurementId ||
         process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ||
         "",
       googleSiteVerification:
-        merged.analytics?.googleSiteVerification ||
+        rawAnalytics.googleSiteVerification ||
         process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
         "",
     },
+    nav: Array.isArray(merged.nav) && merged.nav.length ? (merged.nav as ISiteSettings["nav"]) : fallbackSettings.nav,
   };
 }
 

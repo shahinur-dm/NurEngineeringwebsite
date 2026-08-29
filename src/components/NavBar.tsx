@@ -77,11 +77,11 @@ export function NavBar() {
           </div>
           <div className="flex flex-col justify-center min-w-0">
             <div className="font-display text-[17px] sm:text-[21px] md:text-[23px] font-extrabold uppercase leading-none tracking-[0.03em] sm:tracking-[0.04em] truncate">
-              <span className="text-navy">NUR </span>
-              <span className="text-orange">ENGINEERING</span>
+              <span className="text-navy">{(site.brandName || "NUR ENGINEERING").split(" ")[0]} </span>
+              <span className="text-orange">{(site.brandName || "NUR ENGINEERING").split(" ").slice(1).join(" ")}</span>
             </div>
             <span className="mt-0.5 sm:mt-1 text-[9.5px] sm:text-[11px] font-medium leading-none tracking-tight text-steel truncate">
-              Machine, Spare Parts &amp; Technical Service
+              {site.tagline || "Machine, Spare Parts & Technical Service"}
             </span>
           </div>
         </Link>
