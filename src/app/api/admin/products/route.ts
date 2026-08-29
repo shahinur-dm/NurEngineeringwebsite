@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Product } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
+import { mockProducts, mockCategories } from "@/lib/mock-data";
 
 export const dynamic = "force-dynamic";
 
@@ -18,45 +19,72 @@ export async function GET(req: Request) {
   const limit = Math.max(1, parseInt(url.searchParams.get("limit") || "20", 10));
 
   try {
-    await connectDB();
-    const filter: Record<string, unknown> = {};
+    const db = await connectDB();
+    if (db) {
+      const filter: Record<string, unknown> = {};
 
-    if (q) {
-      filter.$or = [
-        { name: { $regex: q, $options: "i" } },
-        { sku: { $regex: q, $options: "i" } },
-        { brand: { $regex: q, $options: "i" } },
-      ];
+      if (q) {
+        filter.$or = [
+          { name: { $regex: q, $options: "i" } },
+          { sku: { $regex: q, $options: "i" } },
+          { brand: { $regex: q, $options: "i" } },
+        ];
+      }
+      if (category) filter.category = category;
+      if (stock === "in") filter.inStock = true;
+      if (stock === "out") filter.inStock = false;
+      if (published === "true") filter.published = true;
+      if (published === "false") filter.published = false;
+
+      const [items, total] = await Promise.all([
+        Product.find(filter)
+          .populate("category", "name slug")
+          .sort({ order: 1, createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .lean(),
+        Product.countDocuments(filter),
+      ]);
+
+      return NextResponse.json({
+        items,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      });
     }
-    if (category) filter.category = category;
-    if (stock === "in") filter.inStock = true;
-    if (stock === "out") filter.inStock = false;
-    if (published === "true") filter.published = true;
-    if (published === "false") filter.published = false;
-
-    const [items, total] = await Promise.all([
-      Product.find(filter)
-        .populate("category", "name slug")
-        .sort({ order: 1, createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .lean(),
-      Product.countDocuments(filter),
-    ]);
-
-    return NextResponse.json({
-      items,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    });
   } catch (err) {
-    console.error("Fetch products error:", err);
-    return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
+    console.warn("Fetch products DB error, using fallback catalog:", err);
   }
+
+  // Fallback to mock products
+  const catMap = new Map(mockCategories.map((c) => [String(c._id), c]));
+  let list = mockProducts.map((p) => ({
+    ...p,
+    category: catMap.get(String(p.category)) || { name: "General", slug: "general" },
+  }));
+
+  if (q) {
+    const lq = q.toLowerCase();
+    list = list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(lq) ||
+        (p.sku ? p.sku.toLowerCase().includes(lq) : false)
+    );
+  }
+
+  return NextResponse.json({
+    items: list.slice((page - 1) * limit, page * limit),
+    pagination: {
+      page,
+      limit,
+      total: list.length,
+      pages: Math.ceil(list.length / limit),
+    },
+  });
 }
 
 export async function POST(req: Request) {

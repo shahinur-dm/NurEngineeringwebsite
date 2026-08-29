@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Category, Product } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
+import { mockCategories, mockProducts } from "@/lib/mock-data";
 
 export const dynamic = "force-dynamic";
 
@@ -10,24 +11,33 @@ export async function GET() {
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    await connectDB();
-    const categories = await Category.find({ type: "product" })
-      .sort({ order: 1, name: 1 })
-      .lean();
+    const db = await connectDB();
+    if (db) {
+      const categories = await Category.find({ type: "product" })
+        .sort({ order: 1, name: 1 })
+        .lean();
 
-    // Attach product counts
-    const withCounts = await Promise.all(
-      categories.map(async (cat) => {
-        const count = await Product.countDocuments({ category: cat._id });
-        return { ...cat, productCount: count };
-      })
-    );
+      // Attach product counts
+      const withCounts = await Promise.all(
+        categories.map(async (cat) => {
+          const count = await Product.countDocuments({ category: cat._id });
+          return { ...cat, productCount: count };
+        })
+      );
 
-    return NextResponse.json({ categories: withCounts });
+      return NextResponse.json({ categories: withCounts });
+    }
   } catch (err) {
-    console.error("Get categories error:", err);
-    return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
+    console.warn("Get categories DB error, using fallback categories:", err);
   }
+
+  // Fallback
+  const fallback = mockCategories.map((c) => ({
+    ...c,
+    productCount: mockProducts.filter((p) => String(p.category) === String(c._id)).length,
+  }));
+
+  return NextResponse.json({ categories: fallback });
 }
 
 export async function POST(req: Request) {

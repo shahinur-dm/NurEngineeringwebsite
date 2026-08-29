@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { SiteSettings, CompanyProfile } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
+import { fallbackSettings } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -10,17 +11,20 @@ export async function GET() {
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    await connectDB();
-    const [settings, profile] = await Promise.all([
-      SiteSettings.findOne().lean(),
-      CompanyProfile.findOne().lean(),
-    ]);
+    const db = await connectDB();
+    if (db) {
+      const [settings, profile] = await Promise.all([
+        SiteSettings.findOne().lean(),
+        CompanyProfile.findOne().lean(),
+      ]);
 
-    return NextResponse.json({ settings, profile });
+      return NextResponse.json({ settings: settings || fallbackSettings, profile });
+    }
   } catch (err) {
-    console.error("Get settings error:", err);
-    return NextResponse.json({ error: "Failed to fetch settings" }, { status: 500 });
+    console.warn("Get settings DB error, using fallback settings:", err);
   }
+
+  return NextResponse.json({ settings: fallbackSettings, profile: null });
 }
 
 export async function PUT(req: Request) {
