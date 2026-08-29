@@ -17,8 +17,8 @@ const cached: MongooseCache = global.mongooseCache ?? {
 global.mongooseCache = cached;
 
 /**
- * Next.js catalog site: mostly product reads + contact writes.
- * Modest pool keeps Atlas connection count low across serverless instances.
+ * Next.js catalog site: database connection manager.
+ * Safely connects with cached instance and handles reconnections if severed.
  */
 export async function connectDB() {
   const MONGODB_URI = process.env.MONGODB_URI;
@@ -26,19 +26,39 @@ export async function connectDB() {
     return null;
   }
 
-  if (cached.conn) return cached.conn;
-
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false,
-      maxPoolSize: 10,
-      minPoolSize: 1,
-      maxIdleTimeMS: 60_000,
-      serverSelectionTimeoutMS: 8_000,
-      connectTimeoutMS: 10_000,
-    });
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    return cached.conn;
   }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(MONGODB_URI, {
+        bufferCommands: false,
+        maxPoolSize: 10,
+        minPoolSize: 1,
+        maxIdleTimeMS: 60_000,
+        serverSelectionTimeoutMS: 5_000,
+        connectTimeoutMS: 8_000,
+      })
+      .then((m) => {
+        cached.conn = m;
+        return m;
+      })
+      .catch((err) => {
+        cached.promise = null;
+        cached.conn = null;
+        throw err;
+      });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (err) {
+    cached.promise = null;
+    cached.conn = null;
+    console.error("MongoDB connection failed:", err);
+    return null;
+  }
 }
+

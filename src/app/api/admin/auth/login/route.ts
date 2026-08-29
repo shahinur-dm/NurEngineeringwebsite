@@ -19,7 +19,16 @@ export async function POST(req: Request) {
       );
     }
 
-    await connectDB();
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json(
+        {
+          error:
+            "Database is unreachable. Please verify MONGODB_URI connection in your environment settings.",
+        },
+        { status: 503 }
+      );
+    }
 
     // Auto-seed default super admin if database has no users yet
     const count = await User.countDocuments();
@@ -94,10 +103,12 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Login error:", err);
+    const message =
+      err instanceof Error ? err.message : "Internal server error during login";
     return NextResponse.json(
-      { error: "Internal server error during login" },
+      { error: `Login failed: ${message}` },
       { status: 500 }
     );
   }
