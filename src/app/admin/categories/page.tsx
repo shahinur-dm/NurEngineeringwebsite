@@ -151,7 +151,7 @@ export default function AdminCategoriesPage() {
               ) : categories.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-mist">
-                    No categories found. Click "+ Add New Category" above.
+                    No categories found. Click &quot;+ Add New Category&quot; above.
                   </td>
                 </tr>
               ) : (

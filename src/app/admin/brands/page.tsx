@@ -163,7 +163,7 @@ export default function AdminBrandsPage() {
               ) : brands.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-mist">
-                    No brands found. Click "+ Add New Brand" above.
+                    No brands found. Click &quot;+ Add New Brand&quot; above.
                   </td>
                 </tr>
               ) : (

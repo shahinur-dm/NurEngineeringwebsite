@@ -113,7 +113,7 @@ export default function AdminBlogsPage() {
                 <tr>
                   <td colSpan={6} className="py-12 text-center">
                     <p className="text-sm font-bold text-navy">No blog posts found</p>
-                    <p className="mt-1 text-xs text-mist">Click "+ Add New Post" to publish your first guide.</p>
+                    <p className="mt-1 text-xs text-mist">Click &quot;+ Add New Post&quot; to publish your first guide.</p>
                   </td>
                 </tr>
               ) : (

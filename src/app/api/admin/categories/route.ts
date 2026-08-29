@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    let slug = (body.slug || body.name)
+    const slug = (body.slug || body.name)
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, "")
