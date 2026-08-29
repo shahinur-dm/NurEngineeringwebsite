@@ -62,9 +62,9 @@ export default function AdminBlogCategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3.5 sm:gap-4">
         <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
+          <h2 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-navy">
             Blog Categories
           </h2>
           <p className="text-xs text-steel">
@@ -73,13 +73,13 @@ export default function AdminBlogCategoriesPage() {
         </div>
         <Link
           href="/admin/blogs"
-          className="rounded border border-line bg-white px-4 py-2 text-xs font-bold text-navy hover:bg-paper"
+          className="rounded border border-line bg-white px-3.5 sm:px-4 py-2 text-xs font-bold text-navy hover:bg-paper transition w-full sm:w-auto text-center"
         >
           ← Back to All Posts
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[1fr_2fr]">
         {/* Form */}
         <div className="rounded-lg border border-line bg-white p-5 shadow-xs">
           <h3 className="font-display text-sm font-bold uppercase text-navy border-b border-line pb-2">

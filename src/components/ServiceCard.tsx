@@ -19,12 +19,12 @@ export function ServiceCard({ service }: { service: PopulatedService }) {
           </div>
         )}
       </div>
-      <div className="px-3.5 py-3.5">
-        <p className="kicker">Technical service</p>
-        <h3 className="mt-1.5 font-display text-[15px] font-bold uppercase leading-snug tracking-wide text-navy transition group-hover:text-orange">
+      <div className="p-3 sm:px-3.5 sm:py-3.5">
+        <p className="kicker text-[9.5px] sm:text-[11px] truncate">Technical service</p>
+        <h3 className="mt-1 font-display text-[13px] sm:text-[15px] font-bold uppercase leading-snug tracking-wide text-navy transition group-hover:text-orange line-clamp-2">
           {service.title}
         </h3>
-        <p className="mt-1.5 line-clamp-2 text-[12px] leading-5 text-steel">
+        <p className="mt-1.5 hidden sm:line-clamp-2 text-[12px] leading-5 text-steel">
           {service.shortDescription}
         </p>
       </div>

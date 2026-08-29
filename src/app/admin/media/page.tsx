@@ -123,7 +123,7 @@ export default function AdminMediaPage() {
       </div>
 
       {/* Media Grid */}
-      <div className="rounded-lg border border-line bg-white p-5 shadow-xs">
+      <div className="rounded-lg border border-line bg-white p-3.5 sm:p-5 shadow-xs">
         {loading ? (
           <div className="py-16 text-center text-xs text-mist">Loading media library...</div>
         ) : items.length === 0 ? (
@@ -133,7 +133,7 @@ export default function AdminMediaPage() {
             <p className="text-xs text-mist mt-1">Upload your first product photo or banner above.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2.5 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 sm:gap-4">
             {items.map((item) => (
               <div
                 key={item._id}
@@ -167,8 +167,8 @@ export default function AdminMediaPage() {
 
       {/* Selected Image Detail Drawer / Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 p-4 backdrop-blur-xs">
-          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg border border-line bg-white p-6 shadow-2xl overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg border border-line bg-white p-4 sm:p-6 shadow-2xl overflow-y-auto">
             <div className="flex items-center justify-between border-b border-line pb-3">
               <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
                 Asset Details

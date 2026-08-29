@@ -12,20 +12,20 @@ export function TopBar() {
     <div className="bg-[#071422] text-[11px] text-white/80 border-b border-white/5">
       <div className="shell flex min-h-[34px] flex-wrap items-center justify-between gap-y-1.5 py-1.5">
         {/* Left info */}
-        <div className="flex flex-wrap items-center gap-x-4 sm:gap-x-5">
+        <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-5 gap-y-1">
           {/* Phone */}
           <a
             href={`tel:${site.phone}`}
-            className="flex items-center gap-1.5 transition hover:text-orange"
+            className="flex items-center gap-1.5 transition hover:text-orange text-[10.5px] sm:text-[11px]"
           >
             <svg
               viewBox="0 0 24 24"
-              className="h-3.5 w-3.5 fill-none stroke-current"
+              className="h-3.5 w-3.5 fill-none stroke-current shrink-0"
               strokeWidth="2"
             >
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
             </svg>
-            <span>{site.phone}</span>
+            <span className="font-semibold">{site.phone}</span>
           </a>
 
           <span className="hidden h-3 w-px bg-white/20 sm:block" />
@@ -33,17 +33,17 @@ export function TopBar() {
           {/* Email */}
           <a
             href={`mailto:${site.email}`}
-            className="flex items-center gap-1.5 transition hover:text-orange"
+            className="hidden items-center gap-1.5 transition hover:text-orange text-[10.5px] sm:text-[11px] xs:flex"
           >
             <svg
               viewBox="0 0 24 24"
-              className="h-3.5 w-3.5 fill-none stroke-current"
+              className="h-3.5 w-3.5 fill-none stroke-current shrink-0"
               strokeWidth="2"
             >
               <rect width="20" height="16" x="2" y="4" rx="2" />
               <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
             </svg>
-            <span>{site.email}</span>
+            <span className="truncate max-w-[180px] sm:max-w-none">{site.email}</span>
           </a>
 
           <span className="hidden h-3 w-px bg-white/20 md:block" />
@@ -52,7 +52,7 @@ export function TopBar() {
           <div className="hidden items-center gap-1.5 text-white/70 md:flex">
             <svg
               viewBox="0 0 24 24"
-              className="h-3.5 w-3.5 fill-none stroke-current"
+              className="h-3.5 w-3.5 fill-none stroke-current shrink-0"
               strokeWidth="2"
             >
               <circle cx="12" cy="12" r="10" />

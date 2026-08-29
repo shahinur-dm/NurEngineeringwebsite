@@ -115,26 +115,26 @@ export function BlogForm({ initialData, isEdit }: BlogFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3.5 sm:gap-4">
         <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
+          <h2 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-navy">
             {isEdit ? "Edit Blog Post" : "Create Blog Post"}
           </h2>
           <p className="text-xs text-steel">
             Draft technical articles, application notes and industry updates.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           <Link
             href="/admin/blogs"
-            className="rounded border border-line bg-white px-4 py-2 text-xs font-bold uppercase text-navy hover:bg-paper"
+            className="rounded border border-line bg-white px-3.5 sm:px-4 py-2 text-xs font-bold uppercase text-navy hover:bg-paper transition flex-1 sm:flex-none text-center"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="btn-orange px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50"
+            className="btn-orange px-5 sm:px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50 flex-1 sm:flex-none text-center"
           >
             {loading ? "Saving..." : isEdit ? "Update Post" : "Publish / Save"}
           </button>
@@ -147,10 +147,10 @@ export function BlogForm({ initialData, isEdit }: BlogFormProps) {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[2fr_1fr]">
         {/* Main Content Area */}
         <div className="space-y-6">
-          <div className="rounded-lg border border-line bg-white p-5 shadow-xs space-y-4">
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
             <div>
               <label className="block text-xs font-bold uppercase text-navy">Title *</label>
               <input

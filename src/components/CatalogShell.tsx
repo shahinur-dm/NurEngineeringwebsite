@@ -14,11 +14,11 @@ export function CatalogShell({
   showSearch?: boolean;
 }) {
   return (
-    <div className="shell grid gap-6 py-6 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[232px_minmax(0,1fr)]">
+    <div className="shell grid gap-5 sm:gap-6 py-4 sm:py-6 lg:grid-cols-[220px_minmax(0,1fr)] xl:grid-cols-[232px_minmax(0,1fr)]">
       <div className="lg:sticky lg:top-4 lg:self-start">
         <CategorySidebar categories={categories} activeSlug={activeSlug} />
       </div>
-      <div className="min-w-0 space-y-6">
+      <div className="min-w-0 space-y-5 sm:space-y-6">
         {children}
       </div>
     </div>

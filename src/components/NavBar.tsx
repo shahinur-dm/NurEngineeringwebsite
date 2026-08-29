@@ -71,21 +71,23 @@ export function NavBar() {
     <header className="relative z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)]">
       <div className="shell flex items-center justify-between py-2 md:py-2.5">
         {/* Left: Logo & Company Name Branding */}
-        <Link href="/" className="flex items-center gap-3 shrink-0 group">
-          <Logo size={48} />
-          <div className="flex flex-col justify-center">
-            <div className="font-display text-[21px] sm:text-[23px] font-extrabold uppercase leading-none tracking-[0.04em]">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group min-w-0">
+          <div className="shrink-0 scale-90 sm:scale-100 origin-left">
+            <Logo size={46} />
+          </div>
+          <div className="flex flex-col justify-center min-w-0">
+            <div className="font-display text-[17px] sm:text-[21px] md:text-[23px] font-extrabold uppercase leading-none tracking-[0.03em] sm:tracking-[0.04em] truncate">
               <span className="text-navy">NUR </span>
               <span className="text-orange">ENGINEERING</span>
             </div>
-            <span className="mt-1 text-[10.5px] sm:text-[11px] font-medium leading-none tracking-tight text-steel">
+            <span className="mt-0.5 sm:mt-1 text-[9.5px] sm:text-[11px] font-medium leading-none tracking-tight text-steel truncate">
               Machine, Spare Parts &amp; Technical Service
             </span>
           </div>
         </Link>
 
         {/* Center: Desktop Navigation Links */}
-        <nav className="hidden items-center gap-6 lg:gap-8 md:flex">
+        <nav className="hidden items-center gap-5 lg:gap-8 md:flex">
           {nav.map((link) => {
             const active = isActive(link.href);
             const isProducts = link.href === "/products";
@@ -115,7 +117,7 @@ export function NavBar() {
                     )}
                   </Link>
 
-                  {/* Mega Menu for Use Cases */}
+                  {/* Mega Menu for Use Cases on Desktop */}
                   {casesOpen && (
                     <div
                       className="absolute top-full left-1/2 z-50 -translate-x-1/2 border-t-2 border-orange bg-white p-6 shadow-[0_28px_60px_rgba(11,31,51,0.16)] min-w-[540px] max-w-2xl"
@@ -184,12 +186,12 @@ export function NavBar() {
         </nav>
 
         {/* Right: Search Button & Mobile Toggle */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           {/* Circular Search Button */}
           <button
             type="button"
             onClick={() => setSearchOpen((v) => !v)}
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-navy text-white shadow-sm transition hover:bg-orange hover:shadow-md"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-navy text-white shadow-sm transition hover:bg-orange hover:shadow-md"
             aria-label="Search products"
             title="Search products"
           >
@@ -206,7 +208,7 @@ export function NavBar() {
           {/* Mobile Menu Hamburger */}
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-navy hover:bg-paper md:hidden"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-line text-navy hover:bg-paper md:hidden shrink-0"
             onClick={() => setOpen((v) => !v)}
             aria-label="Toggle navigation menu"
           >
@@ -228,12 +230,12 @@ export function NavBar() {
       {/* Search Input Bar (Dropdown Overlay) */}
       {searchOpen && (
         <div className="border-t border-orange/40 bg-navy shadow-xl">
-          <div className="shell py-3">
+          <div className="shell py-2.5 sm:py-3">
             <form
               onSubmit={handleSearchSubmit}
               className="flex w-full items-center overflow-hidden rounded border border-line bg-white shadow-sm"
             >
-              <span className="grid w-11 place-items-center text-mist" aria-hidden>
+              <span className="grid w-9 sm:w-11 place-items-center text-mist shrink-0" aria-hidden>
                 <svg
                   viewBox="0 0 24 24"
                   className="h-4 w-4 fill-none stroke-current"
@@ -248,20 +250,20 @@ export function NavBar() {
                 autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search PLC, motor, VFD, sensor, SKU or part number..."
-                className="min-h-11 w-full bg-transparent pr-3 text-sm text-navy outline-none placeholder:text-mist"
+                placeholder="Search PLC, motor, VFD, sensor, SKU..."
+                className="min-h-10 sm:min-h-11 w-full bg-transparent pr-2 sm:pr-3 text-xs sm:text-sm text-navy outline-none placeholder:text-mist min-w-0"
                 aria-label="Search products"
               />
               <button
                 type="submit"
-                className="btn-orange min-h-11 shrink-0 rounded-none px-6"
+                className="btn-orange min-h-10 sm:min-h-11 shrink-0 rounded-none px-4 sm:px-6 text-xs sm:text-sm"
               >
                 Search
               </button>
               <button
                 type="button"
                 onClick={() => setSearchOpen(false)}
-                className="px-3 text-steel transition hover:text-navy"
+                className="px-2.5 sm:px-3 text-steel transition hover:text-navy text-xs sm:text-sm"
                 aria-label="Close search"
               >
                 ✕
@@ -273,20 +275,26 @@ export function NavBar() {
 
       {/* Mobile Navigation Drawer */}
       {open && (
-        <div className="border-t border-line bg-white py-3 md:hidden">
+        <div className="border-t border-line bg-white py-3 md:hidden shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="shell flex flex-col divide-y divide-line/60">
-            {nav.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`py-2.5 font-display text-[13px] font-bold uppercase tracking-wider transition ${
-                  isActive(link.href) ? "text-orange" : "text-navy hover:text-orange"
-                }`}
-                onClick={() => setOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {nav.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`flex items-center justify-between py-3 font-display text-[13px] font-bold uppercase tracking-wider transition ${
+                    active ? "text-orange" : "text-navy hover:text-orange"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  <span>{link.label}</span>
+                  {active && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-orange" />
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

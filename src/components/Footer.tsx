@@ -10,9 +10,9 @@ export function Footer() {
   const nav = [...(site.nav || [])].sort((a, b) => a.order - b.order);
 
   return (
-    <footer className="mt-10 bg-navy text-white">
+    <footer className="mt-8 sm:mt-10 bg-navy text-white">
       <div className="h-[3px] bg-orange" />
-      <div className="shell grid gap-12 py-14 md:grid-cols-[1.35fr_.7fr_1fr_1fr]">
+      <div className="shell grid gap-8 sm:gap-10 md:gap-12 py-10 sm:py-14 grid-cols-1 sm:grid-cols-2 md:grid-cols-[1.35fr_.7fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-3.5">
             <Logo size={54} />

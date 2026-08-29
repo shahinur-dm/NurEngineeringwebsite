@@ -174,26 +174,26 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3.5 sm:gap-4">
         <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
+          <h2 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-navy">
             {isEdit ? "Edit Product" : "Add New Product"}
           </h2>
           <p className="text-xs text-steel">
             Fill in product parameters, images, specifications, and availability.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           <Link
             href="/admin/products"
-            className="rounded border border-line bg-white px-4 py-2 text-xs font-bold uppercase text-navy hover:bg-paper transition"
+            className="rounded border border-line bg-white px-3.5 sm:px-4 py-2 text-xs font-bold uppercase text-navy hover:bg-paper transition flex-1 sm:flex-none text-center"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="btn-orange px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50"
+            className="btn-orange px-5 sm:px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50 flex-1 sm:flex-none text-center"
           >
             {loading ? "Saving..." : isEdit ? "Update Product" : "Create Product"}
           </button>
@@ -212,11 +212,11 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[2fr_1fr]">
         {/* Main Left Column */}
         <div className="space-y-6">
           {/* General Info */}
-          <div className="rounded-lg border border-line bg-white p-5 shadow-xs space-y-4">
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
             <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
               General Information
             </h3>

@@ -39,21 +39,21 @@ export default async function HomePage() {
             All notes →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {useCases.slice(0, 6).map((item, i) => (
             <Link
               key={item.slug}
               href={`/use-cases/${item.slug}`}
-              className="catalog-card relative p-5"
+              className="catalog-card relative p-4 sm:p-5"
             >
-              <span className="absolute right-4 top-4 font-display text-2xl font-bold text-navy/8">
+              <span className="absolute right-3.5 top-3.5 sm:right-4 sm:top-4 font-display text-2xl font-bold text-navy/8">
                 0{i + 1}
               </span>
-              <p className="kicker">{item.industry}</p>
-              <h3 className="mt-2 pr-8 font-display text-[15px] font-bold uppercase leading-snug tracking-wide text-navy">
+              <p className="kicker text-[10px] sm:text-[11px]">{item.industry}</p>
+              <h3 className="mt-1.5 sm:mt-2 pr-6 sm:pr-8 font-display text-[14px] sm:text-[15px] font-bold uppercase leading-snug tracking-wide text-navy">
                 {item.title}
               </h3>
-              <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-steel">
+              <p className="mt-1.5 sm:mt-2 line-clamp-2 text-[11.5px] sm:text-[12px] leading-5 text-steel">
                 {item.summary}
               </p>
             </Link>
@@ -63,7 +63,7 @@ export default async function HomePage() {
 
       <section>
         <div className="section-label">Featured machine parts</div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-4">
           {featured.map((product) => (
             <ProductCard key={String(product._id)} product={product} size="lg" />
           ))}
@@ -72,7 +72,7 @@ export default async function HomePage() {
 
       <section>
         <div className="section-label">Technical service provider</div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {services.slice(0, 5).map((service) => (
             <ServiceCard key={String(service._id)} service={service} />
           ))}
@@ -81,7 +81,7 @@ export default async function HomePage() {
 
       <section>
         <div className="section-label">More spare parts</div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {smallParts.map((product) => (
             <ProductCard key={String(product._id)} product={product} size="sm" />
           ))}

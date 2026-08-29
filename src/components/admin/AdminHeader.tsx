@@ -37,11 +37,11 @@ export function AdminHeader({
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-line bg-white px-4 md:px-6 shadow-xs">
       {/* Left: Mobile hamburger & Breadcrumb */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
         <button
           type="button"
           onClick={onMobileMenuToggle}
-          className="grid h-9 w-9 place-items-center rounded border border-line text-navy hover:bg-paper lg:hidden"
+          className="grid h-9 w-9 place-items-center rounded border border-line text-navy hover:bg-paper lg:hidden shrink-0 cursor-pointer"
           aria-label="Open sidebar"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,8 +49,8 @@ export function AdminHeader({
           </svg>
         </button>
 
-        <div>
-          <h1 className="font-display text-sm md:text-base font-bold uppercase tracking-wide text-navy">
+        <div className="min-w-0">
+          <h1 className="font-display text-xs sm:text-sm md:text-base font-bold uppercase tracking-wide text-navy truncate max-w-[150px] xs:max-w-[200px] sm:max-w-none">
             {breadcrumb}
           </h1>
         </div>

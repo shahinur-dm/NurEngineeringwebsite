@@ -94,7 +94,7 @@ export default async function ProductDetailPage({
 
   return (
     <CatalogShell categories={categories} activeSlug={categorySlug}>
-      <nav className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-mist">
+      <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.14em] text-mist">
         <Link href="/products" className="transition hover:text-orange">
           Products
         </Link>
@@ -110,11 +110,11 @@ export default async function ProductDetailPage({
           </>
         )}
         <span className="text-line">/</span>
-        <span className="text-navy">{product.name}</span>
+        <span className="text-navy font-semibold truncate max-w-[200px] sm:max-w-none">{product.name}</span>
       </nav>
 
-      <article className="panel p-5 md:p-8">
-        <div className="grid items-start gap-8 lg:grid-cols-[0.96fr_1.04fr] lg:gap-10">
+      <article className="panel p-4 sm:p-5 md:p-8">
+        <div className="grid items-start gap-6 sm:gap-8 lg:grid-cols-[0.96fr_1.04fr] lg:gap-10">
           <div className="space-y-4">
             <ProductGallery
               name={product.name}
@@ -122,16 +122,16 @@ export default async function ProductDetailPage({
               videoUrl={media.videoUrl}
             />
 
-            <div className="border border-line bg-paper/60 p-4">
-              <p className="kicker">At a glance</p>
-              <dl className="mt-3 space-y-0">
+            <div className="border border-line bg-paper/60 p-3.5 sm:p-4">
+              <p className="kicker text-[10px] sm:text-[11px]">At a glance</p>
+              <dl className="mt-2.5 sm:mt-3 space-y-0">
                 {glance.map((row) => (
                   <div
                     key={row.label}
-                    className="grid grid-cols-[7.5rem_1fr] gap-2 border-b border-line py-2 last:border-0"
+                    className="grid grid-cols-[6rem_1fr] sm:grid-cols-[7.5rem_1fr] gap-2 border-b border-line py-1.5 sm:py-2 last:border-0"
                   >
-                    <dt className="text-[12px] text-mist">{row.label}</dt>
-                    <dd className="text-[13px] font-medium text-navy">
+                    <dt className="text-[11.5px] sm:text-[12px] text-mist">{row.label}</dt>
+                    <dd className="text-[12.5px] sm:text-[13px] font-medium text-navy break-words">
                       {row.value}
                     </dd>
                   </div>
@@ -140,13 +140,13 @@ export default async function ProductDetailPage({
             </div>
 
             {extra?.included?.length ? (
-              <div className="border border-line p-4">
-                <p className="kicker">In the pack</p>
-                <ul className="mt-3 flex flex-wrap gap-2">
+              <div className="border border-line p-3.5 sm:p-4">
+                <p className="kicker text-[10px] sm:text-[11px]">In the pack</p>
+                <ul className="mt-2.5 sm:mt-3 flex flex-wrap gap-1.5 sm:gap-2">
                   {extra.included.map((item) => (
                     <li
                       key={item}
-                      className="border border-line bg-white px-2.5 py-1 text-[12px] text-navy"
+                      className="border border-line bg-white px-2.5 py-1 text-[11.5px] sm:text-[12px] text-navy"
                     >
                       {item}
                     </li>
@@ -156,13 +156,13 @@ export default async function ProductDetailPage({
             ) : null}
 
             {extra?.applications?.length ? (
-              <div className="border border-line p-4">
-                <p className="kicker">Typical use</p>
-                <ul className="mt-3 space-y-2">
+              <div className="border border-line p-3.5 sm:p-4">
+                <p className="kicker text-[10px] sm:text-[11px]">Typical use</p>
+                <ul className="mt-2.5 sm:mt-3 space-y-2">
                   {extra.applications.slice(0, 3).map((item) => (
                     <li
                       key={item}
-                      className="flex gap-2.5 text-[12px] leading-5 text-steel"
+                      className="flex gap-2 text-[11.5px] sm:text-[12px] leading-5 text-steel"
                     >
                       <span className="mt-[7px] h-px w-3 shrink-0 bg-orange" />
                       {item}
@@ -172,13 +172,13 @@ export default async function ProductDetailPage({
               </div>
             ) : null}
 
-            <div className="border border-line p-4">
-              <p className="kicker">Before you order</p>
-              <ul className="mt-3 space-y-2.5">
+            <div className="border border-line p-3.5 sm:p-4">
+              <p className="kicker text-[10px] sm:text-[11px]">Before you order</p>
+              <ul className="mt-2.5 sm:mt-3 space-y-2">
                 {orderNotes.map((note) => (
                   <li
                     key={note}
-                    className="flex gap-2.5 text-[12px] leading-5 text-steel"
+                    className="flex gap-2 text-[11.5px] sm:text-[12px] leading-5 text-steel"
                   >
                     <span className="mt-[7px] h-px w-3 shrink-0 bg-orange" />
                     {note}
@@ -187,18 +187,18 @@ export default async function ProductDetailPage({
               </ul>
             </div>
 
-            <div className="flex items-center justify-between gap-3 border border-line bg-navy px-4 py-3.5 text-white">
+            <div className="flex flex-wrap items-center justify-between gap-3 border border-line bg-navy px-4 py-3.5 text-white">
               <div>
-                <p className="font-display text-[13px] font-bold uppercase tracking-[0.12em]">
+                <p className="font-display text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.12em]">
                   Need a match?
                 </p>
-                <p className="mt-0.5 text-[11px] text-white/60">
+                <p className="mt-0.5 text-[10.5px] sm:text-[11px] text-white/60">
                   Photo + nameplate is enough to quote.
                 </p>
               </div>
               <Link
                 href={`/contact?product=${product.slug}`}
-                className="btn-orange shrink-0 px-4"
+                className="btn-orange shrink-0 px-4 text-xs font-bold"
               >
                 Quote
               </Link>
@@ -206,24 +206,24 @@ export default async function ProductDetailPage({
           </div>
 
           <div className="lg:sticky lg:top-24">
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="kicker">{categoryName}</p>
-              <span className="stock-pill">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <p className="kicker text-[10px] sm:text-[11px]">{categoryName}</p>
+              <span className="stock-pill text-[9.5px] sm:text-[10.5px]">
                 {product.inStock ? "Available" : "Made to order"}
               </span>
             </div>
-            <h1 className="mt-3 font-display text-[clamp(1.7rem,3vw,2.35rem)] font-bold uppercase leading-[0.95] tracking-[0.03em] text-navy">
+            <h1 className="mt-2.5 sm:mt-3 font-display text-[clamp(1.4rem,3vw,2.35rem)] font-bold uppercase leading-[1.05] tracking-[0.03em] text-navy">
               {product.name}
             </h1>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-steel">
+            <p className="mt-2.5 sm:mt-3 max-w-xl text-xs sm:text-sm leading-relaxed sm:leading-7 text-steel">
               {product.shortDescription}
             </p>
 
-            <div className="mt-6 border-y border-line py-5">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="mt-5 sm:mt-6 border-y border-line py-4 sm:py-5">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
                 <Link
                   href={`/contact?product=${product.slug}`}
-                  className="btn-orange inline-flex items-center justify-center gap-2"
+                  className="btn-orange inline-flex items-center justify-center gap-2 flex-1 sm:flex-none text-center"
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -241,7 +241,7 @@ export default async function ProductDetailPage({
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-[2.75rem] items-center justify-center gap-2 bg-[#1ea952] px-5 py-2.5 font-display text-[0.8125rem] font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[#188c43] shadow-sm"
+                  className="inline-flex min-h-[2.75rem] items-center justify-center gap-2 bg-[#1ea952] px-5 py-2.5 font-display text-[0.8125rem] font-bold uppercase tracking-[0.1em] text-white transition hover:bg-[#188c43] shadow-sm flex-1 sm:flex-none text-center"
                 >
                   <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
                     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
@@ -249,28 +249,28 @@ export default async function ProductDetailPage({
                   <span>WhatsApp</span>
                 </a>
               </div>
-              <p className="mt-3 text-[12px] leading-5 text-mist">
+              <p className="mt-2.5 sm:mt-3 text-[11.5px] sm:text-[12px] leading-5 text-mist">
                 Indicative price. Confirm variant, coil voltage, I/O type and stock on quote.
               </p>
             </div>
 
-            <dl className="mt-6">
+            <dl className="mt-5 sm:mt-6">
               {facts.map(([label, value], i) => (
                 <div
                   key={label}
-                  className={`grid grid-cols-[9rem_1fr] gap-3 px-0 py-2.5 text-[13px] ${
+                  className={`grid grid-cols-[6.5rem_1fr] sm:grid-cols-[9rem_1fr] gap-2 sm:gap-3 px-0 py-2 sm:py-2.5 text-xs sm:text-[13px] ${
                     i < facts.length - 1 ? "border-b border-line" : ""
                   }`}
                 >
                   <dt className="tracking-wide text-mist">{label}</dt>
-                  <dd className="font-medium text-navy">{value}</dd>
+                  <dd className="font-medium text-navy break-words">{value}</dd>
                 </div>
               ))}
             </dl>
 
             {categorySlug && (
-              <div className="mt-7">
-                <Link href={`/products?category=${categorySlug}`} className="btn-navy">
+              <div className="mt-6 sm:mt-7">
+                <Link href={`/products?category=${categorySlug}`} className="btn-navy w-full sm:w-auto text-center">
                   More in {categoryName}
                 </Link>
               </div>

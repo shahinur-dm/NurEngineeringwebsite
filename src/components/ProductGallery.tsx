@@ -142,15 +142,15 @@ export function ProductGallery({
       </div>
 
       {items.length > 1 && (
-        <div className="mt-2.5 grid grid-cols-5 gap-2">
+        <div className="mt-2.5 flex gap-2 overflow-x-auto pb-1 scrollbar-thin sm:grid sm:grid-cols-5">
           {items.map((item, i) => (
             <button
               key={`${item.kind}-${item.src}-${i}`}
               type="button"
               onClick={() => select(i)}
-              className={`relative aspect-square overflow-hidden border transition ${
+              className={`relative aspect-square h-14 w-14 sm:h-auto sm:w-auto shrink-0 sm:shrink overflow-hidden border transition ${
                 i === active
-                  ? "border-orange"
+                  ? "border-orange ring-1 ring-orange"
                   : "border-line hover:border-navy/30"
               }`}
               aria-label={item.kind === "video" ? "Play video" : `Image ${i + 1}`}
@@ -164,7 +164,7 @@ export function ProductGallery({
               />
               {item.kind === "video" && (
                 <span className="absolute inset-0 grid place-items-center bg-navy/35">
-                  <span className="grid h-7 w-7 place-items-center rounded-full bg-orange text-[10px] text-white">
+                  <span className="grid h-6 w-6 place-items-center rounded-full bg-orange text-[9px] text-white">
                     ▶
                   </span>
                 </span>

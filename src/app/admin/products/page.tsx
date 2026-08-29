@@ -125,9 +125,9 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-white p-4 shadow-xs">
+      <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 rounded-lg border border-line bg-white p-3.5 sm:p-4 shadow-xs">
         {/* Search */}
-        <div className="relative min-w-[220px] flex-1">
+        <div className="relative w-full sm:min-w-[200px] sm:flex-1">
           <input
             type="search"
             placeholder="Search name, SKU, brand..."
@@ -147,7 +147,7 @@ export default function AdminProductsPage() {
             setCategoryFilter(e.target.value);
             setPage(1);
           }}
-          className="rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy"
+          className="w-full sm:w-auto rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
@@ -164,7 +164,7 @@ export default function AdminProductsPage() {
             setStockFilter(e.target.value);
             setPage(1);
           }}
-          className="rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy"
+          className="w-full sm:w-auto rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy"
         >
           <option value="">All Availability</option>
           <option value="in">In Stock</option>
@@ -178,7 +178,7 @@ export default function AdminProductsPage() {
             setPublishedFilter(e.target.value);
             setPage(1);
           }}
-          className="rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy"
+          className="w-full sm:w-auto rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy"
         >
           <option value="">All Status</option>
           <option value="true">Published</option>
@@ -204,7 +204,7 @@ export default function AdminProductsPage() {
 
       {/* Products Table */}
       <div className="rounded-lg border border-line bg-white shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-line bg-paper/50 font-display text-[11px] font-bold uppercase tracking-wider text-navy">
               <tr>
@@ -328,7 +328,7 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Pagination Bar */}
-        <div className="flex items-center justify-between border-t border-line px-5 py-3 text-xs text-steel bg-paper/20">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-line px-4 sm:px-5 py-3 text-xs text-steel bg-paper/20">
           <span>
             Total: <strong>{totalCount}</strong> products
           </span>
@@ -337,7 +337,7 @@ export default function AdminProductsPage() {
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
-              className="rounded border border-line px-2.5 py-1 font-bold disabled:opacity-40"
+              className="rounded border border-line px-3 py-1 font-bold disabled:opacity-40"
             >
               Previous
             </button>
@@ -348,7 +348,7 @@ export default function AdminProductsPage() {
               type="button"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded border border-line px-2.5 py-1 font-bold disabled:opacity-40"
+              className="rounded border border-line px-3 py-1 font-bold disabled:opacity-40"
             >
               Next
             </button>

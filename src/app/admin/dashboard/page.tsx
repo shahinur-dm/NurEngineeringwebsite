@@ -74,38 +74,38 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-line bg-white p-6 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3.5 sm:gap-4 rounded-lg border border-line bg-white p-4 sm:p-6 shadow-xs">
         <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
+          <h2 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-navy">
             Dashboard Overview
           </h2>
           <p className="mt-1 text-xs text-steel">
             Manage your machinery catalog, categories, content and website settings.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2.5">
-          <Link href="/admin/products/new" className="btn-orange px-4 py-2 text-xs font-bold uppercase">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <Link href="/admin/products/new" className="btn-orange px-3.5 py-2 text-xs font-bold uppercase flex-1 sm:flex-none text-center">
             + Add Product
           </Link>
-          <Link href="/admin/blogs/new" className="btn-navy px-4 py-2 text-xs font-bold uppercase">
+          <Link href="/admin/blogs/new" className="btn-navy px-3.5 py-2 text-xs font-bold uppercase flex-1 sm:flex-none text-center">
             + Add Blog
           </Link>
-          <Link href="/admin/settings" className="border border-line bg-paper px-4 py-2 text-xs font-bold uppercase text-navy hover:bg-white transition">
+          <Link href="/admin/settings" className="border border-line bg-paper px-3.5 py-2 text-xs font-bold uppercase text-navy hover:bg-white transition flex-1 sm:flex-none text-center">
             ⚙️ Settings
           </Link>
         </div>
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
         {/* Total Products */}
-        <div className="rounded-lg border border-line bg-white p-5 shadow-xs">
+        <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wider text-mist">Total Products</p>
-            <span className="text-xl">📦</span>
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-mist">Total Products</p>
+            <span className="text-lg sm:text-xl">📦</span>
           </div>
-          <p className="mt-3 font-display text-3xl font-bold text-navy">{stats?.totalProducts ?? 0}</p>
-          <div className="mt-2 flex items-center gap-2 text-[11px] text-steel">
+          <p className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-3xl font-bold text-navy">{stats?.totalProducts ?? 0}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-[11px] text-steel">
             <span className="text-emerald-600 font-semibold">{stats?.publishedProducts ?? 0} Published</span>
             <span>·</span>
             <span>{stats?.draftProducts ?? 0} Drafts</span>
@@ -113,35 +113,35 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Stock Status */}
-        <div className="rounded-lg border border-line bg-white p-5 shadow-xs">
+        <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wider text-mist">Availability</p>
-            <span className="text-xl">⚡</span>
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-mist">Availability</p>
+            <span className="text-lg sm:text-xl">⚡</span>
           </div>
-          <p className="mt-3 font-display text-3xl font-bold text-emerald-600">{stats?.inStockProducts ?? 0}</p>
-          <p className="mt-2 text-[11px] text-steel">
+          <p className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-3xl font-bold text-emerald-600">{stats?.inStockProducts ?? 0}</p>
+          <p className="mt-2 text-[10.5px] sm:text-[11px] text-steel">
             In Stock ({stats?.outOfStockProducts ?? 0} made to order)
           </p>
         </div>
 
         {/* Categories */}
-        <div className="rounded-lg border border-line bg-white p-5 shadow-xs">
+        <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wider text-mist">Categories</p>
-            <span className="text-xl">📁</span>
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-mist">Categories</p>
+            <span className="text-lg sm:text-xl">📁</span>
           </div>
-          <p className="mt-3 font-display text-3xl font-bold text-navy">{stats?.totalCategories ?? 0}</p>
-          <p className="mt-2 text-[11px] text-steel">Machine & parts groups</p>
+          <p className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-3xl font-bold text-navy">{stats?.totalCategories ?? 0}</p>
+          <p className="mt-2 text-[10.5px] sm:text-[11px] text-steel">Machine & parts groups</p>
         </div>
 
         {/* Blogs & Articles */}
-        <div className="rounded-lg border border-line bg-white p-5 shadow-xs">
+        <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-wider text-mist">Blog Posts</p>
-            <span className="text-xl">📝</span>
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-mist">Blog Posts</p>
+            <span className="text-lg sm:text-xl">📝</span>
           </div>
-          <p className="mt-3 font-display text-3xl font-bold text-orange">{stats?.totalBlogs ?? 0}</p>
-          <p className="mt-2 text-[11px] text-steel">Articles & technical notes</p>
+          <p className="mt-2.5 sm:mt-3 font-display text-2xl sm:text-3xl font-bold text-orange">{stats?.totalBlogs ?? 0}</p>
+          <p className="mt-2 text-[10.5px] sm:text-[11px] text-steel">Articles & technical notes</p>
         </div>
       </div>
 

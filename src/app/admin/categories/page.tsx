@@ -129,8 +129,8 @@ export default function AdminCategoriesPage() {
 
       {/* Categories Table */}
       <div className="rounded-lg border border-line bg-white shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left text-xs min-w-[500px]">
             <thead className="border-b border-line bg-paper/50 font-display text-[11px] font-bold uppercase tracking-wider text-navy">
               <tr>
                 <th className="py-3 px-4 w-16">Order</th>
@@ -200,10 +200,10 @@ export default function AdminCategoriesPage() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Create / Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-lg border border-line bg-white p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-lg border border-line bg-white p-4 sm:p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-line pb-3">
               <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
                 {editingCategory ? "Edit Category" : "Add New Category"}

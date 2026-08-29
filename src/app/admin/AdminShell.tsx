@@ -56,7 +56,9 @@ export function AdminShell({
           onMobileMenuToggle={() => setMobileOpen((v) => !v)}
         />
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-3.5 sm:p-5 md:p-6 lg:p-8 min-w-0 max-w-full overflow-x-hidden">
+          {children}
+        </main>
 
         <footer className="border-t border-line bg-white px-6 py-3 text-center text-xs text-mist">
           <span>Nur Engineering Solution CMS · Built for Administrative Management</span>

@@ -43,9 +43,17 @@ button {
   outline-offset: 2px;
 }
 
-.shell {
+.shell,
+.container-page {
   width: min(100% - 2rem, 80rem);
   margin-inline: auto;
+}
+
+@media (max-width: 640px) {
+  .shell,
+  .container-page {
+    width: min(100% - 1.25rem, 80rem);
+  }
 }
 
 .panel {

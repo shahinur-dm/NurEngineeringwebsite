@@ -96,15 +96,15 @@ export function MediaPickerModal({
         </div>
 
         {/* Action Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-4 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 border-b border-line p-3 sm:p-4 bg-white">
           {/* Direct URL input */}
-          <div className="flex flex-1 items-center gap-2 min-w-[240px]">
+          <div className="flex flex-1 items-center gap-2 min-w-0 w-full sm:w-auto">
             <input
               type="url"
               placeholder="Or paste external image URL..."
               value={customUrl}
               onChange={(e) => setCustomUrl(e.target.value)}
-              className="flex-1 rounded border border-line px-3 py-1.5 text-xs outline-none focus:border-orange"
+              className="flex-1 min-w-0 rounded border border-line px-2.5 py-1.5 text-xs outline-none focus:border-orange"
             />
             <button
               type="button"
@@ -120,7 +120,7 @@ export function MediaPickerModal({
           </div>
 
           {/* Upload Button */}
-          <label className="btn-navy cursor-pointer px-4 py-1.5 text-xs font-bold shrink-0">
+          <label className="btn-navy cursor-pointer px-4 py-1.5 text-xs font-bold shrink-0 w-full sm:w-auto text-center">
             <span>{uploading ? "Uploading..." : "+ Upload New"}</span>
             <input
               type="file"
@@ -133,7 +133,7 @@ export function MediaPickerModal({
         </div>
 
         {/* Media Grid */}
-        <div className="flex-1 overflow-y-auto p-4 scrollbar-thin max-h-[50vh]">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 scrollbar-thin max-h-[50vh]">
           {loading ? (
             <div className="py-12 text-center text-xs text-mist">Loading media...</div>
           ) : items.length === 0 ? (
@@ -142,7 +142,7 @@ export function MediaPickerModal({
               <p className="mt-1 text-xs text-mist">Upload an image or paste a URL above.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+            <div className="grid grid-cols-2 gap-2.5 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-6">
               {items.map((item) => (
                 <button
                   key={item._id}

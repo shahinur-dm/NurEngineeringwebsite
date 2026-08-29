@@ -102,10 +102,10 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3.5 sm:gap-4">
         <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
-            Website Settings & Live CMS
+          <h2 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-navy">
+            Website Settings &amp; Live CMS
           </h2>
           <p className="text-xs text-steel">
             Changes saved here automatically update the live public website.
@@ -116,7 +116,7 @@ export default function AdminSettingsPage() {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="btn-orange px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50"
+          className="btn-orange px-5 sm:px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50 w-full sm:w-auto text-center"
         >
           {saving ? "Saving Settings..." : "Save All Settings"}
         </button>
@@ -129,7 +129,7 @@ export default function AdminSettingsPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-line pb-2">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 border-b border-line pb-2">
         {[
           { id: "branding", label: "Logo & Branding", icon: "🎨" },
           { id: "header", label: "Header & Contacts", icon: "📞" },
@@ -141,14 +141,14 @@ export default function AdminSettingsPage() {
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 rounded px-4 py-2 text-xs font-bold transition ${
+            className={`flex items-center gap-1.5 sm:gap-2 rounded px-3 sm:px-4 py-2 text-xs font-bold transition flex-1 sm:flex-none justify-center ${
               tab === t.id
                 ? "bg-navy text-white shadow-xs"
                 : "bg-white text-navy hover:bg-paper border border-line"
             }`}
           >
             <span>{t.icon}</span>
-            <span>{t.label}</span>
+            <span className="truncate">{t.label}</span>
           </button>
         ))}
       </div>
@@ -156,7 +156,7 @@ export default function AdminSettingsPage() {
       <form onSubmit={handleSave} className="space-y-6">
         {/* Tab 1: Logo & Branding */}
         {tab === "branding" && (
-          <div className="rounded-lg border border-line bg-white p-6 shadow-xs space-y-5">
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-6 shadow-xs space-y-5">
             <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
               Logo & Visual Branding
             </h3>

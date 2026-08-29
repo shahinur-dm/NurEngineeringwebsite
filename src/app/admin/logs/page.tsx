@@ -40,9 +40,9 @@ export default function AdminLogsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3.5 sm:gap-4">
         <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
+          <h2 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-navy">
             Audit Activity Logs
           </h2>
           <p className="text-xs text-steel">
@@ -53,7 +53,7 @@ export default function AdminLogsPage() {
         <select
           value={entityFilter}
           onChange={(e) => setEntityFilter(e.target.value)}
-          className="rounded border border-line bg-white px-3 py-2 text-xs font-bold text-navy outline-none focus:border-orange shadow-xs"
+          className="rounded border border-line bg-white px-3 py-2 text-xs font-bold text-navy outline-none focus:border-orange shadow-xs w-full sm:w-auto"
         >
           <option value="">All Entities</option>
           <option value="Product">Products</option>
@@ -62,14 +62,14 @@ export default function AdminLogsPage() {
           <option value="BlogPost">Blog Posts</option>
           <option value="MediaItem">Media Files</option>
           <option value="SiteSettings">Website Settings</option>
-          <option value="User">Users & Authentication</option>
+          <option value="User">Users &amp; Authentication</option>
         </select>
       </div>
 
       {/* Logs Table */}
       <div className="rounded-lg border border-line bg-white shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left text-xs min-w-[600px]">
             <thead className="border-b border-line bg-paper/50 font-display text-[11px] font-bold uppercase tracking-wider text-navy">
               <tr>
                 <th className="py-3 px-4">Action</th>

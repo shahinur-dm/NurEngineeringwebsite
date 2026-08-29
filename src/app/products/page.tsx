@@ -59,7 +59,7 @@ export default async function ProductsPage({
           {String(products.length).padStart(2, "0")} items
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
         {products.map((product) => (
           <ProductCard key={String(product._id)} product={product} />
         ))}

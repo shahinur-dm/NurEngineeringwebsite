@@ -52,27 +52,27 @@ export default function AdminBlogsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3.5 sm:gap-4">
         <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
-            Blog & Content Management
+          <h2 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-navy">
+            Blog &amp; Knowledge Base
           </h2>
           <p className="text-xs text-steel">
-            Create and publish technical articles, maintenance guides and company news.
+            Manage engineering articles, wiring guides and technical publications.
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           <Link
             href="/admin/blogs/categories"
-            className="rounded border border-line bg-white px-3.5 py-2 text-xs font-bold text-navy hover:bg-paper transition"
+            className="rounded border border-line bg-white px-3.5 sm:px-4 py-2 text-xs font-bold uppercase text-navy hover:bg-paper transition flex-1 sm:flex-none text-center"
           >
             Manage Categories
           </Link>
           <Link
             href="/admin/blogs/new"
-            className="btn-orange px-4 py-2 text-xs font-bold uppercase"
+            className="btn-orange px-4 py-2 text-xs font-bold uppercase flex-1 sm:flex-none text-center"
           >
-            + Add New Post
+            + Add New Article
           </Link>
         </div>
       </div>
@@ -88,13 +88,13 @@ export default function AdminBlogsPage() {
         />
       </div>
 
-      {/* Blog List */}
+      {/* Blogs Table */}
       <div className="rounded-lg border border-line bg-white shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto scrollbar-thin">
+          <table className="w-full text-left text-xs min-w-[600px]">
             <thead className="border-b border-line bg-paper/50 font-display text-[11px] font-bold uppercase tracking-wider text-navy">
               <tr>
-                <th className="py-3 px-4">Post</th>
+                <th className="py-3 px-4">Article</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4">Author</th>
                 <th className="py-3 px-4">Status</th>
