@@ -14,8 +14,8 @@ export function SpecialFeaturesSection({ features }: SpecialFeaturesSectionProps
   const visibleFeatures = expanded ? features : features.slice(0, 9);
 
   return (
-    <section className="border-t border-line/60 pt-3 sm:pt-3.5">
-      <div className="mb-2 sm:mb-2.5 flex items-center justify-between gap-4">
+    <section className="pt-0">
+      <div className="mb-1.5 sm:mb-2 flex items-center justify-between gap-4">
         <div className="section-label mb-0">Special features</div>
         {features.length > 9 && (
           <button
@@ -28,7 +28,7 @@ export function SpecialFeaturesSection({ features }: SpecialFeaturesSectionProps
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-1.5 sm:gap-y-2 py-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-1 sm:gap-y-1.5 pt-0.5 pb-0.5">
         {visibleFeatures.map((feat) => (
           <div
             key={String(feat._id || feat.slug || feat.name)}

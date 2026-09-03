@@ -33,7 +33,7 @@ export default async function HomePage() {
 
       {/* 1. COMPANY SERVICES — Compact 6 Boxes */}
       <section>
-        <div className="mb-2 sm:mb-2.5 flex items-center justify-between gap-4">
+        <div className="mb-1.5 sm:mb-2 flex items-center justify-between gap-4">
           <div className="section-label mb-0">Company services</div>
           <Link
             href="/services"
@@ -47,7 +47,7 @@ export default async function HomePage() {
             <Link
               key={service.slug || String(service._id)}
               href={`/services/${service.slug}`}
-              className="group bg-white border border-line p-2.5 sm:p-3 text-center rounded-[2px] shadow-xs hover:border-orange hover:shadow-sm transition flex flex-col items-center justify-center min-h-[64px]"
+              className="group bg-white border border-line p-2 sm:p-2.5 text-center rounded-[2px] shadow-xs hover:border-orange hover:shadow-sm transition flex flex-col items-center justify-center min-h-[54px] sm:min-h-[56px]"
             >
               <span className="font-display text-[12px] sm:text-[13px] font-bold text-navy/70 group-hover:text-orange transition-colors">
                 {String(i + 1).padStart(2, "0")}
