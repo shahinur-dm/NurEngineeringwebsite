@@ -9,11 +9,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const featured = searchParams.get("featured") === "true";
     const categorySlug = searchParams.get("category") || undefined;
+    const subCategorySlug = searchParams.get("subcategory") || searchParams.get("subCategory") || undefined;
     const q = searchParams.get("q") || undefined;
     const limitParam = searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam, 10) : undefined;
 
-    const data = await getProducts({ featured, categorySlug, q, limit });
+    const data = await getProducts({ featured, categorySlug, subCategorySlug, q, limit });
     return jsonOk(data);
   } catch (e) {
     console.error("GET /api/products error:", e);

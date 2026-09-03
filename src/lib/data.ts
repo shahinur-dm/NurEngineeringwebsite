@@ -3,6 +3,7 @@ import { serialize } from "@/lib/serialize";
 import {
   SiteSettings,
   Category,
+  SubCategory,
   Product,
   Service,
   Banner,
@@ -12,6 +13,7 @@ import {
   BlogCategory,
   type ISiteSettings,
   type ICategory,
+  type ISubCategory,
   type IProduct,
   type IService,
   type IBanner,
@@ -23,6 +25,7 @@ import {
 import { navLinks, useCaseContent } from "@/lib/use-cases";
 import {
   mockCategories,
+  mockSubCategories,
   mockBanners,
   mockServices,
   mockProducts,
@@ -32,8 +35,9 @@ import {
   type IMockBlogCategory,
 } from "@/lib/mock-data";
 
-export type PopulatedProduct = Omit<IProduct, "category" | "relatedServices"> & {
+export type PopulatedProduct = Omit<IProduct, "category" | "subCategory" | "relatedServices"> & {
   category: ICategory;
+  subCategory?: ISubCategory | null;
   relatedServices: IService[];
 };
 
@@ -81,13 +85,14 @@ export const fallbackSettings: ISiteSettings = {
 
 function getMockPopulatedProducts(): PopulatedProduct[] {
   const catMap = new Map(mockCategories.map((c) => [String(c._id), c]));
+  const subMap = new Map(mockSubCategories.map((s) => [String(s._id), s]));
   const svcMap = new Map(mockServices.map((s) => [String(s._id), s]));
   return mockProducts.map((p) => ({
     ...p,
     category:
       catMap.get(String(p.category)) ||
-      mockCategories.find((c) => c.slug === "plc") ||
       mockCategories[0],
+    subCategory: p.subCategory ? subMap.get(String(p.subCategory)) || null : null,
     relatedServices: (p.relatedServices || [])
       .map((sid) => svcMap.get(String(sid)))
       .filter(Boolean) as IService[],
@@ -196,17 +201,94 @@ export async function getCategories(
   type?: "product" | "service"
 ): Promise<ICategory[]> {
   try {
-    await connectDB();
-    const filter = type ? { type } : {};
-    const docs = await Category.find(filter)
-      .sort({ order: 1 })
-      .lean<ICategory[]>();
-    if (docs.length) return serialize(docs);
+    const db = await connectDB();
+    if (db) {
+      const count = await Category.countDocuments();
+      if (count === 0) {
+        for (const cat of mockCategories) {
+          try {
+            await Category.create({
+              name: cat.name,
+              slug: cat.slug,
+              type: cat.type,
+              order: cat.order,
+              description: cat.description,
+            });
+          } catch {
+            // ignore duplicate
+          }
+        }
+      }
+      const filter = type ? { type } : {};
+      const docs = await Category.find(filter)
+        .sort({ order: 1 })
+        .lean<ICategory[]>();
+      if (docs.length) return serialize(docs);
+    }
   } catch {
     // fall through to mock
   }
   const filtered = type ? mockCategories.filter((c) => c.type === type) : mockCategories;
   return serialize(filtered);
+}
+
+export async function getSubCategories(
+  categorySlugOrId?: string
+): Promise<ISubCategory[]> {
+  try {
+    const db = await connectDB();
+    if (db) {
+      const count = await SubCategory.countDocuments();
+      if (count === 0) {
+        for (const sub of mockSubCategories) {
+          const parentMockCat = mockCategories.find((c) => c._id === sub.category);
+          if (parentMockCat) {
+            const dbParent = await Category.findOne({ slug: parentMockCat.slug });
+            if (dbParent) {
+              try {
+                await SubCategory.create({
+                  name: sub.name,
+                  slug: sub.slug,
+                  category: dbParent._id,
+                  order: sub.order,
+                  published: true,
+                });
+              } catch {
+                // ignore duplicate
+              }
+            }
+          }
+        }
+      }
+
+      const filter: Record<string, unknown> = { published: { $ne: false } };
+      if (categorySlugOrId) {
+        if (categorySlugOrId.match(/^[0-9a-fA-F]{24}$/)) {
+          filter.category = categorySlugOrId;
+        } else {
+          const cat = await Category.findOne({ slug: categorySlugOrId }).lean<ICategory | null>();
+          if (cat) filter.category = cat._id;
+          else return [];
+        }
+      }
+      const docs = await SubCategory.find(filter)
+        .sort({ order: 1 })
+        .lean<ISubCategory[]>();
+      if (docs.length) return serialize(docs);
+    }
+  } catch {
+    // fall through to mock
+  }
+  let list = mockSubCategories;
+  if (categorySlugOrId) {
+    const targetCat = mockCategories.find(
+      (c) => c.slug === categorySlugOrId || String(c._id) === categorySlugOrId
+    );
+    if (targetCat) {
+      list = list.filter((s) => String(s.category) === String(targetCat._id));
+    }
+  }
+  return serialize(list);
 }
 
 export async function getBanners(): Promise<IBanner[]> {
@@ -263,6 +345,7 @@ export async function getServiceBySlug(
 export async function getProducts(opts?: {
   featured?: boolean;
   categorySlug?: string;
+  subCategorySlug?: string;
   q?: string;
   limit?: number;
 }): Promise<PopulatedProduct[]> {
@@ -278,6 +361,13 @@ export async function getProducts(opts?: {
       if (cat) filter.category = cat._id;
       else return [];
     }
+    if (opts?.subCategorySlug) {
+      const sub = await SubCategory.findOne({
+        slug: opts.subCategorySlug,
+      }).lean<ISubCategory | null>();
+      if (sub) filter.subCategory = sub._id;
+      else return [];
+    }
     if (opts?.q) {
       filter.$or = [
         { name: { $regex: opts.q, $options: "i" } },
@@ -288,6 +378,7 @@ export async function getProducts(opts?: {
     }
     let query = Product.find(filter)
       .populate("category")
+      .populate("subCategory")
       .populate("relatedServices")
       .sort({ order: 1, featured: -1, createdAt: -1 });
     if (opts?.limit) query = query.limit(opts.limit);
@@ -299,6 +390,9 @@ export async function getProducts(opts?: {
   let list = getMockPopulatedProducts();
   if (opts?.featured) list = list.filter((p) => p.featured);
   if (opts?.categorySlug) list = list.filter((p) => p.category.slug === opts.categorySlug);
+  if (opts?.subCategorySlug) {
+    list = list.filter((p) => p.subCategory?.slug === opts.subCategorySlug);
+  }
   if (opts?.q) {
     const qLower = opts.q.toLowerCase();
     list = list.filter(

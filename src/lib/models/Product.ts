@@ -7,6 +7,7 @@ export interface IProduct {
   sku?: string;
   brand?: string;
   category: Types.ObjectId | string;
+  subCategory?: Types.ObjectId | string;
   shortDescription: string;
   description: string;
   price?: number;
@@ -33,6 +34,11 @@ const ProductSchema = new Schema<IProduct>(
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: true,
+      index: true,
+    },
+    subCategory: {
+      type: Schema.Types.ObjectId,
+      ref: "SubCategory",
       index: true,
     },
     shortDescription: { type: String, required: true },

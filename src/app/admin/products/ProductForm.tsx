@@ -11,6 +11,12 @@ interface Category {
   name: string;
 }
 
+interface SubCategory {
+  _id: string;
+  name: string;
+  category: string | { _id: string };
+}
+
 interface ProductFormProps {
   initialData?: {
     _id?: string;
@@ -19,6 +25,7 @@ interface ProductFormProps {
     sku?: string;
     brand?: string;
     category: string | { _id: string };
+    subCategory?: string | { _id: string };
     shortDescription: string;
     description: string;
     price?: number;
@@ -37,6 +44,7 @@ interface ProductFormProps {
 export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -50,6 +58,11 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
     typeof initialData?.category === "object"
       ? initialData.category._id
       : initialData?.category || ""
+  );
+  const [subCategory, setSubCategory] = useState(
+    typeof initialData?.subCategory === "object"
+      ? initialData.subCategory._id
+      : initialData?.subCategory || ""
   );
   const [shortDescription, setShortDescription] = useState(
     initialData?.shortDescription || ""
@@ -84,6 +97,19 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
         if (d.categories) setCategories(d.categories);
       });
   }, []);
+
+  useEffect(() => {
+    if (!category) {
+      setSubCategories([]);
+      return;
+    }
+    fetch(`/api/admin/subcategories?categoryId=${category}`)
+      .then((res) => res.json())
+      .then((d) => {
+        if (d.subcategories) setSubCategories(d.subcategories);
+      })
+      .catch((err) => console.error("Subcategories fetch error:", err));
+  }, [category]);
 
   function handleAddSpec() {
     if (specInput.trim()) {
@@ -130,6 +156,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
         sku,
         brand,
         category,
+        subCategory: subCategory || null,
         shortDescription,
         description,
         price: price ? parseFloat(price) : undefined,
@@ -160,10 +187,11 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
       }
 
       setSuccess("Product saved successfully!");
-      setTimeout(() => {
+      if (!isEdit) {
         router.push("/admin/products");
+      } else {
         router.refresh();
-      }, 1000);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -173,20 +201,20 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3.5 sm:gap-4">
+      {/* Action Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
         <div>
-          <h2 className="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-navy">
-            {isEdit ? "Edit Product" : "Add New Product"}
+          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
+            {isEdit ? "Edit Machine Part" : "Add New Machine Part"}
           </h2>
           <p className="text-xs text-steel">
-            Fill in product parameters, images, specifications, and availability.
+            Provide technical specifications, images, pricing, and category placement.
           </p>
         </div>
-        <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Link
             href="/admin/products"
-            className="rounded border border-line bg-white px-3.5 sm:px-4 py-2 text-xs font-bold uppercase text-navy hover:bg-paper transition flex-1 sm:flex-none text-center"
+            className="rounded border border-line px-4 py-2 text-xs font-bold text-steel hover:bg-paper flex-1 sm:flex-none text-center"
           >
             Cancel
           </Link>
@@ -243,7 +271,10 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 <select
                   required
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    setSubCategory(""); // reset subcategory on category change
+                  }}
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy font-medium"
                 >
                   <option value="">Select a category...</option>
@@ -255,6 +286,33 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 </select>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Sub-Category (Optional)
+                </label>
+                <select
+                  value={subCategory}
+                  onChange={(e) => setSubCategory(e.target.value)}
+                  disabled={!category || subCategories.length === 0}
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy font-medium disabled:bg-paper/80 disabled:text-mist"
+                >
+                  <option value="">
+                    {!category
+                      ? "Select Category First"
+                      : subCategories.length === 0
+                      ? "No sub-categories available"
+                      : "Select sub-category..."}
+                  </option>
+                  {subCategories.map((s) => (
+                    <option key={s._id} value={s._id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-navy">
                   Brand / Class

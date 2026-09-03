@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { CatalogShell } from "@/components/CatalogShell";
 import { ProductCard } from "@/components/ProductCard";
-import { getCategories, getProducts, getSettings } from "@/lib/data";
+import { SubCategoryBar } from "@/components/SubCategoryBar";
+import { getCategories, getSubCategories, getProducts, getSettings } from "@/lib/data";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -10,15 +11,17 @@ export const revalidate = 0;
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; subcategory?: string; q?: string }>;
 }): Promise<Metadata> {
   const sp = await searchParams;
   const site = await getSettings();
   const title = sp.q
     ? `Search: ${sp.q}`
-    : sp.category
-      ? sp.category.replace(/-/g, " ")
-      : "Products";
+    : sp.subcategory
+      ? sp.subcategory.replace(/-/g, " ")
+      : sp.category
+        ? sp.category.replace(/-/g, " ")
+        : "Products";
   return buildPageMetadata({
     site,
     title,
@@ -30,45 +33,67 @@ export async function generateMetadata({
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; subcategory?: string; q?: string }>;
 }) {
   const sp = await searchParams;
-  const [categories, products] = await Promise.all([
+  const [categories, subcategories, products] = await Promise.all([
     getCategories("product"),
-    getProducts({ categorySlug: sp.category, q: sp.q }),
+    sp.category ? getSubCategories(sp.category) : Promise.resolve([]),
+    getProducts({
+      categorySlug: sp.category,
+      subCategorySlug: sp.subcategory,
+      q: sp.q,
+    }),
   ]);
 
-  const active = categories.find((c) => c.slug === sp.category);
+  const activeCategory = categories.find((c) => c.slug === sp.category);
+  const activeSubCategory = subcategories.find((s) => s.slug === sp.subcategory);
+
   const heading = sp.q
     ? `Search results for “${sp.q}”`
-    : active
-      ? active.name
-      : "All products";
+    : activeSubCategory
+      ? `${activeCategory?.name || ""} → ${activeSubCategory.name}`
+      : activeCategory
+        ? activeCategory.name
+        : "All products";
 
   return (
     <CatalogShell categories={categories} activeSlug={sp.category}>
+      {/* Horizontal Sub-Category Navigation Bar */}
+      {activeCategory && subcategories.length > 0 && (
+        <SubCategoryBar
+          categorySlug={activeCategory.slug}
+          categoryName={activeCategory.name}
+          subcategories={subcategories}
+          activeSubSlug={sp.subcategory}
+        />
+      )}
+
       <div className="flex items-end justify-between gap-4">
         <div>
           <div className="section-label">{heading}</div>
-          {active?.description && (
-            <p className="-mt-2 mb-1 max-w-2xl text-sm leading-6 text-steel">
-              {active.description}
+          {activeCategory?.description && !sp.subcategory && (
+            <p className="-mt-2 mb-1 max-w-2xl text-xs sm:text-sm leading-5 sm:leading-6 text-steel">
+              {activeCategory.description}
             </p>
           )}
         </div>
-        <p className="pb-1 font-display text-[12px] uppercase tracking-[0.16em] text-mist">
+        <p className="pb-1 font-display text-[12px] uppercase tracking-[0.16em] text-mist shrink-0">
           {String(products.length).padStart(2, "0")} items
         </p>
       </div>
+
       <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
         {products.map((product) => (
           <ProductCard key={String(product._id)} product={product} />
         ))}
       </div>
+
       {!products.length && (
-        <p className="border border-line bg-white p-8 text-sm text-steel">
-          No parts matched this search. Try another name, SKU, or category — or send us a photo on the contact page.
-        </p>
+        <div className="border border-line bg-white p-8 text-center text-sm text-steel rounded-[2px]">
+          <p className="font-bold text-navy text-sm sm:text-base">No parts currently available in this category.</p>
+          <p className="mt-1 text-xs text-mist">Try selecting another sub-category or send us an inquiry on our contact page.</p>
+        </div>
       )}
     </CatalogShell>
   );

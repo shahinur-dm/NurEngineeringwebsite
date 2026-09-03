@@ -45,11 +45,11 @@ export function CategorySidebar({
         </button>
 
         {mobileOpen && (
-          <div className="border-t border-line divide-y divide-line/70 animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="border-t border-line divide-y divide-line/70 max-h-[320px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
             <Link
               href="/products"
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center justify-between px-4 py-2.5 text-[13px] transition ${
+              className={`flex items-center justify-between px-4 py-2 text-[12.5px] transition ${
                 !activeSlug
                   ? "border-l-[3px] border-l-orange bg-[#fff7f1] font-semibold text-navy"
                   : "border-l-[3px] border-l-transparent text-steel hover:bg-paper hover:text-navy"
@@ -65,13 +65,13 @@ export function CategorySidebar({
                   key={String(cat._id)}
                   href={`/products?category=${cat.slug}`}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center justify-between px-4 py-2.5 text-[13px] transition ${
+                  className={`flex items-center justify-between px-4 py-2 text-[12.5px] transition ${
                     active
                       ? "border-l-[3px] border-l-orange bg-[#fff7f1] font-semibold text-navy"
                       : "border-l-[3px] border-l-transparent text-steel hover:bg-paper hover:text-navy"
                   }`}
                 >
-                  <span>{cat.name}</span>
+                  <span className="truncate">{cat.name}</span>
                   {active && <span className="text-orange font-bold text-xs">✓</span>}
                 </Link>
               );
@@ -87,25 +87,25 @@ export function CategorySidebar({
         )}
       </div>
 
-      {/* Desktop Category Sidebar (Unchanged) */}
-      <aside className="hidden lg:block overflow-hidden border border-line bg-white shadow-[0_1px_0_rgba(11,31,51,0.03)]">
-        <div className="flex items-center justify-between bg-navy px-4 py-3">
-          <p className="font-display text-[13px] font-bold uppercase tracking-[0.16em] text-white">
+      {/* Desktop Category Sidebar (Narrower with Clean Scrollbar) */}
+      <aside className="hidden lg:block overflow-hidden border border-line bg-white shadow-[0_1px_0_rgba(11,31,51,0.03)] rounded-[2px]">
+        <div className="flex items-center justify-between bg-navy px-3 py-2.5">
+          <p className="font-display text-[12px] font-bold uppercase tracking-[0.14em] text-white">
             Category
           </p>
-          <span className="h-px w-8 bg-orange" />
+          <span className="h-px w-6 bg-orange" />
         </div>
-        <ul>
+        <ul className="max-h-[380px] xl:max-h-[420px] overflow-y-auto divide-y divide-line/60 scrollbar-thin">
           <li>
             <Link
               href="/products"
-              className={`flex items-center justify-between border-b border-line px-4 py-2.5 text-[13px] transition ${
+              className={`flex items-center justify-between px-3 py-2 text-[11.5px] xl:text-[12px] leading-tight transition ${
                 !activeSlug
-                  ? "border-l-[3px] border-l-orange bg-[#fff7f1] font-semibold text-navy"
-                  : "border-l-[3px] border-l-transparent text-steel hover:bg-paper hover:text-navy"
+                  ? "border-l-[3px] border-l-orange bg-[#fff7f1] font-bold text-navy"
+                  : "border-l-[3px] border-l-transparent font-medium text-steel hover:bg-paper hover:text-navy"
               }`}
             >
-              All products
+              <span className="truncate">All products</span>
             </Link>
           </li>
           {categories.map((cat) => {
@@ -114,13 +114,14 @@ export function CategorySidebar({
               <li key={String(cat._id)}>
                 <Link
                   href={`/products?category=${cat.slug}`}
-                  className={`flex items-center justify-between border-b border-line px-4 py-2.5 text-[13px] transition ${
+                  className={`flex items-center justify-between px-3 py-2 text-[11.5px] xl:text-[12px] leading-tight transition ${
                     active
-                      ? "border-l-[3px] border-l-orange bg-[#fff7f1] font-semibold text-navy"
-                      : "border-l-[3px] border-l-transparent text-steel hover:bg-paper hover:text-navy"
+                      ? "border-l-[3px] border-l-orange bg-[#fff7f1] font-bold text-navy"
+                      : "border-l-[3px] border-l-transparent font-medium text-steel hover:bg-paper hover:text-navy"
                   }`}
+                  title={cat.name}
                 >
-                  {cat.name}
+                  <span className="truncate">{cat.name}</span>
                 </Link>
               </li>
             );
@@ -128,7 +129,7 @@ export function CategorySidebar({
         </ul>
         <Link
           href="/contact"
-          className="block bg-navy px-4 py-3.5 text-center font-display text-[13px] font-bold uppercase tracking-[0.16em] text-white transition hover:bg-navy-mid"
+          className="block bg-navy px-3 py-2 text-center font-display text-[11.5px] font-bold uppercase tracking-[0.14em] text-white transition hover:bg-orange"
         >
           Contact
         </Link>
