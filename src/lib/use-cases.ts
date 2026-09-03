@@ -439,7 +439,7 @@ export const useCaseContent: UseCaseContent[] = [
 export const navLinks = [
   { href: "/", label: "Home", order: 1 },
   { href: "/products", label: "Products", order: 2 },
-  { href: "/use-cases", label: "Use Cases", order: 3 },
+  { href: "/use-cases", label: "Our Services", order: 3 },
   { href: "/services", label: "Services", order: 4 },
   { href: "/about", label: "About", order: 5 },
   { href: "/contact", label: "Contact", order: 6 },

@@ -28,9 +28,10 @@ export function NavBar() {
 
   const rawNav = site.nav?.length ? site.nav : [];
   const hasBlog = rawNav.some((item) => item.href === "/blog");
-  const fullNav = hasBlog
+  const fullNav = (hasBlog
     ? rawNav
-    : [...rawNav, { href: "/blog", label: "Blog", order: 7 }];
+    : [...rawNav, { href: "/blog", label: "Blog", order: 7 }]
+  ).map((item) => (item.href === "/use-cases" ? { ...item, label: "Our Services" } : item));
   const nav = [...fullNav].sort((a, b) => a.order - b.order);
 
   // Debounced live search fetch
