@@ -43,6 +43,11 @@ export async function GET() {
       ...((doc?.social as Record<string, string>) || {}),
       ...((mem.social as Record<string, string>) || {}),
     },
+    footerQr: {
+      ...fallbackSettings.footerQr,
+      ...((doc?.footerQr as Record<string, unknown>) || {}),
+      ...((mem.footerQr as Record<string, unknown>) || {}),
+    },
     seo: {
       ...fallbackSettings.seo,
       ...((doc?.seo as Record<string, unknown>) || {}),
@@ -79,6 +84,11 @@ export async function PUT(req: Request) {
           ...fallbackSettings.social,
           ...((global.inMemorySettingsCache?.social as Record<string, string>) || {}),
           ...(settings.social || {}),
+        },
+        footerQr: {
+          ...fallbackSettings.footerQr,
+          ...((global.inMemorySettingsCache?.footerQr as Record<string, unknown>) || {}),
+          ...(settings.footerQr || {}),
         },
         seo: {
           ...fallbackSettings.seo,

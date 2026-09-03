@@ -22,9 +22,9 @@ export default function AdminSettingsPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerField, setPickerField] = useState<"logo" | "favicon">("logo");
+  const [pickerField, setPickerField] = useState<"logo" | "favicon" | "wechatQr" | "whatsappQr">("logo");
 
-  // Settings state across all 5 tabs
+  // Settings state across all tabs
   const [brandName, setBrandName] = useState("Nur Engineering Solution");
   const [tagline, setTagline] = useState("Machine, spare parts and Technical service provider");
   const [description, setDescription] = useState("");
@@ -40,6 +40,14 @@ export default function AdminSettingsPage() {
   const [linkedin, setLinkedin] = useState("https://www.linkedin.com/");
   const [youtube, setYoutube] = useState("https://www.youtube.com/");
   const [whatsapp, setWhatsapp] = useState("+880170000000");
+
+  // Footer QR Codes state
+  const [wechatQr, setWechatQr] = useState("");
+  const [wechatQrLabel, setWechatQrLabel] = useState("WECHAT QR SCAN");
+  const [wechatQrEnabled, setWechatQrEnabled] = useState(true);
+  const [whatsappQr, setWhatsappQr] = useState("");
+  const [whatsappQrLabel, setWhatsappQrLabel] = useState("WHATSAPP QR SCAN");
+  const [whatsappQrEnabled, setWhatsappQrEnabled] = useState(true);
 
   // SEO & Analytics state
   const [seoTitle, setSeoTitle] = useState("Nur Engineering Solution | Machine Parts & Technical Service");
@@ -85,6 +93,15 @@ export default function AdminSettingsPage() {
           if (s.social?.youtube) setYoutube(s.social.youtube);
           if (s.social?.whatsapp) setWhatsapp(s.social.whatsapp);
 
+          if (s.footerQr) {
+            if (s.footerQr.wechatQr !== undefined) setWechatQr(s.footerQr.wechatQr);
+            if (s.footerQr.wechatQrLabel) setWechatQrLabel(s.footerQr.wechatQrLabel);
+            if (s.footerQr.wechatQrEnabled !== undefined) setWechatQrEnabled(s.footerQr.wechatQrEnabled);
+            if (s.footerQr.whatsappQr !== undefined) setWhatsappQr(s.footerQr.whatsappQr);
+            if (s.footerQr.whatsappQrLabel) setWhatsappQrLabel(s.footerQr.whatsappQrLabel);
+            if (s.footerQr.whatsappQrEnabled !== undefined) setWhatsappQrEnabled(s.footerQr.whatsappQrEnabled);
+          }
+
           if (s.seo?.defaultTitle) setSeoTitle(s.seo.defaultTitle);
           if (s.seo?.defaultDescription) setSeoDescription(s.seo.defaultDescription);
           if (Array.isArray(s.seo?.keywords)) {
@@ -104,6 +121,8 @@ export default function AdminSettingsPage() {
   function handleSelectMedia(url: string) {
     if (pickerField === "logo") setLogo(url);
     if (pickerField === "favicon") setFavicon(url);
+    if (pickerField === "wechatQr") setWechatQr(url);
+    if (pickerField === "whatsappQr") setWhatsappQr(url);
   }
 
   async function handleSave(e?: React.FormEvent) {
@@ -137,6 +156,14 @@ export default function AdminSettingsPage() {
             linkedin,
             youtube,
             whatsapp,
+          },
+          footerQr: {
+            wechatQr,
+            wechatQrLabel,
+            wechatQrEnabled,
+            whatsappQr,
+            whatsappQrLabel,
+            whatsappQrEnabled,
           },
           seo: {
             defaultTitle: seoTitle,
@@ -222,6 +249,7 @@ export default function AdminSettingsPage() {
           { id: "header", label: "Header & Contacts", Icon: PhoneIcon },
           { id: "location", label: "Location & Maps", Icon: MapPinIcon },
           { id: "social", label: "Social Links", Icon: GlobeIcon },
+          { id: "footer", label: "Footer & QR Codes", Icon: ImageIcon },
           { id: "general", label: "General & SEO", Icon: SettingsIcon },
         ].map((t) => {
           const ActiveIcon = t.Icon;
@@ -521,7 +549,214 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        {/* Tab 5: General & SEO */}
+        {/* Tab 5: Footer & QR Codes */}
+        {tab === "footer" && (
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-6 shadow-xs space-y-6">
+            <div>
+              <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
+                Footer Settings & QR Scan Codes
+              </h3>
+              <p className="mt-1 text-xs text-steel">
+                Manage contact information, social links, and WeChat / WhatsApp QR codes displayed in the website Footer.
+              </p>
+            </div>
+
+            {/* Quick Contact Info Overview */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-navy">Footer Contact Information</h4>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Phone Number (Clickable tel:)</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Email Address (Clickable mailto:)</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Company Address</label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Office / Business Hours</label>
+                  <input
+                    type="text"
+                    value={hours}
+                    onChange={(e) => setHours(e.target.value)}
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* WeChat QR Code */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-navy flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[#07C160]"></span>
+                  WeChat QR Code
+                </h4>
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-navy">
+                  <input
+                    type="checkbox"
+                    checked={wechatQrEnabled}
+                    onChange={(e) => setWechatQrEnabled(e.target.checked)}
+                    className="rounded border-line text-orange focus:ring-orange"
+                  />
+                  <span>Show WeChat QR in Footer</span>
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">WeChat QR Display Label</label>
+                  <input
+                    type="text"
+                    value={wechatQrLabel}
+                    onChange={(e) => setWechatQrLabel(e.target.value)}
+                    placeholder="WECHAT QR SCAN"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-bold uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">WeChat QR Image URL (Optional)</label>
+                  <div className="flex gap-2 mt-1">
+                    <input
+                      type="text"
+                      value={wechatQr}
+                      onChange={(e) => setWechatQr(e.target.value)}
+                      placeholder="Paste image URL or choose from Media Library..."
+                      className="flex-1 min-w-0 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono text-[11px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPickerField("wechatQr");
+                        setPickerOpen(true);
+                      }}
+                      className="btn-navy px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5"
+                    >
+                      <ImageIcon size={16} />
+                      <span>Media</span>
+                    </button>
+                  </div>
+                  <p className="mt-1 text-[10.5px] text-mist">If empty, a crisp vector WeChat QR code displays cleanly.</p>
+                </div>
+              </div>
+
+              {wechatQr && (
+                <div className="flex items-center gap-3 p-2.5 rounded bg-white border border-line">
+                  <div className="h-14 w-14 rounded border border-line bg-paper flex items-center justify-center p-1 overflow-hidden shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={wechatQr} alt="WeChat QR Preview" className="h-full w-full object-contain" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-navy">Active WeChat QR Image</p>
+                    <button
+                      type="button"
+                      onClick={() => setWechatQr("")}
+                      className="mt-1 text-[10.5px] font-bold text-red-600 hover:underline"
+                    >
+                      Reset to Vector QR
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* WhatsApp QR Code */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-navy flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[#25D366]"></span>
+                  WhatsApp QR Code
+                </h4>
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-navy">
+                  <input
+                    type="checkbox"
+                    checked={whatsappQrEnabled}
+                    onChange={(e) => setWhatsappQrEnabled(e.target.checked)}
+                    className="rounded border-line text-orange focus:ring-orange"
+                  />
+                  <span>Show WhatsApp QR in Footer</span>
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">WhatsApp QR Display Label</label>
+                  <input
+                    type="text"
+                    value={whatsappQrLabel}
+                    onChange={(e) => setWhatsappQrLabel(e.target.value)}
+                    placeholder="WHATSAPP QR SCAN"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-bold uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">WhatsApp QR Image URL (Optional)</label>
+                  <div className="flex gap-2 mt-1">
+                    <input
+                      type="text"
+                      value={whatsappQr}
+                      onChange={(e) => setWhatsappQr(e.target.value)}
+                      placeholder="Paste image URL or choose from Media Library..."
+                      className="flex-1 min-w-0 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono text-[11px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPickerField("whatsappQr");
+                        setPickerOpen(true);
+                      }}
+                      className="btn-navy px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5"
+                    >
+                      <ImageIcon size={16} />
+                      <span>Media</span>
+                    </button>
+                  </div>
+                  <p className="mt-1 text-[10.5px] text-mist">If empty, a crisp vector WhatsApp QR code displays cleanly.</p>
+                </div>
+              </div>
+
+              {whatsappQr && (
+                <div className="flex items-center gap-3 p-2.5 rounded bg-white border border-line">
+                  <div className="h-14 w-14 rounded border border-line bg-paper flex items-center justify-center p-1 overflow-hidden shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={whatsappQr} alt="WhatsApp QR Preview" className="h-full w-full object-contain" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-navy">Active WhatsApp QR Image</p>
+                    <button
+                      type="button"
+                      onClick={() => setWhatsappQr("")}
+                      className="mt-1 text-[10.5px] font-bold text-red-600 hover:underline"
+                    >
+                      Reset to Vector QR
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 6: General & SEO */}
         {tab === "general" && (
           <div className="rounded-lg border border-line bg-white p-6 shadow-xs space-y-5">
             <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">

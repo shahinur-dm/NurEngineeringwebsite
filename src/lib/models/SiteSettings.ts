@@ -20,6 +20,14 @@ export interface ISiteSettings {
     youtube?: string;
     whatsapp?: string;
   };
+  footerQr?: {
+    wechatQr?: string;
+    wechatQrLabel?: string;
+    wechatQrEnabled?: boolean;
+    whatsappQr?: string;
+    whatsappQrLabel?: string;
+    whatsappQrEnabled?: boolean;
+  };
   seo: {
     defaultTitle: string;
     defaultDescription: string;
@@ -54,6 +62,14 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
       instagram: String,
       youtube: String,
       whatsapp: String,
+    },
+    footerQr: {
+      wechatQr: { type: String, default: "" },
+      wechatQrLabel: { type: String, default: "WECHAT QR SCAN" },
+      wechatQrEnabled: { type: Boolean, default: true },
+      whatsappQr: { type: String, default: "" },
+      whatsappQrLabel: { type: String, default: "WHATSAPP QR SCAN" },
+      whatsappQrEnabled: { type: Boolean, default: true },
     },
     seo: {
       defaultTitle: { type: String, required: true },

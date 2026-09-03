@@ -68,6 +68,15 @@ export const fallbackSettings: ISiteSettings = {
     linkedin: "https://www.linkedin.com/",
     instagram: "https://www.instagram.com/",
     youtube: "https://www.youtube.com/",
+    whatsapp: "+880 1700-000000",
+  },
+  footerQr: {
+    wechatQr: "",
+    wechatQrLabel: "WECHAT QR SCAN",
+    wechatQrEnabled: true,
+    whatsappQr: "",
+    whatsappQrLabel: "WHATSAPP QR SCAN",
+    whatsappQrEnabled: true,
   },
   seo: {
     defaultTitle:
@@ -136,6 +145,11 @@ export async function getSettings(): Promise<ISiteSettings> {
     fallbackSettings.social ||
     {}) as Record<string, string>;
 
+  const rawFooterQr = ((doc?.footerQr as Record<string, unknown>) ||
+    (mem?.footerQr as Record<string, unknown>) ||
+    fallbackSettings.footerQr ||
+    {}) as Record<string, unknown>;
+
   const rawSeo = ((doc?.seo as Record<string, unknown>) ||
     (mem?.seo as Record<string, unknown>) ||
     fallbackSettings.seo ||
@@ -163,11 +177,19 @@ export async function getSettings(): Promise<ISiteSettings> {
       fallbackSettings.notice ||
       "Out of stock products will be delivered within 3-5 days.",
     social: {
-      facebook: rawSocial.facebook || fallbackSettings.social.facebook || "",
-      linkedin: rawSocial.linkedin || fallbackSettings.social.linkedin || "",
-      instagram: rawSocial.instagram || fallbackSettings.social.instagram || "",
-      youtube: rawSocial.youtube || fallbackSettings.social.youtube || "",
-      whatsapp: rawSocial.whatsapp || "+880170000000",
+      facebook: rawSocial.facebook || fallbackSettings.social?.facebook || "",
+      linkedin: rawSocial.linkedin || fallbackSettings.social?.linkedin || "",
+      instagram: rawSocial.instagram || fallbackSettings.social?.instagram || "",
+      youtube: rawSocial.youtube || fallbackSettings.social?.youtube || "",
+      whatsapp: rawSocial.whatsapp || fallbackSettings.social?.whatsapp || "+880170000000",
+    },
+    footerQr: {
+      wechatQr: (rawFooterQr.wechatQr as string) || "",
+      wechatQrLabel: (rawFooterQr.wechatQrLabel as string) || "WECHAT QR SCAN",
+      wechatQrEnabled: rawFooterQr.wechatQrEnabled !== false,
+      whatsappQr: (rawFooterQr.whatsappQr as string) || "",
+      whatsappQrLabel: (rawFooterQr.whatsappQrLabel as string) || "WHATSAPP QR SCAN",
+      whatsappQrEnabled: rawFooterQr.whatsappQrEnabled !== false,
     },
     seo: {
       defaultTitle: (rawSeo.defaultTitle as string) || fallbackSettings.seo.defaultTitle,
