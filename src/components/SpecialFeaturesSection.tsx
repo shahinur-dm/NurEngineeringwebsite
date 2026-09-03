@@ -15,8 +15,8 @@ export function SpecialFeaturesSection({ features }: SpecialFeaturesSectionProps
 
   return (
     <section className="pt-0">
-      <div className="mb-1.5 sm:mb-2 flex items-center justify-between gap-4">
-        <div className="section-label mb-0">Special features</div>
+      <div className="mb-1 sm:mb-1.5 flex items-center justify-between gap-4">
+        <div className="section-label !mb-0">Special features</div>
         {features.length > 9 && (
           <button
             type="button"
@@ -28,7 +28,7 @@ export function SpecialFeaturesSection({ features }: SpecialFeaturesSectionProps
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-1 sm:gap-y-1.5 pt-0.5 pb-0.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-1 sm:gap-y-1.5">
         {visibleFeatures.map((feat) => (
           <div
             key={String(feat._id || feat.slug || feat.name)}

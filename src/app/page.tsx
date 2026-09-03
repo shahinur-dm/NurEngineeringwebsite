@@ -33,8 +33,8 @@ export default async function HomePage() {
 
       {/* 1. COMPANY SERVICES — Compact 6 Boxes */}
       <section>
-        <div className="mb-1.5 sm:mb-2 flex items-center justify-between gap-4">
-          <div className="section-label mb-0">Company services</div>
+        <div className="mb-1 sm:mb-1.5 flex items-center justify-between gap-4">
+          <div className="section-label !mb-0">Company services</div>
           <Link
             href="/services"
             className="text-[11px] font-bold uppercase tracking-[0.16em] text-orange transition hover:text-navy shrink-0"
