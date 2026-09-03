@@ -403,6 +403,7 @@ export async function getProducts(opts?: {
   categorySlug?: string;
   subCategorySlug?: string;
   q?: string;
+  page?: number;
   limit?: number;
 }): Promise<PopulatedProduct[]> {
   try {
@@ -437,7 +438,11 @@ export async function getProducts(opts?: {
       .populate("subCategory")
       .populate("relatedServices")
       .sort({ order: 1, featured: -1, createdAt: -1 });
-    if (opts?.limit) query = query.limit(opts.limit);
+    if (opts?.page && opts?.limit) {
+      query = query.skip((opts.page - 1) * opts.limit).limit(opts.limit);
+    } else if (opts?.limit) {
+      query = query.limit(opts.limit);
+    }
     const docs = await query.lean<PopulatedProduct[]>();
     if (docs.length) return serialize(docs);
   } catch {
@@ -459,8 +464,69 @@ export async function getProducts(opts?: {
     );
   }
   list.sort((a, b) => (a.order || 999) - (b.order || 999));
-  if (opts?.limit) list = list.slice(0, opts.limit);
+  if (opts?.page && opts?.limit) {
+    const start = (opts.page - 1) * opts.limit;
+    list = list.slice(start, start + opts.limit);
+  } else if (opts?.limit) {
+    list = list.slice(0, opts.limit);
+  }
   return serialize(list);
+}
+
+export async function getProductsTotalCount(opts?: {
+  featured?: boolean;
+  categorySlug?: string;
+  subCategorySlug?: string;
+  q?: string;
+}): Promise<number> {
+  try {
+    await connectDB();
+    const filter: Record<string, unknown> = { published: true };
+    if (opts?.featured) filter.featured = true;
+    if (opts?.categorySlug) {
+      const cat = await Category.findOne({
+        slug: opts.categorySlug,
+        type: "product",
+      }).lean<ICategory | null>();
+      if (cat) filter.category = cat._id;
+      else return 0;
+    }
+    if (opts?.subCategorySlug) {
+      const sub = await SubCategory.findOne({
+        slug: opts.subCategorySlug,
+      }).lean<ISubCategory | null>();
+      if (sub) filter.subCategory = sub._id;
+      else return 0;
+    }
+    if (opts?.q) {
+      filter.$or = [
+        { name: { $regex: opts.q, $options: "i" } },
+        { shortDescription: { $regex: opts.q, $options: "i" } },
+        { sku: { $regex: opts.q, $options: "i" } },
+        { brand: { $regex: opts.q, $options: "i" } },
+      ];
+    }
+    const count = await Product.countDocuments(filter);
+    if (count > 0) return count;
+  } catch {
+    // fall through
+  }
+  let list = getMockPopulatedProducts();
+  if (opts?.featured) list = list.filter((p) => p.featured);
+  if (opts?.categorySlug) list = list.filter((p) => p.category.slug === opts.categorySlug);
+  if (opts?.subCategorySlug) {
+    list = list.filter((p) => p.subCategory?.slug === opts.subCategorySlug);
+  }
+  if (opts?.q) {
+    const qLower = opts.q.toLowerCase();
+    list = list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(qLower) ||
+        p.shortDescription.toLowerCase().includes(qLower) ||
+        (p.sku && p.sku.toLowerCase().includes(qLower))
+    );
+  }
+  return list.length;
 }
 
 export async function getProductBySlug(

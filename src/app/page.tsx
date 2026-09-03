@@ -1,13 +1,14 @@
 import { CatalogShell } from "@/components/CatalogShell";
 import { HeroSlider } from "@/components/HeroSlider";
 import { ProductCard } from "@/components/ProductCard";
-import { ServiceCard } from "@/components/ServiceCard";
 import { SpecialFeaturesSection } from "@/components/SpecialFeaturesSection";
+import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 import {
   getBanners,
   getCategories,
   getProducts,
+  getProductsTotalCount,
   getServices,
   getFeatures,
 } from "@/lib/data";
@@ -15,17 +16,25 @@ import {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function HomePage() {
-  const [categories, banners, featured, latest, services, features] = await Promise.all([
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const sp = await searchParams;
+  const currentPage = Math.max(1, parseInt(sp.page || "1", 10) || 1);
+  const pageSize = 20;
+
+  const [categories, banners, services, features, products, totalProducts] = await Promise.all([
     getCategories("product"),
     getBanners(),
-    getProducts({ featured: true, limit: 4 }),
-    getProducts({ limit: 24 }),
     getServices(),
     getFeatures(),
+    getProducts({ page: currentPage, limit: pageSize }),
+    getProductsTotalCount(),
   ]);
 
-  const smallParts = latest.filter((p) => !p.featured).slice(0, 5);
+  const totalPages = Math.ceil(totalProducts / pageSize);
 
   return (
     <CatalogShell categories={categories}>
@@ -63,31 +72,31 @@ export default async function HomePage() {
       {/* 2. SPECIAL FEATURES — Compact 3 Columns with See More Toggle */}
       <SpecialFeaturesSection features={features} />
 
+      {/* 3. OUR PRODUCT — 20 Products, 5 per Row */}
       <section>
-        <div className="section-label">Featured machine parts</div>
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-4">
-          {featured.map((product) => (
-            <ProductCard key={String(product._id)} product={product} size="lg" />
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="section-label">Technical service provider</div>
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {services.slice(0, 5).map((service) => (
-            <ServiceCard key={String(service._id)} service={service} />
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="section-label">More spare parts</div>
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {smallParts.map((product) => (
+        <div className="section-label">Our product</div>
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {products.map((product) => (
             <ProductCard key={String(product._id)} product={product} size="sm" />
           ))}
         </div>
+
+        {/* View More Product Link */}
+        <div className="pt-3.5 text-center">
+          <Link
+            href="/products"
+            className="inline-block font-display text-[12px] font-bold uppercase tracking-[0.16em] text-orange hover:text-navy transition"
+          >
+            View More Product →
+          </Link>
+        </div>
+
+        {/* Dynamic Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          basePath="/"
+        />
       </section>
     </CatalogShell>
   );
