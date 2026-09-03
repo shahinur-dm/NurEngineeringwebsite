@@ -250,16 +250,8 @@ export function NavBar() {
           <div className="relative hidden md:block" ref={searchRef}>
             <form
               onSubmit={handleSearchSubmit}
-              className="flex items-center rounded border border-line bg-paper/60 hover:bg-white focus-within:bg-white focus-within:border-orange focus-within:ring-1 focus-within:ring-orange/30 transition px-2.5 lg:px-3 py-1.5 gap-2 w-[165px] lg:w-[210px] xl:w-[240px]"
+              className="flex items-center rounded-[2px] border-2 border-navy bg-white overflow-hidden h-[36px] lg:h-[38px] w-[240px] lg:w-[320px] xl:w-[380px] shadow-[0_1px_2px_rgba(11,31,51,0.06)] transition focus-within:border-orange"
             >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4 text-navy/70 shrink-0 fill-none stroke-current"
-                strokeWidth="2.2"
-              >
-                <circle cx="11" cy="11" r="6.5" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
               <input
                 type="text"
                 value={q}
@@ -268,8 +260,8 @@ export function NavBar() {
                   setShowResults(true);
                 }}
                 onFocus={() => setShowResults(true)}
-                placeholder="SEARCH..."
-                className="w-full bg-transparent text-xs sm:text-[12.5px] font-bold text-navy placeholder:text-navy/60 uppercase tracking-wider outline-none min-w-0"
+                placeholder="Search PLC, servo drives, heaters, sensors, part numbers..."
+                className="w-full bg-transparent px-3 text-xs sm:text-[12.5px] text-navy placeholder:text-steel/70 placeholder:font-normal outline-none min-w-0"
               />
               {q && (
                 <button
@@ -279,17 +271,32 @@ export function NavBar() {
                     setResults([]);
                     setShowResults(false);
                   }}
-                  className="text-mist hover:text-navy text-xs font-bold shrink-0 p-0.5"
+                  className="text-mist hover:text-navy text-xs font-bold shrink-0 px-1.5"
                   aria-label="Clear search"
                 >
                   ✕
                 </button>
               )}
+              <button
+                type="submit"
+                className="bg-navy text-white hover:bg-orange transition flex items-center gap-1.5 px-3.5 lg:px-4 h-full shrink-0 font-display text-xs lg:text-[13px] font-bold uppercase tracking-wider select-none cursor-pointer"
+                title="Search products"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-3.5 w-3.5 fill-none stroke-current shrink-0"
+                  strokeWidth="2.5"
+                >
+                  <circle cx="11" cy="11" r="6.5" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+                <span>SEARCH</span>
+              </button>
             </form>
 
             {/* Live Search Vertical Dropdown (Desktop) */}
             {showResults && q.trim().length > 0 && (
-              <div className="absolute right-0 top-full mt-1.5 z-50 w-[300px] lg:w-[350px] rounded-lg border border-line bg-white shadow-2xl overflow-hidden divide-y divide-line/60 animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute right-0 top-full mt-1.5 z-50 w-full min-w-[320px] lg:min-w-[380px] rounded-lg border border-line bg-white shadow-2xl overflow-hidden divide-y divide-line/60 animate-in fade-in slide-in-from-top-1 duration-150">
                 {loading ? (
                   <div className="p-4 text-center text-xs text-mist font-medium flex items-center justify-center gap-2">
                     <span className="inline-block h-3.5 w-3.5 rounded-full border-2 border-orange border-t-transparent animate-spin" />
@@ -408,16 +415,8 @@ export function NavBar() {
         <div className="border-t border-line bg-white p-3 md:hidden shadow-lg animate-in fade-in slide-in-from-top-1 duration-150" ref={mobileSearchRef}>
           <form
             onSubmit={handleSearchSubmit}
-            className="flex items-center rounded border border-line bg-paper px-3 py-2 gap-2"
+            className="flex items-center rounded-[2px] border-2 border-navy bg-white overflow-hidden h-9"
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4 text-navy/70 shrink-0 fill-none stroke-current"
-              strokeWidth="2.2"
-            >
-              <circle cx="11" cy="11" r="6.5" />
-              <path d="m20 20-3.5-3.5" />
-            </svg>
             <input
               type="text"
               autoFocus
@@ -426,8 +425,8 @@ export function NavBar() {
                 setQ(e.target.value);
                 setShowResults(true);
               }}
-              placeholder="SEARCH PRODUCTS..."
-              className="w-full bg-transparent text-xs font-bold text-navy placeholder:text-navy/60 uppercase tracking-wider outline-none min-w-0"
+              placeholder="Search PLC, servo drives, heaters, sensors, part numbers..."
+              className="w-full bg-transparent px-2.5 text-xs text-navy placeholder:text-steel/70 outline-none min-w-0"
             />
             {q && (
               <button
@@ -436,17 +435,20 @@ export function NavBar() {
                   setQ("");
                   setResults([]);
                 }}
-                className="text-mist hover:text-navy text-xs font-bold shrink-0 p-0.5"
+                className="text-mist hover:text-navy text-xs font-bold shrink-0 px-1.5"
               >
                 ✕
               </button>
             )}
             <button
-              type="button"
-              onClick={() => setMobileSearchOpen(false)}
-              className="text-steel hover:text-navy text-xs font-bold shrink-0 ml-1"
+              type="submit"
+              className="bg-navy text-white hover:bg-orange transition flex items-center gap-1.5 px-3 h-full shrink-0 font-display text-xs font-bold uppercase tracking-wider"
             >
-              Close
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current" strokeWidth="2.5">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+              <span>SEARCH</span>
             </button>
           </form>
 
