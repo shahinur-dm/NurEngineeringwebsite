@@ -31,11 +31,11 @@ export default async function HomePage() {
       <HeroSlider banners={banners} />
 
       <section>
-        <div className="flex items-end justify-between gap-4">
-          <div className="section-label">Company use cases</div>
+        <div className="mb-2 sm:mb-2.5 flex items-center justify-between gap-4">
+          <div className="section-label mb-0">Company use cases</div>
           <Link
             href="/use-cases"
-            className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-orange transition hover:text-navy"
+            className="text-[11px] font-semibold uppercase tracking-[0.16em] text-orange transition hover:text-navy shrink-0"
           >
             All notes →
           </Link>
