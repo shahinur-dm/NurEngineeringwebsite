@@ -10,14 +10,19 @@ export function ProductCard({
   size?: "lg" | "md" | "sm";
 }) {
   const aspect =
-    size === "lg" ? "aspect-[5/4]" : size === "sm" ? "aspect-square" : "aspect-[4/3]";
+    size === "lg"
+      ? "aspect-[4/3.6]"
+      : size === "sm"
+      ? "aspect-[1/1.08]"
+      : "aspect-[1/1.05]";
   const category =
     typeof product.category === "object" ? product.category.name : "";
 
   return (
-    <div className="catalog-card group flex flex-col justify-between">
-      <Link href={`/products/${product.slug}`} className="block">
-        <div className={`image-frame relative ${aspect}`}>
+    <div className="catalog-card group flex flex-col h-full bg-white border border-line rounded-[2px] shadow-xs hover:border-orange/60 hover:shadow-sm transition">
+      {/* 1. Product Image Frame */}
+      <Link href={`/products/${product.slug}`} className="block relative overflow-hidden shrink-0">
+        <div className={`image-frame relative w-full ${aspect} bg-paper/50`}>
           <Img
             src={product.image}
             alt={product.name}
@@ -30,41 +35,48 @@ export function ProductCard({
             </span>
           )}
         </div>
-        <div className={size === "sm" ? "p-2.5 sm:p-3 pb-0" : "p-3 sm:px-3.5 sm:pt-3.5 pb-0"}>
-          <p className="kicker text-[9.5px] sm:text-[11px] truncate">{category}</p>
+      </Link>
+
+      {/* 2. Product Information & Action Buttons */}
+      <div className="flex-1 flex flex-col justify-between p-2.5 sm:p-3">
+        {/* Title and Category */}
+        <Link href={`/products/${product.slug}`} className="block mb-2 sm:mb-2.5">
+          <p className="kicker text-[10px] sm:text-[11px] truncate text-orange font-bold uppercase tracking-wider">
+            {category || "Industrial Machine Parts"}
+          </p>
           <h3
-            className={`mt-1 font-display font-bold uppercase leading-snug tracking-wide text-navy transition group-hover:text-orange line-clamp-2 ${
-              size === "sm" ? "text-[12px] sm:text-[13px]" : "text-[13px] sm:text-[15px]"
+            className={`mt-1 font-display font-bold uppercase leading-snug tracking-wide text-navy transition group-hover:text-orange line-clamp-2 min-h-[2.6em] ${
+              size === "sm" ? "text-[12px] sm:text-[13px]" : "text-[13px] sm:text-[14px]"
             }`}
+            title={product.name}
           >
             {product.name}
           </h3>
-          {size !== "sm" && (
-            <p className="mt-1.5 hidden sm:line-clamp-2 text-[12px] leading-5 text-steel">
+          {size !== "sm" && product.shortDescription && (
+            <p className="mt-1 hidden sm:line-clamp-2 text-[11.5px] leading-relaxed text-steel">
               {product.shortDescription}
             </p>
           )}
-        </div>
-      </Link>
+        </Link>
 
-      <div className={size === "sm" ? "p-2.5 pt-2.5 sm:p-3 sm:pt-3" : "p-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-3"}>
-        <div className="flex items-center justify-between gap-1.5 sm:gap-2 border-t border-line pt-2">
+        {/* 3. Action Buttons: ASK PRICE (Orange) & VIEW DETAILS (Green) */}
+        <div className="pt-2.5 sm:pt-3 border-t border-line mt-auto flex items-center gap-1.5 sm:gap-2">
+          {/* ASK PRICE (Orange) */}
           <Link
             href={`/contact?product=${product.slug}`}
-            className={`inline-flex items-center justify-center bg-orange font-display font-bold uppercase text-white transition hover:bg-[#e05300] active:scale-95 shadow-2xs shrink-0 ${
-              size === "sm"
-                ? "px-2 py-1 text-[9.5px] sm:text-[10px] tracking-[0.05em]"
-                : "px-2.5 sm:px-3 py-1 sm:py-1 text-[10px] sm:text-[10.5px] tracking-[0.06em] sm:tracking-[0.08em]"
-            }`}
+            className="flex-1 min-w-0 inline-flex items-center justify-center bg-orange font-display font-bold uppercase text-white transition hover:bg-[#e05300] active:scale-95 shadow-2xs py-1.5 sm:py-2 text-[9.5px] sm:text-[11px] tracking-[0.05em] sm:tracking-[0.06em] rounded-[2px] text-center"
             title={`Ask price for ${product.name}`}
           >
-            Ask Price
+            <span className="truncate">ASK PRICE</span>
           </Link>
+
+          {/* VIEW DETAILS (Green) */}
           <Link
             href={`/products/${product.slug}`}
-            className="text-[10px] font-semibold uppercase tracking-[0.12em] text-orange hover:text-navy transition shrink-0"
+            className="flex-1 min-w-0 inline-flex items-center justify-center bg-[#16a34a] font-display font-bold uppercase text-white transition hover:bg-[#15803d] active:scale-95 shadow-2xs py-1.5 sm:py-2 text-[9.5px] sm:text-[11px] tracking-[0.05em] sm:tracking-[0.06em] rounded-[2px] text-center"
+            title={`View details for ${product.name}`}
           >
-            View →
+            <span className="truncate">VIEW DETAILS</span>
           </Link>
         </div>
       </div>
