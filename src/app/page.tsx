@@ -1,8 +1,7 @@
 import { CatalogShell } from "@/components/CatalogShell";
 import { HeroSlider } from "@/components/HeroSlider";
-import { ProductCard } from "@/components/ProductCard";
 import { SpecialFeaturesSection } from "@/components/SpecialFeaturesSection";
-import { Pagination } from "@/components/Pagination";
+import { OurProductSection } from "@/components/OurProductSection";
 import Link from "next/link";
 import {
   getBanners,
@@ -33,8 +32,6 @@ export default async function HomePage({
     getProducts({ page: currentPage, limit: pageSize }),
     getProductsTotalCount(),
   ]);
-
-  const totalPages = Math.ceil(totalProducts / pageSize);
 
   return (
     <CatalogShell categories={categories}>
@@ -72,32 +69,14 @@ export default async function HomePage({
       {/* 2. SPECIAL FEATURES — Compact 3 Columns with See More Toggle */}
       <SpecialFeaturesSection features={features} />
 
-      {/* 3. OUR PRODUCT — 20 Products, 5 per Row */}
-      <section>
-        <div className="section-label">Our product</div>
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {products.map((product) => (
-            <ProductCard key={String(product._id)} product={product} size="sm" />
-          ))}
-        </div>
-
-        {/* View More Product Link */}
-        <div className="pt-3.5 text-center">
-          <Link
-            href="/products"
-            className="inline-block font-display text-[12px] font-bold uppercase tracking-[0.16em] text-orange hover:text-navy transition"
-          >
-            View More Product →
-          </Link>
-        </div>
-
-        {/* Dynamic Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          basePath="/"
-        />
-      </section>
+      {/* 3. OUR PRODUCT — 20 Products with Client-Side Load More & Dynamic Pagination */}
+      <OurProductSection
+        initialProducts={products}
+        totalProducts={totalProducts}
+        pageSize={pageSize}
+        initialPage={currentPage}
+      />
     </CatalogShell>
   );
 }
+

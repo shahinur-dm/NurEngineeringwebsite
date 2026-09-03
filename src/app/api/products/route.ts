@@ -13,12 +13,15 @@ export async function GET(request: NextRequest) {
     const q = searchParams.get("q") || undefined;
     const limitParam = searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+    const pageParam = searchParams.get("page");
+    const page = pageParam ? parseInt(pageParam, 10) : undefined;
 
-    const data = await getProducts({ featured, categorySlug, subCategorySlug, q, limit });
+    const data = await getProducts({ featured, categorySlug, subCategorySlug, q, limit, page });
     return jsonOk(data);
   } catch (e) {
     console.error("GET /api/products error:", e);
     return jsonError("Failed to fetch products");
   }
 }
+
 
