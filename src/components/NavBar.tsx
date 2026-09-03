@@ -146,7 +146,7 @@ export function NavBar() {
         </Link>
 
         {/* Center-Left: Desktop Navigation Links (Slightly Larger Font & Shifted Left) */}
-        <nav className="hidden items-center gap-4 lg:gap-6.5 xl:gap-8 md:flex mr-auto">
+        <nav className="hidden items-center gap-3.5 md:gap-4 lg:gap-5.5 xl:gap-7 md:flex mr-auto shrink-0">
           {nav.map((link) => {
             const active = isActive(link.href);
             const isProducts = link.href === "/products";
@@ -156,13 +156,13 @@ export function NavBar() {
               return (
                 <div
                   key={link.href}
-                  className="relative"
+                  className="relative shrink-0"
                   onMouseEnter={() => setCasesOpen(true)}
                   onMouseLeave={() => setCasesOpen(false)}
                 >
                   <Link
                     href="/use-cases"
-                    className={`relative flex items-center gap-1 py-3.5 font-display text-[14.5px] lg:text-[15px] font-bold uppercase tracking-[0.06em] transition ${
+                    className={`relative flex items-center gap-1 py-3.5 font-display text-[14px] lg:text-[14.5px] xl:text-[15px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
                       active
                         ? "text-orange"
                         : "text-navy hover:text-orange"
@@ -170,7 +170,7 @@ export function NavBar() {
                     aria-current={active ? "page" : undefined}
                     aria-expanded={casesOpen}
                   >
-                    {link.label}
+                    <span>{link.label}</span>
                     {active && (
                       <span className="absolute bottom-1 left-0 h-[2.5px] w-full bg-orange" />
                     )}
@@ -219,7 +219,7 @@ export function NavBar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative flex items-center gap-1 py-3.5 font-display text-[14.5px] lg:text-[15px] font-bold uppercase tracking-[0.06em] transition ${
+                className={`relative flex items-center gap-1 py-3.5 font-display text-[14px] lg:text-[14.5px] xl:text-[15px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
                   active
                     ? "text-orange"
                     : "text-navy hover:text-orange"
@@ -230,7 +230,7 @@ export function NavBar() {
                 {isProducts && (
                   <svg
                     viewBox="0 0 24 24"
-                    className="h-3 w-3 fill-none stroke-current opacity-70"
+                    className="h-3 w-3 fill-none stroke-current opacity-70 shrink-0"
                     strokeWidth="2.5"
                   >
                     <path d="m6 9 6 6 6-6" />
@@ -247,10 +247,10 @@ export function NavBar() {
         {/* Right: Compact Header Live Search & Mobile Toggle */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Desktop / Laptop Live Search Input & Dropdown */}
-          <div className="relative hidden md:block" ref={searchRef}>
+          <div className="relative hidden md:block shrink-0" ref={searchRef}>
             <form
               onSubmit={handleSearchSubmit}
-              className="flex items-center rounded-[2px] border-2 border-navy bg-white overflow-hidden h-[36px] lg:h-[38px] w-[240px] lg:w-[320px] xl:w-[380px] shadow-[0_1px_2px_rgba(11,31,51,0.06)] transition focus-within:border-orange"
+              className="flex items-center rounded-[2px] border-2 border-navy bg-white overflow-hidden h-[34px] md:h-[36px] w-[180px] md:w-[195px] lg:w-[240px] xl:w-[270px] shadow-[0_1px_2px_rgba(11,31,51,0.06)] transition focus-within:border-orange shrink-0"
             >
               <input
                 type="text"
@@ -261,7 +261,7 @@ export function NavBar() {
                 }}
                 onFocus={() => setShowResults(true)}
                 placeholder="Search PLC, servo drives, heaters, sensors, part numbers..."
-                className="w-full bg-transparent px-3 text-xs sm:text-[12.5px] text-navy placeholder:text-steel/70 placeholder:font-normal outline-none min-w-0"
+                className="w-full bg-transparent px-2.5 text-[11.5px] md:text-xs text-navy placeholder:text-steel/70 placeholder:font-normal outline-none min-w-0"
               />
               {q && (
                 <button
@@ -271,7 +271,7 @@ export function NavBar() {
                     setResults([]);
                     setShowResults(false);
                   }}
-                  className="text-mist hover:text-navy text-xs font-bold shrink-0 px-1.5"
+                  className="text-mist hover:text-navy text-xs font-bold shrink-0 px-1"
                   aria-label="Clear search"
                 >
                   ✕
@@ -279,7 +279,7 @@ export function NavBar() {
               )}
               <button
                 type="submit"
-                className="bg-navy text-white hover:bg-orange transition flex items-center gap-1.5 px-3.5 lg:px-4 h-full shrink-0 font-display text-xs lg:text-[13px] font-bold uppercase tracking-wider select-none cursor-pointer"
+                className="bg-navy text-white hover:bg-orange transition flex items-center gap-1 px-2.5 md:px-3 h-full shrink-0 font-display text-xs font-bold uppercase tracking-wider select-none cursor-pointer"
                 title="Search products"
               >
                 <svg
@@ -290,13 +290,13 @@ export function NavBar() {
                   <circle cx="11" cy="11" r="6.5" />
                   <path d="m20 20-3.5-3.5" />
                 </svg>
-                <span>SEARCH</span>
+                <span className="hidden sm:inline">SEARCH</span>
               </button>
             </form>
 
             {/* Live Search Vertical Dropdown (Desktop) */}
             {showResults && q.trim().length > 0 && (
-              <div className="absolute right-0 top-full mt-1.5 z-50 w-full min-w-[320px] lg:min-w-[380px] rounded-lg border border-line bg-white shadow-2xl overflow-hidden divide-y divide-line/60 animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute right-0 top-full mt-1 z-50 w-[300px] sm:w-[340px] max-w-[90vw] rounded-lg border border-line bg-white shadow-2xl overflow-hidden divide-y divide-line/60 animate-in fade-in slide-in-from-top-1 duration-150">
                 {loading ? (
                   <div className="p-4 text-center text-xs text-mist font-medium flex items-center justify-center gap-2">
                     <span className="inline-block h-3.5 w-3.5 rounded-full border-2 border-orange border-t-transparent animate-spin" />
