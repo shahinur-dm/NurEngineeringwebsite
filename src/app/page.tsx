@@ -2,26 +2,27 @@ import { CatalogShell } from "@/components/CatalogShell";
 import { HeroSlider } from "@/components/HeroSlider";
 import { ProductCard } from "@/components/ProductCard";
 import { ServiceCard } from "@/components/ServiceCard";
+import { SpecialFeaturesSection } from "@/components/SpecialFeaturesSection";
 import Link from "next/link";
 import {
   getBanners,
   getCategories,
   getProducts,
   getServices,
-  getUseCases,
+  getFeatures,
 } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const [categories, banners, featured, latest, services, useCases] = await Promise.all([
+  const [categories, banners, featured, latest, services, features] = await Promise.all([
     getCategories("product"),
     getBanners(),
     getProducts({ featured: true, limit: 4 }),
     getProducts({ limit: 24 }),
-    getServices({ featured: true }),
-    getUseCases(),
+    getServices(),
+    getFeatures(),
   ]);
 
   const smallParts = latest.filter((p) => !p.featured).slice(0, 5);
@@ -30,37 +31,37 @@ export default async function HomePage() {
     <CatalogShell categories={categories}>
       <HeroSlider banners={banners} />
 
+      {/* 1. COMPANY SERVICES — Compact 6 Boxes */}
       <section>
         <div className="mb-2 sm:mb-2.5 flex items-center justify-between gap-4">
-          <div className="section-label mb-0">Company use cases</div>
+          <div className="section-label mb-0">Company services</div>
           <Link
-            href="/use-cases"
-            className="text-[11px] font-semibold uppercase tracking-[0.16em] text-orange transition hover:text-navy shrink-0"
+            href="/services"
+            className="text-[11px] font-bold uppercase tracking-[0.16em] text-orange transition hover:text-navy shrink-0"
           >
-            All notes →
+            All services →
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {useCases.slice(0, 6).map((item, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2.5">
+          {services.slice(0, 6).map((service, i) => (
             <Link
-              key={item.slug}
-              href={`/use-cases/${item.slug}`}
-              className="catalog-card relative p-4 sm:p-5"
+              key={service.slug || String(service._id)}
+              href={`/services/${service.slug}`}
+              className="group bg-white border border-line p-2.5 sm:p-3 text-center rounded-[2px] shadow-xs hover:border-orange hover:shadow-sm transition flex flex-col items-center justify-center min-h-[64px]"
             >
-              <span className="absolute right-3.5 top-3.5 sm:right-4 sm:top-4 font-display text-2xl font-bold text-navy/8">
-                0{i + 1}
+              <span className="font-display text-[12px] sm:text-[13px] font-bold text-navy/70 group-hover:text-orange transition-colors">
+                {String(i + 1).padStart(2, "0")}
               </span>
-              <p className="kicker text-[10px] sm:text-[11px]">{item.industry}</p>
-              <h3 className="mt-1.5 sm:mt-2 pr-6 sm:pr-8 font-display text-[14px] sm:text-[15px] font-bold uppercase leading-snug tracking-wide text-navy">
-                {item.title}
-              </h3>
-              <p className="mt-1.5 sm:mt-2 line-clamp-2 text-[11.5px] sm:text-[12px] leading-5 text-steel">
-                {item.summary}
-              </p>
+              <span className="mt-0.5 text-[11px] sm:text-[11.5px] font-bold text-navy leading-tight line-clamp-2">
+                {service.title}
+              </span>
             </Link>
           ))}
         </div>
       </section>
+
+      {/* 2. SPECIAL FEATURES — Compact 3 Columns with See More Toggle */}
+      <SpecialFeaturesSection features={features} />
 
       <section>
         <div className="section-label">Featured machine parts</div>

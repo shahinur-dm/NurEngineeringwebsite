@@ -68,6 +68,13 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    title: "SERVICES & FEATURES",
+    entries: [
+      { type: "link", label: "Company Services", href: "/admin/services", Icon: SlidersIcon },
+      { type: "link", label: "Special Features", href: "/admin/features", Icon: TagIcon },
+    ],
+  },
+  {
     title: "CONTENT & BLOG",
     entries: [
       { type: "link", label: "Blog Posts", href: "/admin/blogs", Icon: NewspaperIcon },

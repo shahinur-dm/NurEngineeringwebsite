@@ -13,3 +13,4 @@ export * from "./BlogCategory";
 export * from "./BlogPost";
 export * from "./MediaItem";
 export * from "./ActivityLog";
+export * from "./Feature";

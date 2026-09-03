@@ -6,6 +6,7 @@ import {
   SubCategory,
   Product,
   Service,
+  Feature,
   Banner,
   CompanyProfile,
   UseCase,
@@ -16,6 +17,7 @@ import {
   type ISubCategory,
   type IProduct,
   type IService,
+  type IFeature,
   type IBanner,
   type ICompanyProfile,
   type IUseCase,
@@ -26,6 +28,7 @@ import { navLinks, useCaseContent } from "@/lib/use-cases";
 import {
   mockCategories,
   mockSubCategories,
+  mockSpecialFeatures,
   mockBanners,
   mockServices,
   mockProducts,
@@ -33,6 +36,7 @@ import {
   mockBlogPosts,
   type IMockBlogPost,
   type IMockBlogCategory,
+  type IMockSpecialFeature,
 } from "@/lib/mock-data";
 
 export type PopulatedProduct = Omit<IProduct, "category" | "subCategory" | "relatedServices"> & {
@@ -308,21 +312,73 @@ export async function getServices(opts?: {
   featured?: boolean;
 }): Promise<PopulatedService[]> {
   try {
-    await connectDB();
-    const filter: Record<string, unknown> = { published: true };
-    if (opts?.featured) filter.featured = true;
-    const docs = await Service.find(filter)
-      .populate("category")
-      .populate({ path: "relatedProducts", populate: { path: "category" } })
-      .sort({ order: 1 })
-      .lean<PopulatedService[]>();
-    if (docs.length) return serialize(docs);
+    const db = await connectDB();
+    if (db) {
+      const count = await Service.countDocuments();
+      if (count === 0) {
+        for (const svc of mockServices) {
+          try {
+            await Service.create({
+              title: svc.title,
+              slug: svc.slug,
+              shortDescription: svc.shortDescription,
+              description: svc.description,
+              image: svc.image,
+              features: svc.features,
+              order: svc.order,
+              featured: svc.featured,
+              published: true,
+            });
+          } catch {
+            // ignore duplicate
+          }
+        }
+      }
+      const filter: Record<string, unknown> = { published: true };
+      if (opts?.featured) filter.featured = true;
+      const docs = await Service.find(filter)
+        .populate("category")
+        .populate({ path: "relatedProducts", populate: { path: "category" } })
+        .sort({ order: 1, _id: 1 })
+        .lean<PopulatedService[]>();
+      if (docs.length) return serialize(docs);
+    }
   } catch {
     // fall through to mock
   }
   let res = getMockPopulatedServices();
   if (opts?.featured) res = res.filter((s) => s.featured);
   return serialize(res);
+}
+
+export async function getFeatures(): Promise<IFeature[]> {
+  try {
+    const db = await connectDB();
+    if (db) {
+      const count = await Feature.countDocuments();
+      if (count === 0) {
+        for (const feat of mockSpecialFeatures) {
+          try {
+            await Feature.create({
+              name: feat.name,
+              slug: feat.slug,
+              order: feat.order,
+              active: feat.active,
+            });
+          } catch {
+            // ignore duplicate
+          }
+        }
+      }
+      const docs = await Feature.find({ active: { $ne: false } })
+        .sort({ order: 1, _id: 1 })
+        .lean<IFeature[]>();
+      if (docs.length) return serialize(docs);
+    }
+  } catch {
+    // fall through to mock
+  }
+  return serialize(mockSpecialFeatures.filter((f) => f.active));
 }
 
 export async function getServiceBySlug(
