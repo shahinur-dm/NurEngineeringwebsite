@@ -57,18 +57,30 @@ export function TopBar() {
           </a>
         </div>
 
-        {/* Center: Dynamic Notice Ticker */}
+        {/* Center: Dynamic Notice Ticker (Seamless Continuous Marquee) */}
         <div
-          className="notice-ticker-container flex-1 overflow-hidden mx-2 sm:mx-4 md:mx-6 min-w-0 flex items-center cursor-default select-none"
+          className="notice-ticker-container flex-1 overflow-hidden mx-2 sm:mx-4 md:mx-6 min-w-0 flex items-center cursor-default select-none relative"
           title="Notice (Hover to pause)"
         >
           <div className="notice-ticker-track">
-            <span className="text-xs sm:text-[12.5px] font-bold text-yellow-300 mr-1.5 tracking-wide uppercase">
-              NOTICE:
-            </span>
-            <span className="text-xs sm:text-[12.5px] font-medium text-white tracking-normal">
-              {noticeText}
-            </span>
+            {/* Primary Content Group */}
+            <div className="notice-ticker-group">
+              {[0, 1, 2, 3].map((i) => (
+                <span key={`g1-${i}`} className="notice-ticker-item">
+                  <span className="notice-label">NOTICE:</span>
+                  <span className="notice-text">{noticeText}</span>
+                </span>
+              ))}
+            </div>
+            {/* Exact Duplicated Group for Infinite Seamless Loop */}
+            <div className="notice-ticker-group" aria-hidden="true">
+              {[0, 1, 2, 3].map((i) => (
+                <span key={`g2-${i}`} className="notice-ticker-item">
+                  <span className="notice-label">NOTICE:</span>
+                  <span className="notice-text">{noticeText}</span>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
