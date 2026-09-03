@@ -10,11 +10,14 @@ export function TopBar() {
     ? rawWa
     : `https://wa.me/${cleanPhone}`;
 
+  const noticeText =
+    site.notice || "Out of stock products will be delivered within 3-5 days.";
+
   return (
     <div className="bg-[#1F456E] text-white/90 border-b border-white/10">
       <div className="shell flex min-h-[34px] items-center justify-between gap-2 py-1">
         {/* Left info: Phone & Email */}
-        <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
           {/* Phone */}
           <a
             href={`tel:${site.phone}`}
@@ -38,7 +41,7 @@ export function TopBar() {
           {/* Email */}
           <a
             href={`mailto:${site.email}`}
-            className="flex items-center gap-1.5 min-w-0 transition text-white/90 hover:text-orange text-xs sm:text-[12.5px]"
+            className="flex items-center gap-1.5 shrink-0 transition text-white/90 hover:text-orange text-xs sm:text-[12.5px]"
           >
             <svg
               viewBox="0 0 24 24"
@@ -50,8 +53,23 @@ export function TopBar() {
               <rect width="20" height="16" x="2" y="4" rx="2" />
               <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
             </svg>
-            <span className="truncate max-w-[130px] sm:max-w-[220px] md:max-w-none">{site.email}</span>
+            <span className="truncate max-w-[130px] sm:max-w-[180px] md:max-w-none">{site.email}</span>
           </a>
+        </div>
+
+        {/* Center: Dynamic Notice Ticker */}
+        <div
+          className="notice-ticker-container flex-1 overflow-hidden mx-2 sm:mx-4 md:mx-6 min-w-0 flex items-center cursor-default select-none"
+          title="Notice (Hover to pause)"
+        >
+          <div className="notice-ticker-track">
+            <span className="text-xs sm:text-[12.5px] font-bold text-yellow-300 mr-1.5 tracking-wide uppercase">
+              NOTICE:
+            </span>
+            <span className="text-xs sm:text-[12.5px] font-medium text-white tracking-normal">
+              {noticeText}
+            </span>
+          </div>
         </div>
 
         {/* Right social icons: Facebook -> LinkedIn -> YouTube -> WhatsApp */}

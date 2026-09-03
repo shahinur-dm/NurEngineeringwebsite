@@ -54,6 +54,7 @@ export const fallbackSettings: ISiteSettings = {
   hours: "Sat–Thu 9:00–18:00",
   mapEmbedUrl:
     "https://maps.google.com/maps?q=Dhaka%2C%20Bangladesh&t=&z=13&ie=UTF8&iwloc=&output=embed",
+  notice: "Out of stock products will be delivered within 3-5 days.",
   social: {
     facebook: "https://www.facebook.com/",
     linkedin: "https://www.linkedin.com/",
@@ -148,6 +149,10 @@ export async function getSettings(): Promise<ISiteSettings> {
     mapEmbedUrl: (merged.mapEmbedUrl as string) || fallbackSettings.mapEmbedUrl,
     logoUrl: ((merged.logoUrl || merged.logo) as string) || "",
     favicon: (merged.favicon as string) || "",
+    notice:
+      (merged.notice as string) ||
+      fallbackSettings.notice ||
+      "Out of stock products will be delivered within 3-5 days.",
     social: {
       facebook: rawSocial.facebook || fallbackSettings.social.facebook || "",
       linkedin: rawSocial.linkedin || fallbackSettings.social.linkedin || "",

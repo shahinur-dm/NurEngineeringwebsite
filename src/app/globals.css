@@ -262,6 +262,31 @@ button {
   content: "";
 }
 
+/* Top Bar Notice Ticker */
+@keyframes notice-ticker {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.notice-ticker-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  min-width: 100%;
+  animation: notice-ticker 22s linear infinite;
+  will-change: transform;
+}
+
+.notice-ticker-container:hover .notice-ticker-track,
+.notice-ticker-track:hover {
+  animation-play-state: paused !important;
+}
+
+
 @media (max-width: 640px) {
   .shell {
     width: min(100% - 1.25rem, 80rem);

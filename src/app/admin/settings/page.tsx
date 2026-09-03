@@ -33,6 +33,7 @@ export default function AdminSettingsPage() {
   const [phone, setPhone] = useState("+880 1700-000000");
   const [email, setEmail] = useState("info@nurengineering.com");
   const [hours, setHours] = useState("Sat–Thu 9:00–18:00");
+  const [notice, setNotice] = useState("Out of stock products will be delivered within 3-5 days.");
   const [address, setAddress] = useState("Dhaka, Bangladesh");
   const [mapsEmbed, setMapsEmbed] = useState("");
   const [facebook, setFacebook] = useState("https://www.facebook.com/");
@@ -76,6 +77,7 @@ export default function AdminSettingsPage() {
           if (s.phone) setPhone(s.phone);
           if (s.email) setEmail(s.email);
           if (s.hours) setHours(s.hours);
+          if (s.notice) setNotice(s.notice);
           if (s.address) setAddress(s.address);
           if (s.mapEmbedUrl) setMapsEmbed(s.mapEmbedUrl);
           if (s.social?.facebook) setFacebook(s.social.facebook);
@@ -127,6 +129,7 @@ export default function AdminSettingsPage() {
           phone,
           email,
           hours,
+          notice,
           address,
           mapEmbedUrl: mapsEmbed,
           social: {
@@ -399,6 +402,35 @@ export default function AdminSettingsPage() {
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
                 />
               </div>
+            </div>
+
+            {/* Top Bar Notice / Announcement Ticker */}
+            <div className="border-t border-line pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase text-navy">
+                  Top Bar Notice / Announcement Ticker
+                </label>
+                <span className="text-[10.5px] font-bold text-orange uppercase tracking-wider">
+                  Live Ticker Banner
+                </span>
+              </div>
+              <input
+                type="text"
+                value={notice}
+                onChange={(e) => setNotice(e.target.value)}
+                placeholder="e.g. Out of stock products will be delivered within 3-5 days."
+                className="w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+              />
+              <div className="rounded border border-line bg-paper/60 p-3 flex items-center gap-2">
+                <span className="text-[10px] font-bold text-mist uppercase">Preview:</span>
+                <span className="text-[11.5px] font-bold text-amber-500">NOTICE:</span>
+                <span className="text-[11.5px] font-medium text-navy truncate">
+                  {notice || "Out of stock products will be delivered within 3-5 days."}
+                </span>
+              </div>
+              <p className="text-[10.5px] text-mist">
+                This notice continuously animates from right to left in the top blue contact bar. Hovering over it pauses the movement for easy reading.
+              </p>
             </div>
           </div>
         )}

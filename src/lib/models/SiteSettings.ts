@@ -12,6 +12,7 @@ export interface ISiteSettings {
   mapEmbedUrl: string;
   logoUrl?: string;
   favicon?: string;
+  notice?: string;
   social: {
     facebook?: string;
     linkedin?: string;
@@ -43,6 +44,10 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     mapEmbedUrl: { type: String, default: "" },
     logoUrl: String,
     favicon: String,
+    notice: {
+      type: String,
+      default: "Out of stock products will be delivered within 3-5 days.",
+    },
     social: {
       facebook: String,
       linkedin: String,
