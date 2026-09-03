@@ -127,7 +127,7 @@ export function NavBar() {
   }
 
   return (
-    <header className="relative z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)]">
+    <header className="sticky top-0 z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)]">
       <div className="shell flex items-center justify-between py-2 md:py-2.5 gap-3">
         {/* Left: Logo & Company Name Branding (Slightly Larger) */}
         <Link href="/" className="flex items-center gap-2.5 sm:gap-3.5 shrink-0 group min-w-0 mr-2 md:mr-4 lg:mr-8">
