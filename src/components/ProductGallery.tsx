@@ -158,7 +158,17 @@ export function ProductGallery({
 
       {/* Thumbnail Gallery Row */}
       {items.length > 1 && (
-        <div className="mt-3.5 grid grid-cols-5 gap-2 sm:gap-2.5">
+        <div
+          className={`mt-3.5 grid gap-2 sm:gap-2.5 ${
+            items.length === 2
+              ? "grid-cols-2 max-w-[200px]"
+              : items.length === 3
+              ? "grid-cols-3 max-w-[300px]"
+              : items.length === 4
+              ? "grid-cols-4"
+              : "grid-cols-5"
+          }`}
+        >
           {items.map((item, i) => {
             const isActive = i === active;
             if (item.kind === "video") {

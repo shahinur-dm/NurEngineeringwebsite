@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CatalogShell } from "@/components/CatalogShell";
-import { Img } from "@/components/Img";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductTabs } from "@/components/ProductTabs";
 import { getProductDetail } from "@/lib/product-details";
@@ -10,8 +9,6 @@ import { getProductMedia } from "@/lib/product-media";
 import {
   getCategories,
   getProductBySlug,
-  getRelatedProducts,
-  getUseCases,
   getSettings,
 } from "@/lib/data";
 
@@ -42,28 +39,18 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   const extra = getProductDetail(product.slug);
-  const categoryId =
-    typeof product.category === "object"
-      ? String(product.category._id)
-      : String(product.category);
   const categorySlug =
     typeof product.category === "object" ? product.category.slug : undefined;
   const categoryName =
     typeof product.category === "object" ? product.category.name : "Category";
 
-  const [categories, related, useCases, siteSettings] = await Promise.all([
+  const [categories, siteSettings] = await Promise.all([
     getCategories("product"),
-    getRelatedProducts(categoryId, product.slug, 4),
-    getUseCases(),
     getSettings(),
   ]);
 
   const phone = siteSettings?.phone || "+880 1700-000000";
   const cleanPhone = phone.replace(/[^\d]/g, "");
-
-  const linkedUseCases = extra
-    ? useCases.filter((item) => extra.relatedUseCaseSlugs.includes(item.slug))
-    : [];
 
   const media = getProductMedia(
     product.image,
@@ -275,97 +262,6 @@ export default async function ProductDetailPage({
           packing={product.packing || extra?.packing || ""}
         />
       </article>
-
-      {/* Related Products Section */}
-      {related.length > 0 && (
-        <section className="panel mt-6 sm:mt-8 p-4 sm:p-5 md:p-8">
-          <h2 className="section-label">Related products</h2>
-          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
-            {related.map((item) => {
-              const catName =
-                typeof item.category === "object" ? item.category?.name : "";
-              return (
-                <Link
-                  key={String(item._id)}
-                  href={`/products/${item.slug}`}
-                  className="group flex flex-col justify-between border border-line bg-white p-3.5 transition hover:border-orange/60 hover:shadow-sm"
-                >
-                  <div>
-                    <div className="relative aspect-square w-full overflow-hidden border border-line/50 bg-paper/20">
-                      <Img
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-contain p-2 transition duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 240px"
-                      />
-                    </div>
-                    <div className="mt-3">
-                      {catName && (
-                        <p className="text-[10.5px] font-semibold uppercase tracking-wider text-mist">
-                          {catName}
-                        </p>
-                      )}
-                      <h3 className="mt-1 font-display text-[13px] font-bold uppercase leading-snug tracking-wide text-navy transition group-hover:text-orange line-clamp-2">
-                        {item.name}
-                      </h3>
-                      {item.shortDescription && (
-                        <p className="mt-1 line-clamp-2 text-[11.5px] leading-4 text-steel">
-                          {item.shortDescription}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Related Technical Services Section */}
-      {product.relatedServices && product.relatedServices.length > 0 && (
-        <section className="panel mt-6 sm:mt-8 p-4 sm:p-5 md:p-8">
-          <div className="section-label">Related technical services</div>
-          <div className="flex flex-wrap gap-2.5">
-            {product.relatedServices.map((service) =>
-              service?.slug ? (
-                <Link
-                  key={String(service._id)}
-                  href={`/services/${service.slug}`}
-                  className="border border-line bg-white px-4 py-2.5 text-[12.5px] font-semibold text-navy transition hover:border-orange hover:text-orange"
-                >
-                  {service.title}
-                </Link>
-              ) : null
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Where This Part is Used Section */}
-      {linkedUseCases.length > 0 && (
-        <section className="panel mt-6 sm:mt-8 p-4 sm:p-5 md:p-8">
-          <div className="section-label">Where this part is used</div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {linkedUseCases.map((item) => (
-              <Link
-                key={item.slug}
-                href={`/use-cases/${item.slug}`}
-                className="catalog-card p-5 border border-line bg-white hover:border-orange transition"
-              >
-                <p className="kicker">{item.industry}</p>
-                <p className="mt-2 font-display text-[14.5px] font-bold uppercase tracking-wide text-navy">
-                  {item.title}
-                </p>
-                <p className="mt-2 line-clamp-2 text-[12px] leading-5 text-steel">
-                  {item.summary}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
     </CatalogShell>
   );
 }
