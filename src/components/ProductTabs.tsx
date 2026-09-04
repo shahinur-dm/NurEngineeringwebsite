@@ -11,6 +11,7 @@ export interface ProductTabsProps {
   warrantyAndReturns?: string;
   condition?: string;
   packing?: string;
+  className?: string;
 }
 
 export function ProductTabs({
@@ -22,6 +23,7 @@ export function ProductTabs({
   warrantyAndReturns = "",
   condition = "",
   packing = "",
+  className = "",
 }: ProductTabsProps) {
   const [activeTab, setActiveTab] = useState<"desc" | "specs" | "warranty">("desc");
 
@@ -32,9 +34,9 @@ In the event of verified factory defects or incorrect part delivery, replacement
 Physical damage, electrical overload, or incorrect installation is not covered under warranty.`;
 
   return (
-    <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-line">
+    <div className={`mt-5 pt-4 border-t border-[#e2e8f0] ${className}`}>
       {/* Tabs Header */}
-      <div className="border-b border-line flex items-center gap-6 sm:gap-10 overflow-x-auto scrollbar-none">
+      <div className="border-b border-[#e2e8f0] flex items-center gap-5 sm:gap-7 overflow-x-auto scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveTab("desc")}

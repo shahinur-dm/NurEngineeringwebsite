@@ -20,29 +20,29 @@ export function ProductGallery({
   const yt = youtubeId(videoUrl);
   const isFile = Boolean(videoUrl && /\.(mp4|webm|ogg)(\?|$)/i.test(videoUrl));
 
-  const items: Item[] = [
-    ...images.filter(Boolean).map((src) => ({ kind: "image" as const, src })),
-    ...(yt
-      ? [
-          {
-            kind: "video" as const,
-            src: videoUrl!,
-            id: yt,
-            thumb: `https://img.youtube.com/vi/${yt}/hqdefault.jpg`,
-          },
-        ]
-      : []),
-    ...(isFile && videoUrl && !yt
-      ? [
-          {
-            kind: "video" as const,
-            src: videoUrl,
-            id: "file",
-            thumb: images[0] || "",
-          },
-        ]
-      : []),
-  ];
+  const imageItems: Item[] = images
+    .filter(Boolean)
+    .map((src) => ({ kind: "image" as const, src }));
+
+  const videoItem: Item | null = yt
+    ? {
+        kind: "video" as const,
+        src: videoUrl!,
+        id: yt,
+        thumb: `https://img.youtube.com/vi/${yt}/hqdefault.jpg`,
+      }
+    : isFile && videoUrl
+    ? {
+        kind: "video" as const,
+        src: videoUrl,
+        id: "file",
+        thumb: images[0] || "",
+      }
+    : null;
+
+  const items: Item[] = videoItem
+    ? [...imageItems.slice(0, 3), videoItem]
+    : imageItems.slice(0, 4);
 
   const [active, setActive] = useState(0);
   const [playing, setPlaying] = useState(false);

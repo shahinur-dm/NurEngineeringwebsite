@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CatalogShell } from "@/components/CatalogShell";
+import { Img } from "@/components/Img";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductTabs } from "@/components/ProductTabs";
 import { getProductDetail } from "@/lib/product-details";
@@ -9,6 +10,7 @@ import { getProductMedia } from "@/lib/product-media";
 import {
   getCategories,
   getProductBySlug,
+  getRelatedProducts,
   getSettings,
 } from "@/lib/data";
 
@@ -39,13 +41,18 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   const extra = getProductDetail(product.slug);
+  const categoryId =
+    typeof product.category === "object"
+      ? String(product.category._id)
+      : String(product.category);
   const categorySlug =
     typeof product.category === "object" ? product.category.slug : undefined;
   const categoryName =
     typeof product.category === "object" ? product.category.name : "Category";
 
-  const [categories, siteSettings] = await Promise.all([
+  const [categories, related, siteSettings] = await Promise.all([
     getCategories("product"),
+    getRelatedProducts(categoryId, product.slug, 4),
     getSettings(),
   ]);
 
@@ -101,16 +108,32 @@ export default async function ProductDetailPage({
       {/* Main Product Details Card */}
       <article className="panel p-5 sm:p-7 md:p-8 bg-white border border-[#e2e8f0] rounded-[4px] shadow-xs">
         <div className="grid items-start gap-7 sm:gap-8 lg:grid-cols-[1fr_1.1fr] lg:gap-10">
-          {/* Left Side: Image / Video Gallery */}
-          <div className="w-full">
+          {/* Left Side: Image / Video Gallery + 3 Tabs Directly Below */}
+          <div className="w-full flex flex-col">
             <ProductGallery
               name={product.name}
               images={media.images}
               videoUrl={media.videoUrl}
             />
+
+            {/* Description / Specifications / Warranty & Returns Tab Section */}
+            <ProductTabs
+              description={product.description || extra?.overview || ""}
+              features={extra?.features || []}
+              specTable={
+                product.specTable && product.specTable.length > 0
+                  ? product.specTable
+                  : extra?.specTable || null
+              }
+              specsList={product.specs || []}
+              warranty={product.warranty || extra?.warranty || ""}
+              warrantyAndReturns={product.warrantyAndReturns || ""}
+              condition={product.condition || extra?.condition || ""}
+              packing={product.packing || extra?.packing || ""}
+            />
           </div>
 
-          {/* Right Side: Product Information */}
+          {/* Right Side: Product Information & Attributes with Checkmarks */}
           <div className="flex flex-col">
             {/* Category & Availability Status */}
             <div className="flex flex-wrap items-center gap-3">
@@ -169,18 +192,33 @@ export default async function ProductDetailPage({
               </p>
             </div>
 
-            {/* Specifications / Attribute Table */}
-            <dl className="mt-5 border-t border-[#e2e8f0] divide-y divide-[#e2e8f0]">
-              {facts.map(([label, value]) => (
-                <div
-                  key={label}
-                  className="grid grid-cols-[7.5rem_1fr] sm:grid-cols-[9.5rem_1fr] gap-2 py-2 text-xs sm:text-[13px]"
-                >
-                  <dt className="text-slate-500 font-normal">{label}</dt>
-                  <dd className="font-semibold text-navy break-words">{value}</dd>
-                </div>
-              ))}
-            </dl>
+            {/* Specifications / Product Details Table with Green Checkmark Icons */}
+            <div className="mt-5 border-t border-[#e2e8f0] pt-3.5">
+              <p className="font-display text-xs font-bold uppercase tracking-wider text-navy mb-2.5">
+                Product Details
+              </p>
+              <dl className="divide-y divide-[#e2e8f0]">
+                {facts.map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="grid grid-cols-[8.5rem_1fr] sm:grid-cols-[10.5rem_1fr] gap-2 py-2 text-xs sm:text-[13px] items-center"
+                  >
+                    <dt className="text-slate-600 font-medium flex items-center gap-1.5">
+                      <svg
+                        className="h-3.5 w-3.5 text-[#1ea952] shrink-0 stroke-[2.5]"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span>{label}</span>
+                    </dt>
+                    <dd className="font-semibold text-navy break-words">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
 
             {/* Trust & Service Information Badges (2x2) */}
             <div className="mt-5 pt-4 border-t border-[#e2e8f0] grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
@@ -245,23 +283,64 @@ export default async function ProductDetailPage({
             </div>
           </div>
         </div>
-
-        {/* Description / Specifications / Warranty & Returns Tab Section */}
-        <ProductTabs
-          description={product.description || extra?.overview || ""}
-          features={extra?.features || []}
-          specTable={
-            product.specTable && product.specTable.length > 0
-              ? product.specTable
-              : extra?.specTable || null
-          }
-          specsList={product.specs || []}
-          warranty={product.warranty || extra?.warranty || ""}
-          warrantyAndReturns={product.warrantyAndReturns || ""}
-          condition={product.condition || extra?.condition || ""}
-          packing={product.packing || extra?.packing || ""}
-        />
       </article>
+
+      {/* Related Products Section */}
+      {related && related.length > 0 && (
+        <section className="panel mt-6 sm:mt-8 p-4 sm:p-5 md:p-8 bg-white border border-[#e2e8f0] rounded-[4px] shadow-xs">
+          <div className="flex items-center justify-between border-b border-[#e2e8f0] pb-3 mb-4 sm:mb-6">
+            <h2 className="font-display text-sm sm:text-base font-bold uppercase tracking-wider text-navy">
+              Related Products
+            </h2>
+            <Link
+              href={categorySlug ? `/products?category=${categorySlug}` : "/products"}
+              className="text-xs font-semibold text-orange hover:underline uppercase"
+            >
+              View All
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
+            {related.map((item) => {
+              const catName =
+                typeof item.category === "object" ? item.category?.name : "";
+              return (
+                <Link
+                  key={String(item._id)}
+                  href={`/products/${item.slug}`}
+                  className="group flex flex-col justify-between border border-[#e2e8f0] bg-white p-3.5 rounded-[2px] transition hover:border-orange hover:shadow-sm"
+                >
+                  <div>
+                    <div className="relative aspect-square w-full overflow-hidden border border-[#e2e8f0]/60 bg-paper/20 rounded-[2px]">
+                      <Img
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="object-contain p-2 transition duration-500 group-hover:scale-105"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 240px"
+                      />
+                    </div>
+                    <div className="mt-3">
+                      {catName && (
+                        <p className="text-[10.5px] font-semibold uppercase tracking-wider text-mist">
+                          {catName}
+                        </p>
+                      )}
+                      <h3 className="mt-1 font-display text-[13px] font-bold uppercase leading-snug tracking-wide text-navy transition group-hover:text-orange line-clamp-2">
+                        {item.name}
+                      </h3>
+                      {item.shortDescription && (
+                        <p className="mt-1 line-clamp-2 text-[11.5px] leading-4 text-steel">
+                          {item.shortDescription}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </CatalogShell>
   );
 }
