@@ -32,16 +32,16 @@ In the event of verified factory defects or incorrect part delivery, replacement
 Physical damage, electrical overload, or incorrect installation is not covered under warranty.`;
 
   return (
-    <section className="panel mt-6 sm:mt-8 p-4 sm:p-6 md:p-8">
+    <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-line">
       {/* Tabs Header */}
       <div className="border-b border-line flex items-center gap-6 sm:gap-10 overflow-x-auto scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveTab("desc")}
-          className={`pb-3.5 text-xs sm:text-[13px] font-display font-bold uppercase tracking-wider transition whitespace-nowrap -mb-px ${
+          className={`pb-3 text-xs sm:text-[13px] font-display font-bold uppercase tracking-wider transition whitespace-nowrap -mb-px ${
             activeTab === "desc"
-              ? "text-navy border-b-2 border-[#1ea952]"
-              : "text-mist hover:text-navy border-b-2 border-transparent"
+              ? "text-navy border-b-[3px] border-[#1ea952]"
+              : "text-steel/80 hover:text-navy border-b-[3px] border-transparent"
           }`}
         >
           Description
@@ -50,10 +50,10 @@ Physical damage, electrical overload, or incorrect installation is not covered u
         <button
           type="button"
           onClick={() => setActiveTab("specs")}
-          className={`pb-3.5 text-xs sm:text-[13px] font-display font-bold uppercase tracking-wider transition whitespace-nowrap -mb-px ${
+          className={`pb-3 text-xs sm:text-[13px] font-display font-bold uppercase tracking-wider transition whitespace-nowrap -mb-px ${
             activeTab === "specs"
-              ? "text-navy border-b-2 border-[#1ea952]"
-              : "text-mist hover:text-navy border-b-2 border-transparent"
+              ? "text-navy border-b-[3px] border-[#1ea952]"
+              : "text-steel/80 hover:text-navy border-b-[3px] border-transparent"
           }`}
         >
           Specifications
@@ -62,10 +62,10 @@ Physical damage, electrical overload, or incorrect installation is not covered u
         <button
           type="button"
           onClick={() => setActiveTab("warranty")}
-          className={`pb-3.5 text-xs sm:text-[13px] font-display font-bold uppercase tracking-wider transition whitespace-nowrap -mb-px ${
+          className={`pb-3 text-xs sm:text-[13px] font-display font-bold uppercase tracking-wider transition whitespace-nowrap -mb-px ${
             activeTab === "warranty"
-              ? "text-navy border-b-2 border-[#1ea952]"
-              : "text-mist hover:text-navy border-b-2 border-transparent"
+              ? "text-navy border-b-[3px] border-[#1ea952]"
+              : "text-steel/80 hover:text-navy border-b-[3px] border-transparent"
           }`}
         >
           Warranty & Returns
@@ -77,7 +77,7 @@ Physical damage, electrical overload, or incorrect installation is not covered u
         {/* Description Tab */}
         {activeTab === "desc" && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="max-w-4xl text-xs sm:text-sm leading-relaxed sm:leading-7 text-steel whitespace-pre-line">
+            <div className="max-w-4xl text-xs sm:text-sm leading-relaxed sm:leading-7 text-steel whitespace-pre-line font-normal">
               {description || "No product description available."}
             </div>
 
@@ -194,6 +194,6 @@ Physical damage, electrical overload, or incorrect installation is not covered u
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
 }

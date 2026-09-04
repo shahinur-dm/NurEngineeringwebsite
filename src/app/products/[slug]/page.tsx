@@ -258,23 +258,23 @@ export default async function ProductDetailPage({
             </div>
           </div>
         </div>
-      </article>
 
-      {/* Description / Specifications / Warranty & Returns Tab Section */}
-      <ProductTabs
-        description={product.description || extra?.overview || ""}
-        features={extra?.features || []}
-        specTable={
-          product.specTable && product.specTable.length > 0
-            ? product.specTable
-            : extra?.specTable || null
-        }
-        specsList={product.specs || []}
-        warranty={product.warranty || extra?.warranty || ""}
-        warrantyAndReturns={product.warrantyAndReturns || ""}
-        condition={product.condition || extra?.condition || ""}
-        packing={product.packing || extra?.packing || ""}
-      />
+        {/* Description / Specifications / Warranty & Returns Tab Section */}
+        <ProductTabs
+          description={product.description || extra?.overview || ""}
+          features={extra?.features || []}
+          specTable={
+            product.specTable && product.specTable.length > 0
+              ? product.specTable
+              : extra?.specTable || null
+          }
+          specsList={product.specs || []}
+          warranty={product.warranty || extra?.warranty || ""}
+          warrantyAndReturns={product.warrantyAndReturns || ""}
+          condition={product.condition || extra?.condition || ""}
+          packing={product.packing || extra?.packing || ""}
+        />
+      </article>
 
       {/* Related Products Section */}
       {related.length > 0 && (
