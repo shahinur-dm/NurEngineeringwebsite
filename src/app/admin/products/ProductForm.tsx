@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Img } from "@/components/Img";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
+import { youtubeId } from "@/lib/product-media";
 
 interface Category {
   _id: string;
@@ -15,6 +16,11 @@ interface SubCategory {
   _id: string;
   name: string;
   category: string | { _id: string };
+}
+
+interface SpecRow {
+  label: string;
+  value: string;
 }
 
 interface ProductFormProps {
@@ -31,8 +37,15 @@ interface ProductFormProps {
     price?: number;
     currency: string;
     image: string;
-    gallery: string[];
-    specs: string[];
+    gallery?: string[];
+    videoUrl?: string;
+    specs?: string[];
+    specTable?: SpecRow[];
+    condition?: string;
+    packing?: string;
+    warranty?: string;
+    warrantyAndReturns?: string;
+    availabilityText?: string;
     inStock: boolean;
     featured: boolean;
     published: boolean;
@@ -49,7 +62,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Form State
+  // General Fields
   const [name, setName] = useState(initialData?.name || "");
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [sku, setSku] = useState(initialData?.sku || "");
@@ -70,21 +83,50 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   const [description, setDescription] = useState(
     initialData?.description || ""
   );
+
+  // Specifications
+  const [specTable, setSpecTable] = useState<SpecRow[]>(
+    initialData?.specTable || []
+  );
+  const [specLabelInput, setSpecLabelInput] = useState("");
+  const [specValueInput, setSpecValueInput] = useState("");
+
+  const [specs, setSpecs] = useState<string[]>(initialData?.specs || []);
+  const [specInput, setSpecInput] = useState("");
+
+  // Warranty, Condition, Packing, Availability
+  const [warranty, setWarranty] = useState(
+    initialData?.warranty || "12-month manufacturer warranty"
+  );
+  const [condition, setCondition] = useState(
+    initialData?.condition || "100% Genuine, Authorised Stock"
+  );
+  const [packing, setPacking] = useState(initialData?.packing || "Carton");
+  const [availabilityText, setAvailabilityText] = useState(
+    initialData?.availabilityText || "In stock – confirm lead time"
+  );
+  const [warrantyAndReturns, setWarrantyAndReturns] = useState(
+    initialData?.warrantyAndReturns || ""
+  );
+
+  // Pricing & Stock
   const [price, setPrice] = useState<string>(
     initialData?.price ? String(initialData.price) : ""
   );
   const [currency, setCurrency] = useState(initialData?.currency || "BDT");
+  const [inStock, setInStock] = useState(initialData?.inStock !== false);
+  const [featured, setFeatured] = useState(Boolean(initialData?.featured));
+  const [published, setPublished] = useState(initialData?.published !== false);
+  const [order, setOrder] = useState<number>(initialData?.order || 0);
+
+  // Media Management
   const [image, setImage] = useState(
     initialData?.image ||
       "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1600&q=80"
   );
   const [gallery, setGallery] = useState<string[]>(initialData?.gallery || []);
-  const [specs, setSpecs] = useState<string[]>(initialData?.specs || []);
-  const [specInput, setSpecInput] = useState("");
-  const [inStock, setInStock] = useState(initialData?.inStock !== false);
-  const [featured, setFeatured] = useState(Boolean(initialData?.featured));
-  const [published, setPublished] = useState(initialData?.published !== false);
-  const [order, setOrder] = useState<number>(initialData?.order || 0);
+  const [videoUrl, setVideoUrl] = useState(initialData?.videoUrl || "");
+  const [customImageUrl, setCustomImageUrl] = useState("");
 
   // Media Picker state
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -95,7 +137,8 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
       .then((res) => res.json())
       .then((d) => {
         if (d.categories) setCategories(d.categories);
-      });
+      })
+      .catch((err) => console.error("Categories fetch error:", err));
   }, []);
 
   useEffect(() => {
@@ -111,19 +154,38 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
       .catch((err) => console.error("Subcategories fetch error:", err));
   }, [category]);
 
-  function handleAddSpec() {
-    if (specInput.trim()) {
-      setSpecs([...specs, specInput.trim()]);
-      setSpecInput("");
+  // Gallery manipulation handlers
+  function handleSetAsMainImage(index: number) {
+    const selected = gallery[index];
+    if (!selected) return;
+    const oldMain = image;
+    const updatedGallery = gallery.filter((_, i) => i !== index);
+    if (oldMain && !updatedGallery.includes(oldMain)) {
+      updatedGallery.unshift(oldMain);
     }
+    setImage(selected);
+    setGallery(updatedGallery);
   }
 
-  function handleRemoveSpec(index: number) {
-    setSpecs(specs.filter((_, i) => i !== index));
+  function handleMoveGalleryImage(index: number, direction: -1 | 1) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= gallery.length) return;
+    const copy = [...gallery];
+    const temp = copy[index];
+    copy[index] = copy[targetIndex];
+    copy[targetIndex] = temp;
+    setGallery(copy);
   }
 
   function handleRemoveGalleryImage(index: number) {
     setGallery(gallery.filter((_, i) => i !== index));
+  }
+
+  function handleAddGalleryUrl() {
+    if (customImageUrl.trim()) {
+      setGallery([...gallery, customImageUrl.trim()]);
+      setCustomImageUrl("");
+    }
   }
 
   function openMediaPicker(target: "main" | "gallery") {
@@ -135,8 +197,37 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
     if (pickerTarget === "main") {
       setImage(url);
     } else {
-      setGallery([...gallery, url]);
+      if (!gallery.includes(url)) {
+        setGallery([...gallery, url]);
+      }
     }
+  }
+
+  // Specifications handlers
+  function handleAddSpecRow() {
+    if (specLabelInput.trim() && specValueInput.trim()) {
+      setSpecTable([
+        ...specTable,
+        { label: specLabelInput.trim(), value: specValueInput.trim() },
+      ]);
+      setSpecLabelInput("");
+      setSpecValueInput("");
+    }
+  }
+
+  function handleRemoveSpecRow(index: number) {
+    setSpecTable(specTable.filter((_, i) => i !== index));
+  }
+
+  function handleAddSpec() {
+    if (specInput.trim()) {
+      setSpecs([...specs, specInput.trim()]);
+      setSpecInput("");
+    }
+  }
+
+  function handleRemoveSpec(index: number) {
+    setSpecs(specs.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -148,6 +239,9 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
     try {
       if (!category) {
         throw new Error("Please select a category");
+      }
+      if (!image.trim()) {
+        throw new Error("Primary product image is required");
       }
 
       const payload = {
@@ -163,7 +257,14 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
         currency,
         image,
         gallery,
+        videoUrl: videoUrl.trim() || undefined,
         specs,
+        specTable,
+        condition,
+        packing,
+        warranty,
+        warrantyAndReturns,
+        availabilityText,
         inStock,
         featured,
         published,
@@ -186,7 +287,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
         throw new Error(data.error || "Failed to save product");
       }
 
-      setSuccess("Product saved successfully!");
+      setSuccess("Product and media saved successfully!");
       if (!isEdit) {
         router.push("/admin/products");
       } else {
@@ -199,16 +300,18 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
     }
   }
 
+  const yt = youtubeId(videoUrl);
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-7xl">
       {/* Action Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
         <div>
           <h2 className="font-display text-xl font-bold uppercase tracking-wide text-navy">
-            {isEdit ? "Edit Machine Part" : "Add New Machine Part"}
+            {isEdit ? "Edit Machine Part & Media" : "Add New Machine Part"}
           </h2>
           <p className="text-xs text-steel">
-            Provide technical specifications, images, pricing, and category placement.
+            Manage product content, specifications, gallery images, video, and availability.
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -229,7 +332,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
       </div>
 
       {error && (
-        <div className="rounded border border-red-500/30 bg-red-50 p-3 text-xs text-red-600">
+        <div className="rounded border border-red-500/30 bg-red-50 p-3 text-xs text-red-600 font-medium">
           {error}
         </div>
       )}
@@ -240,8 +343,8 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
         </div>
       )}
 
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[2fr_1fr]">
-        {/* Main Left Column */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[1.6fr_1.1fr]">
+        {/* Main Left Column: Content, Specs, Warranty */}
         <div className="space-y-6">
           {/* General Info */}
           <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
@@ -258,8 +361,8 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. SIMATIC S7-1200 CPU 1214C"
-                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium text-navy"
+                placeholder="e.g. 7-INCH HMI TOUCH PANEL"
+                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-semibold text-navy"
               />
             </div>
 
@@ -273,7 +376,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                   value={category}
                   onChange={(e) => {
                     setCategory(e.target.value);
-                    setSubCategory(""); // reset subcategory on category change
+                    setSubCategory("");
                   }}
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange bg-white text-navy font-medium"
                 >
@@ -321,13 +424,11 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                   type="text"
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
-                  placeholder="e.g. Siemens, Delta, Omron, ABB"
+                  placeholder="e.g. Weintek / Delta class"
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
                 />
               </div>
-            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-navy">
                   SKU / Model Number
@@ -336,20 +437,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                   type="text"
                   value={sku}
                   onChange={(e) => setSku(e.target.value)}
-                  placeholder="e.g. 6ES7 214-1AG40-0XB0"
-                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
-                  Custom Slug (optional)
-                </label>
-                <input
-                  type="text"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  placeholder="auto-generated from name if blank"
+                  placeholder="e.g. NES-HMI-7"
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
                 />
               </div>
@@ -357,90 +445,444 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-navy">
-                Short Description (Card summary) *
+                Custom Slug (Optional)
+              </label>
+              <input
+                type="text"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder="auto-generated from name if left empty"
+                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                Short Product Description *
               </label>
               <textarea
                 required
                 rows={2}
                 value={shortDescription}
                 onChange={(e) => setShortDescription(e.target.value)}
-                placeholder="Compact 1-2 sentence description for catalog cards"
-                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange leading-relaxed"
+                placeholder="7-inch industrial HMI with Ethernet and serial."
+                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange leading-relaxed text-navy"
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-navy">
-                Full Description (Overview section) *
+                Full Description (Description Tab Content) *
               </label>
               <textarea
                 required
                 rows={5}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Comprehensive technical details, operating characteristics and variant information"
+                placeholder="The 7-inch HMI touch panel delivers reliable performance for industrial automation applications..."
                 className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange leading-relaxed"
               />
             </div>
           </div>
 
-          {/* Specifications Table Builder */}
-          <div className="rounded-lg border border-line bg-white p-5 shadow-xs space-y-4">
-            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
-              Technical Specifications
-            </h3>
+          {/* Technical Specifications Table Builder */}
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
+            <div className="border-b border-line pb-3 flex items-center justify-between">
+              <div>
+                <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
+                  Technical Specifications Table
+                </h3>
+                <p className="text-[11px] text-steel">
+                  Add Parameter / Value pairs displayed in the Specifications Tab & technical view.
+                </p>
+              </div>
+            </div>
 
-            <div className="flex gap-2">
+            <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
               <input
                 type="text"
-                placeholder="e.g. Supply: 24 VDC or Output: 14 DI / 10 DO"
-                value={specInput}
-                onChange={(e) => setSpecInput(e.target.value)}
+                placeholder="Parameter (e.g. Display Size)"
+                value={specLabelInput}
+                onChange={(e) => setSpecLabelInput(e.target.value)}
+                className="rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+              />
+              <input
+                type="text"
+                placeholder="Value (e.g. 7.0 inch TFT LCD)"
+                value={specValueInput}
+                onChange={(e) => setSpecValueInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    handleAddSpec();
+                    handleAddSpecRow();
                   }
                 }}
-                className="flex-1 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                className="rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
               />
               <button
                 type="button"
-                onClick={handleAddSpec}
-                className="btn-navy px-4 py-2 text-xs font-bold"
+                onClick={handleAddSpecRow}
+                className="btn-orange px-4 py-2 text-xs font-bold uppercase"
               >
-                + Add Spec
+                + Add Row
               </button>
             </div>
 
-            {specs.length > 0 ? (
-              <ul className="space-y-2">
-                {specs.map((spec, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center justify-between rounded border border-line bg-paper/50 px-3 py-2 text-xs text-navy"
-                  >
-                    <span>{spec}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSpec(i)}
-                      className="text-red-500 hover:text-red-700 font-bold"
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
+            {specTable.length > 0 ? (
+              <div className="overflow-x-auto border border-line">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-paper/80 border-b border-line text-navy font-bold uppercase text-[10.5px]">
+                      <th className="py-2 px-3">Parameter</th>
+                      <th className="py-2 px-3">Specification Value</th>
+                      <th className="py-2 px-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {specTable.map((row, i) => (
+                      <tr key={i} className="hover:bg-paper/30">
+                        <td className="py-2 px-3 font-medium text-steel">{row.label}</td>
+                        <td className="py-2 px-3 font-semibold text-navy">{row.value}</td>
+                        <td className="py-2 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSpecRow(i)}
+                            className="text-red-500 hover:text-red-700 font-bold px-2 py-1 text-xs"
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             ) : (
-              <p className="text-xs text-mist">No specifications added yet.</p>
+              <p className="text-xs text-mist">No specification rows added yet.</p>
             )}
+
+            {/* Quick Specs Tags (Optional) */}
+            <div className="pt-3 border-t border-line">
+              <label className="block text-xs font-bold uppercase tracking-wider text-navy mb-2">
+                Quick Feature Bullet Points (Optional)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. Ethernet 10/100 Mbps or IP65 front"
+                  value={specInput}
+                  onChange={(e) => setSpecInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddSpec();
+                    }
+                  }}
+                  className="flex-1 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSpec}
+                  className="btn-navy px-4 py-2 text-xs font-bold"
+                >
+                  + Add
+                </button>
+              </div>
+
+              {specs.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2.5">
+                  {specs.map((spec, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded border border-line bg-paper px-2.5 py-1 text-xs text-navy font-medium"
+                    >
+                      {spec}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSpec(i)}
+                        className="text-red-500 hover:text-red-700 font-bold"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Warranty, Condition, Packing & Return Policy */}
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
+            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
+              Warranty, Condition & Commercial Terms
+            </h3>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Condition
+                </label>
+                <input
+                  type="text"
+                  value={condition}
+                  onChange={(e) => setCondition(e.target.value)}
+                  placeholder="e.g. Weintek / Delta class as quoted"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Packaging
+                </label>
+                <input
+                  type="text"
+                  value={packing}
+                  onChange={(e) => setPacking(e.target.value)}
+                  placeholder="e.g. Carton / Factory sealed"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Warranty Summary
+                </label>
+                <input
+                  type="text"
+                  value={warranty}
+                  onChange={(e) => setWarranty(e.target.value)}
+                  placeholder="e.g. As quoted / 12-month manufacturer warranty"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Availability / Lead Time Note
+                </label>
+                <input
+                  type="text"
+                  value={availabilityText}
+                  onChange={(e) => setAvailabilityText(e.target.value)}
+                  placeholder="e.g. In stock – confirm lead time"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                Warranty & Returns Policy (Warranty Tab Content)
+              </label>
+              <textarea
+                rows={4}
+                value={warrantyAndReturns}
+                onChange={(e) => setWarrantyAndReturns(e.target.value)}
+                placeholder="Details on warranty claim, replacement policy, defect inspection and delivery terms..."
+                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange leading-relaxed"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Images & Publish Settings */}
+        {/* Right Column: Media Management (Images, Video, Gallery, Publish) */}
         <div className="space-y-6">
-          {/* Status & Visibility */}
-          <div className="rounded-lg border border-line bg-white p-5 shadow-xs space-y-4">
+          {/* Primary Product Image */}
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div>
+                <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
+                  Primary Product Image *
+                </h3>
+                <p className="text-[11px] text-steel">Main image shown on catalog & page.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => openMediaPicker("main")}
+                className="text-xs font-bold text-orange hover:underline"
+              >
+                Media Library
+              </button>
+            </div>
+
+            <div className="relative aspect-square overflow-hidden rounded border border-line bg-white flex items-center justify-center p-3">
+              <Img
+                src={image}
+                alt="Main Product"
+                fill
+                className="object-contain p-2"
+                sizes="300px"
+              />
+            </div>
+
+            <input
+              type="text"
+              required
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+              placeholder="Image URL: https://... or /uploads/..."
+              className="w-full rounded border border-line px-3 py-1.5 text-[11px] outline-none text-steel focus:border-orange"
+            />
+          </div>
+
+          {/* Additional Gallery Images */}
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div>
+                <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
+                  Gallery Images ({gallery.length})
+                </h3>
+                <p className="text-[11px] text-steel">Add, reorder, or set any image as primary.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => openMediaPicker("gallery")}
+                className="text-xs font-bold text-orange hover:underline flex items-center gap-1"
+              >
+                <span>+ Pick Media</span>
+              </button>
+            </div>
+
+            {/* Custom URL Input for Gallery */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Or paste image URL here..."
+                value={customImageUrl}
+                onChange={(e) => setCustomImageUrl(e.target.value)}
+                className="flex-1 rounded border border-line px-2.5 py-1.5 text-xs outline-none focus:border-orange"
+              />
+              <button
+                type="button"
+                onClick={handleAddGalleryUrl}
+                className="rounded border border-line bg-paper px-3 py-1.5 text-xs font-bold text-navy hover:bg-paper/80"
+              >
+                Add URL
+              </button>
+            </div>
+
+            {/* Gallery Grid */}
+            {gallery.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {gallery.map((url, i) => (
+                  <div
+                    key={i}
+                    className="group relative aspect-square overflow-hidden rounded border border-line bg-white p-1 flex flex-col justify-between shadow-2xs"
+                  >
+                    <div className="relative h-full w-full">
+                      <Img
+                        src={url}
+                        alt={`Gallery item ${i + 1}`}
+                        fill
+                        className="object-contain p-1"
+                        sizes="120px"
+                      />
+                    </div>
+
+                    {/* Action Controls Overlay */}
+                    <div className="absolute inset-0 bg-navy/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1 text-white">
+                      <button
+                        type="button"
+                        onClick={() => handleSetAsMainImage(i)}
+                        className="rounded bg-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow"
+                        title="Set this image as primary product image"
+                      >
+                        ★ Set Main
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={i === 0}
+                          onClick={() => handleMoveGalleryImage(i, -1)}
+                          className="h-6 w-6 rounded bg-white/20 hover:bg-white/40 text-xs font-bold disabled:opacity-30"
+                          title="Move Left"
+                        >
+                          ◀
+                        </button>
+                        <button
+                          type="button"
+                          disabled={i === gallery.length - 1}
+                          onClick={() => handleMoveGalleryImage(i, 1)}
+                          className="h-6 w-6 rounded bg-white/20 hover:bg-white/40 text-xs font-bold disabled:opacity-30"
+                          title="Move Right"
+                        >
+                          ▶
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGalleryImage(i)}
+                          className="h-6 w-6 rounded bg-red-600 hover:bg-red-700 text-xs font-bold"
+                          title="Delete image"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-mist">No additional gallery images added.</p>
+            )}
+          </div>
+
+          {/* Product Video Management */}
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div>
+                <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
+                  Product Video
+                </h3>
+                <p className="text-[11px] text-steel">YouTube or direct MP4 video URL.</p>
+              </div>
+              {videoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setVideoUrl("")}
+                  className="text-xs font-bold text-red-500 hover:underline"
+                >
+                  Remove Video
+                </button>
+              )}
+            </div>
+
+            <input
+              type="text"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="e.g. https://www.youtube.com/watch?v=... or /uploads/demo.mp4"
+              className="w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+            />
+
+            {videoUrl && (
+              <div className="rounded border border-line bg-paper/40 p-2.5">
+                <p className="text-[11px] font-bold text-navy mb-1.5 uppercase tracking-wider">
+                  Video Preview:
+                </p>
+                {yt ? (
+                  <div className="relative aspect-video w-full overflow-hidden rounded bg-black">
+                    <iframe
+                      title="Admin Video Preview"
+                      src={`https://www.youtube-nocookie.com/embed/${yt}`}
+                      className="absolute inset-0 h-full w-full"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : (
+                  <div className="relative aspect-video w-full overflow-hidden rounded bg-black flex items-center justify-center text-white text-xs">
+                    <video src={videoUrl} controls className="h-full w-full object-contain" />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Status & Pricing */}
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
             <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
               Publish & Inventory
             </h3>
@@ -463,7 +905,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                   onChange={(e) => setInStock(e.target.checked)}
                   className="h-4 w-4 rounded accent-orange"
                 />
-                <span className="text-xs font-bold text-navy">In Stock (Available for prompt supply)</span>
+                <span className="text-xs font-bold text-navy">In Stock (Available)</span>
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer">
@@ -477,26 +919,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               </label>
             </div>
 
-            <div className="pt-2 border-t border-line">
-              <label className="block text-xs font-bold uppercase tracking-wider text-navy">
-                Display Order Priority
-              </label>
-              <input
-                type="number"
-                value={order}
-                onChange={(e) => setOrder(parseInt(e.target.value, 10) || 0)}
-                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
-              />
-              <p className="mt-1 text-[10.5px] text-mist">Lower number = appears earlier in listing</p>
-            </div>
-          </div>
-
-          {/* Pricing (Optional) */}
-          <div className="rounded-lg border border-line bg-white p-5 shadow-xs space-y-3">
-            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
-              Price Reference (Optional)
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-line">
               <div>
                 <label className="block text-xs font-bold uppercase text-navy">Currency</label>
                 <input
@@ -517,73 +940,18 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 />
               </div>
             </div>
-          </div>
 
-          {/* Primary Image */}
-          <div className="rounded-lg border border-line bg-white p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
-                Primary Image *
-              </h3>
-              <button
-                type="button"
-                onClick={() => openMediaPicker("main")}
-                className="text-xs font-bold text-orange hover:underline flex items-center gap-1"
-              >
-                <span>Change Image</span>
-              </button>
-            </div>
-
-            <div className="relative aspect-square overflow-hidden rounded border border-line bg-paper/50">
-              <Img
-                src={image}
-                alt="Product Preview"
-                fill
-                className="object-contain p-3"
-                sizes="250px"
+            <div className="pt-2 border-t border-line">
+              <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                Display Order Priority
+              </label>
+              <input
+                type="number"
+                value={order}
+                onChange={(e) => setOrder(parseInt(e.target.value, 10) || 0)}
+                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
               />
-            </div>
-            <input
-              type="text"
-              required
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              placeholder="https://... or /uploads/..."
-              className="w-full rounded border border-line px-3 py-1.5 text-[11px] outline-none text-steel"
-            />
-          </div>
-
-          {/* Gallery Images */}
-          <div className="rounded-lg border border-line bg-white p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between border-b border-line pb-3">
-              <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
-                Additional Gallery ({gallery.length})
-              </h3>
-              <button
-                type="button"
-                onClick={() => openMediaPicker("gallery")}
-                className="text-xs font-bold text-orange hover:underline flex items-center gap-1"
-              >
-                <span>+ Add Image</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {gallery.map((url, i) => (
-                <div
-                  key={i}
-                  className="group relative aspect-square overflow-hidden rounded border border-line bg-paper/50"
-                >
-                  <Img src={url} alt="" fill className="object-cover" sizes="80px" />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveGalleryImage(i)}
-                    className="absolute top-1 right-1 grid h-5 w-5 place-items-center rounded bg-red-600 text-[10px] text-white opacity-0 group-hover:opacity-100 transition"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+              <p className="mt-1 text-[10.5px] text-mist">Lower number = appears earlier in listing</p>
             </div>
           </div>
         </div>

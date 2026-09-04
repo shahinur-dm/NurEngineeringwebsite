@@ -14,7 +14,14 @@ export interface IProduct {
   currency: string;
   image: string;
   gallery?: string[];
+  videoUrl?: string;
   specs: string[];
+  specTable?: { label: string; value: string }[];
+  condition?: string;
+  packing?: string;
+  warranty?: string;
+  warrantyAndReturns?: string;
+  availabilityText?: string;
   relatedServices?: (Types.ObjectId | string)[];
   inStock: boolean;
   featured: boolean;
@@ -47,7 +54,14 @@ const ProductSchema = new Schema<IProduct>(
     currency: { type: String, default: "BDT" },
     image: { type: String, required: true },
     gallery: [{ type: String }],
+    videoUrl: String,
     specs: [{ type: String }],
+    specTable: [{ label: String, value: String }],
+    condition: String,
+    packing: String,
+    warranty: String,
+    warrantyAndReturns: String,
+    availabilityText: String,
     relatedServices: [{ type: Schema.Types.ObjectId, ref: "Service" }],
     inStock: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
@@ -61,3 +75,4 @@ ProductSchema.index({ name: "text", shortDescription: "text", sku: "text" });
 
 export const Product =
   models.Product || model<IProduct>("Product", ProductSchema);
+

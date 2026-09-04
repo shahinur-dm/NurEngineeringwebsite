@@ -121,7 +121,14 @@ export async function POST(req: Request) {
       ...body,
       slug,
       gallery: body.gallery || [],
+      videoUrl: body.videoUrl || undefined,
       specs: body.specs || [],
+      specTable: body.specTable || [],
+      condition: body.condition || undefined,
+      packing: body.packing || undefined,
+      warranty: body.warranty || undefined,
+      warrantyAndReturns: body.warrantyAndReturns || undefined,
+      availabilityText: body.availabilityText || undefined,
       relatedServices: body.relatedServices || [],
     });
 

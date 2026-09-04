@@ -55,11 +55,27 @@ export function getProductMedia(
   extraGallery: string[] = [],
   extraVideo?: string
 ): ProductMedia {
-  const fromCategory = categorySlug ? categoryGallery[categorySlug] || [] : [];
-  const images = [mainImage, ...extraGallery, ...fromCategory].filter(
-    (src, i, arr) => src && arr.indexOf(src) === i
-  );
-  const videoUrl =
-    extraVideo || (categorySlug ? categoryVideo[categorySlug] : undefined);
-  return { images: images.slice(0, videoUrl ? 4 : 5), videoUrl };
+  const images: string[] = [];
+  if (mainImage) images.push(mainImage);
+  if (Array.isArray(extraGallery)) {
+    for (const img of extraGallery) {
+      if (img && !images.includes(img)) {
+        images.push(img);
+      }
+    }
+  }
+
+  // Only fall back to category samples if no gallery images were specified at all
+  if (images.length <= 1 && categorySlug && (!extraGallery || extraGallery.length === 0)) {
+    const fromCategory = categoryGallery[categorySlug] || [];
+    for (const img of fromCategory) {
+      if (img && !images.includes(img)) {
+        images.push(img);
+      }
+    }
+  }
+
+  const videoUrl = extraVideo || undefined;
+  return { images, videoUrl };
 }
+

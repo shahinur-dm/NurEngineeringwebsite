@@ -38,7 +38,7 @@ export function ProductGallery({
             kind: "video" as const,
             src: videoUrl,
             id: "file",
-            thumb: images[0],
+            thumb: images[0] || "",
           },
         ]
       : []),
@@ -49,128 +49,167 @@ export function ProductGallery({
   const current = items[active] || items[0];
   if (!current) return null;
 
-  const imageCount = items.filter((item) => item.kind === "image").length;
-
   function select(index: number) {
     setActive(index);
-    setPlaying(false);
+    // If selecting video thumbnail, autoplay immediately
+    if (items[index]?.kind === "video") {
+      setPlaying(true);
+    } else {
+      setPlaying(false);
+    }
   }
 
   function go(dir: number) {
-    setActive((i) => (i + dir + items.length) % items.length);
-    setPlaying(false);
+    const nextIndex = (active + dir + items.length) % items.length;
+    setActive(nextIndex);
+    if (items[nextIndex]?.kind === "video") {
+      setPlaying(true);
+    } else {
+      setPlaying(false);
+    }
   }
 
   return (
-    <div>
-      <div className="image-frame relative aspect-[4/3] border border-line bg-navy">
+    <div className="w-full select-none">
+      {/* Main Media Box */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden border border-line bg-white shadow-xs">
         {current.kind === "image" ? (
-          <Img
-            src={current.src}
-            alt={name}
-            fill
-            priority
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
+          <div className="relative h-full w-full p-4 sm:p-6 md:p-8 flex items-center justify-center">
+            <Img
+              src={current.src}
+              alt={name}
+              fill
+              priority
+              className="object-contain p-2 sm:p-4 transition-transform duration-300 hover:scale-[1.02]"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+          </div>
         ) : playing && yt && current.id !== "file" ? (
           <iframe
             title={`${name} video`}
             src={`https://www.youtube-nocookie.com/embed/${current.id}?rel=0&autoplay=1`}
-            className="absolute inset-0 z-[2] h-full w-full"
+            className="absolute inset-0 z-10 h-full w-full bg-black"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
         ) : playing && current.id === "file" ? (
           <video
-            className="absolute inset-0 z-[2] h-full w-full object-cover"
+            className="absolute inset-0 z-10 h-full w-full object-contain bg-black"
             src={current.src}
             controls
             autoPlay
             playsInline
           />
         ) : (
-          <>
+          <div className="relative h-full w-full bg-navy/95">
             <Img
               src={current.thumb || images[0]}
               alt={`${name} video`}
               fill
-              className="object-cover"
+              className="object-cover opacity-60"
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
             <button
               type="button"
               onClick={() => setPlaying(true)}
-              className="absolute inset-0 z-[2] grid place-items-center bg-navy/25 transition hover:bg-navy/15"
+              className="absolute inset-0 z-20 grid place-items-center bg-navy/30 transition hover:bg-navy/20"
               aria-label="Play video"
             >
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-orange text-white shadow-lg">
-                ▶
-              </span>
+              <div className="flex flex-col items-center gap-2">
+                <span className="grid h-14 w-14 place-items-center rounded-full bg-orange text-white shadow-xl hover:scale-105 transition">
+                  <svg className="h-6 w-6 fill-current ml-0.5" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+                <span className="text-[11px] font-display font-bold uppercase tracking-widest text-white drop-shadow">
+                  Play Video
+                </span>
+              </div>
             </button>
-          </>
+          </div>
         )}
 
-        {items.length > 1 && !playing && (
+        {/* Prev / Next Arrows */}
+        {items.length > 1 && (
           <>
             <button
               type="button"
-              aria-label="Previous"
-              className="absolute left-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center bg-navy/55 text-white backdrop-blur-sm transition hover:bg-orange"
+              aria-label="Previous image"
               onClick={() => go(-1)}
+              className="absolute left-2.5 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center bg-white/90 text-navy/70 border border-line/70 hover:bg-orange hover:text-white hover:border-orange transition shadow-sm"
             >
-              ‹
+              <svg className="h-4 w-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
             </button>
             <button
               type="button"
-              aria-label="Next"
-              className="absolute right-3 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center bg-navy/55 text-white backdrop-blur-sm transition hover:bg-orange"
+              aria-label="Next image"
               onClick={() => go(1)}
+              className="absolute right-2.5 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center bg-white/90 text-navy/70 border border-line/70 hover:bg-orange hover:text-white hover:border-orange transition shadow-sm"
             >
-              ›
+              <svg className="h-4 w-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
             </button>
           </>
         )}
-
-        <div className="absolute bottom-3 left-3 z-10 bg-navy/70 px-2 py-1 font-display text-[10px] uppercase tracking-[0.16em] text-white backdrop-blur-sm">
-          {current.kind === "video"
-            ? playing
-              ? "Playing"
-              : "Video"
-            : `${String(active + 1).padStart(2, "0")} / ${String(imageCount).padStart(2, "0")}`}
-        </div>
       </div>
 
+      {/* Thumbnail Gallery Row */}
       {items.length > 1 && (
-        <div className="mt-2.5 flex gap-2 overflow-x-auto pb-1 scrollbar-thin sm:grid sm:grid-cols-5">
-          {items.map((item, i) => (
-            <button
-              key={`${item.kind}-${item.src}-${i}`}
-              type="button"
-              onClick={() => select(i)}
-              className={`relative aspect-square h-14 w-14 sm:h-auto sm:w-auto shrink-0 sm:shrink overflow-hidden border transition ${
-                i === active
-                  ? "border-orange ring-1 ring-orange"
-                  : "border-line hover:border-navy/30"
-              }`}
-              aria-label={item.kind === "video" ? "Play video" : `Image ${i + 1}`}
-            >
-              <Img
-                src={item.kind === "video" ? item.thumb || images[0] : item.src}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="96px"
-              />
-              {item.kind === "video" && (
-                <span className="absolute inset-0 grid place-items-center bg-navy/35">
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-orange text-[9px] text-white">
-                    ▶
-                  </span>
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="mt-3 grid grid-cols-5 gap-2 sm:gap-2.5">
+          {items.map((item, i) => {
+            const isActive = i === active;
+            if (item.kind === "video") {
+              return (
+                <button
+                  key={`video-${i}`}
+                  type="button"
+                  onClick={() => select(i)}
+                  className={`relative aspect-square overflow-hidden border transition flex flex-col items-center justify-center bg-[#2b2e35] ${
+                    isActive
+                      ? "border-orange ring-2 ring-orange/60"
+                      : "border-line hover:border-navy/40"
+                  }`}
+                  aria-label="Product Video"
+                >
+                  <div className="flex flex-col items-center justify-center gap-1 p-1">
+                    <span className="grid h-7 w-7 place-items-center rounded-full border border-white/70 text-white">
+                      <svg className="h-3.5 w-3.5 fill-current ml-0.5" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </span>
+                    <span className="font-display text-[9px] font-bold uppercase tracking-wider text-white">
+                      Video
+                    </span>
+                  </div>
+                </button>
+              );
+            }
+
+            return (
+              <button
+                key={`img-${item.src}-${i}`}
+                type="button"
+                onClick={() => select(i)}
+                className={`relative aspect-square overflow-hidden border bg-white p-1 transition ${
+                  isActive
+                    ? "border-orange ring-2 ring-orange/60"
+                    : "border-line hover:border-navy/40"
+                }`}
+                aria-label={`Product thumbnail ${i + 1}`}
+              >
+                <Img
+                  src={item.src}
+                  alt=""
+                  fill
+                  className="object-contain p-1"
+                  sizes="100px"
+                />
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
