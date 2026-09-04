@@ -129,16 +129,16 @@ export function ProductGallery({
           </div>
         )}
 
-        {/* Prev / Next Arrows */}
+        {/* Prev / Next Chevrons */}
         {items.length > 1 && (
           <>
             <button
               type="button"
               aria-label="Previous image"
               onClick={() => go(-1)}
-              className="absolute left-2.5 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center bg-white/90 text-navy/70 border border-line/70 hover:bg-orange hover:text-white hover:border-orange transition shadow-sm"
+              className="absolute left-3 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center text-mist hover:text-navy transition cursor-pointer select-none"
             >
-              <svg className="h-4 w-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+              <svg className="h-6 w-6 stroke-current fill-none opacity-60 hover:opacity-100 transition-opacity" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             </button>
@@ -146,9 +146,9 @@ export function ProductGallery({
               type="button"
               aria-label="Next image"
               onClick={() => go(1)}
-              className="absolute right-2.5 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center bg-white/90 text-navy/70 border border-line/70 hover:bg-orange hover:text-white hover:border-orange transition shadow-sm"
+              className="absolute right-3 top-1/2 z-20 -translate-y-1/2 flex h-9 w-9 items-center justify-center text-mist hover:text-navy transition cursor-pointer select-none"
             >
-              <svg className="h-4 w-4 fill-none stroke-current" strokeWidth="2.5" viewBox="0 0 24 24">
+              <svg className="h-6 w-6 stroke-current fill-none opacity-60 hover:opacity-100 transition-opacity" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
@@ -158,7 +158,7 @@ export function ProductGallery({
 
       {/* Thumbnail Gallery Row */}
       {items.length > 1 && (
-        <div className="mt-3 grid grid-cols-5 gap-2 sm:gap-2.5">
+        <div className="mt-3.5 grid grid-cols-5 gap-2 sm:gap-2.5">
           {items.map((item, i) => {
             const isActive = i === active;
             if (item.kind === "video") {
@@ -167,21 +167,21 @@ export function ProductGallery({
                   key={`video-${i}`}
                   type="button"
                   onClick={() => select(i)}
-                  className={`relative aspect-square overflow-hidden border transition flex flex-col items-center justify-center bg-[#2b2e35] ${
+                  className={`relative aspect-square overflow-hidden border transition flex flex-col items-center justify-center bg-[#2b2e35] cursor-pointer rounded-[2px] ${
                     isActive
-                      ? "border-orange ring-2 ring-orange/60"
-                      : "border-line hover:border-navy/40"
+                      ? "border-2 border-[#1ea952]"
+                      : "border-line hover:border-steel/50"
                   }`}
                   aria-label="Product Video"
                 >
                   <div className="flex flex-col items-center justify-center gap-1 p-1">
-                    <span className="grid h-7 w-7 place-items-center rounded-full border border-white/70 text-white">
+                    <span className="grid h-7 w-7 place-items-center rounded-full border border-white/80 text-white">
                       <svg className="h-3.5 w-3.5 fill-current ml-0.5" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </span>
                     <span className="font-display text-[9px] font-bold uppercase tracking-wider text-white">
-                      Video
+                      VIDEO
                     </span>
                   </div>
                 </button>
@@ -193,19 +193,19 @@ export function ProductGallery({
                 key={`img-${item.src}-${i}`}
                 type="button"
                 onClick={() => select(i)}
-                className={`relative aspect-square overflow-hidden border bg-white p-1 transition ${
+                className={`relative aspect-square overflow-hidden border bg-white p-1 transition cursor-pointer rounded-[2px] ${
                   isActive
-                    ? "border-orange ring-2 ring-orange/60"
-                    : "border-line hover:border-navy/40"
+                    ? "border-2 border-[#1ea952]"
+                    : "border-line hover:border-steel/50"
                 }`}
-                aria-label={`Product thumbnail ${i + 1}`}
+                aria-label={`${name} thumbnail ${i + 1}`}
               >
                 <Img
                   src={item.src}
-                  alt=""
+                  alt={`${name} thumbnail ${i + 1}`}
                   fill
                   className="object-contain p-1"
-                  sizes="100px"
+                  sizes="(max-width: 640px) 20vw, 90px"
                 />
               </button>
             );
