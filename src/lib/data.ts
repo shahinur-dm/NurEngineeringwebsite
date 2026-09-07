@@ -238,7 +238,7 @@ export async function getCategories(
       const docs = await Category.find(filter)
         .sort({ order: 1, name: 1 })
         .lean<ICategory[]>();
-      if (docs && docs.length > 0) {
+      if (docs) {
         return serialize(docs);
       }
     }
@@ -281,7 +281,7 @@ export async function getSubCategories(
         .populate("category", "name slug")
         .sort({ order: 1, name: 1 })
         .lean<ISubCategory[]>();
-      if (docs && docs.length > 0) {
+      if (docs) {
         return serialize(docs);
       }
     }
@@ -308,7 +308,7 @@ export async function getBrands(): Promise<IBrand[]> {
       const docs = await Brand.find({ active: { $ne: false } })
         .sort({ order: 1, name: 1 })
         .lean<IBrand[]>();
-      if (docs && docs.length > 0) {
+      if (docs) {
         return serialize(docs);
       }
     }
@@ -317,6 +317,7 @@ export async function getBrands(): Promise<IBrand[]> {
   }
   return [];
 }
+
 
 export async function getBanners(): Promise<IBanner[]> {
   try {
