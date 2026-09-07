@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { connectDB } from "@/lib/db";
-import { BlogPost } from "@/lib/models";
+import mongoose from "mongoose";
+import { connectDB } from "@/lib/mongodb";
+import { BlogPost, BlogCategory } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
 import { mockBlogPosts, mockBlogCategories } from "@/lib/mock-data";
 
@@ -35,7 +36,14 @@ export async function GET(req: Request) {
         .sort({ createdAt: -1 })
         .lean();
 
-      return NextResponse.json({ posts });
+      return NextResponse.json(
+        { posts },
+        {
+          headers: {
+            "Cache-Control": "no-store, max-age=0",
+          },
+        }
+      );
     }
   } catch (err) {
     console.warn("Get blog posts DB error, using fallback posts:", err);
@@ -65,30 +73,66 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    if (!body.title || !body.summary || !body.content) {
+    if (!body.title || !String(body.title).trim() || !body.summary || !String(body.summary).trim() || !body.content || !String(body.content).trim()) {
       return NextResponse.json(
         { error: "Title, Summary and Content are required" },
         { status: 400 }
       );
     }
 
-    await connectDB();
-    let slug = (body.slug || body.title)
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
+    }
+
+    let slug = (body.slug || body.title || "post")
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-");
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    if (!slug) slug = `post-${Date.now()}`;
 
     const existing = await BlogPost.findOne({ slug });
     if (existing) {
       slug = `${slug}-${Date.now().toString().slice(-4)}`;
     }
 
+    // Safely resolve category ID
+    let categoryRef: mongoose.Types.ObjectId | null = null;
+    if (body.category) {
+      if (typeof body.category === "object" && "_id" in body.category) {
+        const idStr = String(body.category._id).trim();
+        if (mongoose.Types.ObjectId.isValid(idStr)) {
+          categoryRef = new mongoose.Types.ObjectId(idStr);
+        }
+      } else if (typeof body.category === "string" && body.category.trim()) {
+        const catTrim = body.category.trim();
+        if (mongoose.Types.ObjectId.isValid(catTrim)) {
+          categoryRef = new mongoose.Types.ObjectId(catTrim);
+        } else {
+          const foundCat = await BlogCategory.findOne({
+            $or: [{ slug: catTrim }, { name: catTrim }],
+          });
+          if (foundCat) categoryRef = foundCat._id;
+        }
+      }
+    }
+
     const post = await BlogPost.create({
-      ...body,
+      title: String(body.title).trim(),
       slug,
-      author: body.author || admin.name,
-      tags: body.tags || [],
+      summary: String(body.summary).trim(),
+      content: String(body.content).trim(),
+      coverImage: body.coverImage ? String(body.coverImage).trim() : "",
+      author: body.author ? String(body.author).trim() : (admin.name || "Nur Engineering Team"),
+      category: categoryRef,
+      tags: Array.isArray(body.tags) ? body.tags : [],
+      seoTitle: body.seoTitle ? String(body.seoTitle).trim() : "",
+      seoDescription: body.seoDescription ? String(body.seoDescription).trim() : "",
+      status: body.status || "draft",
+      featured: Boolean(body.featured),
     });
 
     await logActivity({
@@ -113,8 +157,11 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, post });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Create blog post error:", err);
-    return NextResponse.json({ error: "Failed to create blog post" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to create blog post" },
+      { status: 500 }
+    );
   }
 }

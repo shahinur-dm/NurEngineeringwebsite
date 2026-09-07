@@ -90,8 +90,9 @@ export function BlogForm({ initialData, isEdit }: BlogFormProps) {
         featured,
       };
 
+      const blogId = initialData?._id || initialData?.slug;
       const url = isEdit
-        ? `/api/admin/blogs/${initialData?._id}`
+        ? `/api/admin/blogs/${blogId}`
         : "/api/admin/blogs";
       const method = isEdit ? "PUT" : "POST";
 
