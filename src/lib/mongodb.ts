@@ -16,12 +16,15 @@ const cached: MongooseCache = global.mongooseCache ?? {
 
 global.mongooseCache = cached;
 
+const DEFAULT_MONGODB_URI =
+  "mongodb+srv://efootballmadrid25_db_user:ljvpbVMGVJTQPVcH@dawatit.5hxbo9c.mongodb.net/NurCompanyWebsite?appName=dawatit";
+
 /**
  * Next.js catalog site: database connection manager.
  * Connects safely with cached instance and handles reconnections if severed.
  */
 export async function connectDB() {
-  const MONGODB_URI = process.env.MONGODB_URI;
+  const MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
   if (!MONGODB_URI) {
     return null;
   }
@@ -37,8 +40,8 @@ export async function connectDB() {
         maxPoolSize: 10,
         minPoolSize: 1,
         maxIdleTimeMS: 60_000,
-        serverSelectionTimeoutMS: 5_000,
-        connectTimeoutMS: 8_000,
+        serverSelectionTimeoutMS: 8_000,
+        connectTimeoutMS: 10_000,
         family: 4,
         autoIndex: process.env.NODE_ENV !== "production",
       })
@@ -63,3 +66,4 @@ export async function connectDB() {
     return null;
   }
 }
+

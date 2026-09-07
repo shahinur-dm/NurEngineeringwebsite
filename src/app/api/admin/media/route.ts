@@ -4,7 +4,6 @@ import fs from "fs/promises";
 import { connectDB } from "@/lib/db";
 import { MediaItem } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import { getStoredMedia, saveStoredMedia, StoredMedia } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -17,26 +16,27 @@ export async function GET(req: Request) {
 
   try {
     const db = await connectDB();
-    if (db) {
-      const filter: Record<string, unknown> = {};
-      if (q) {
-        filter.$or = [
-          { title: { $regex: q, $options: "i" } },
-          { filename: { $regex: q, $options: "i" } },
-        ];
-      }
-
-      const dbItems = await MediaItem.find(filter).sort({ createdAt: -1 }).lean();
-      if (dbItems.length > 0) {
-        return NextResponse.json({ items: dbItems });
-      }
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
-  } catch (err) {
-    console.warn("Get media DB warning, using store:", err);
-  }
 
-  const stored = getStoredMedia(q);
-  return NextResponse.json({ items: stored });
+    const filter: Record<string, unknown> = {};
+    if (q) {
+      filter.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { filename: { $regex: q, $options: "i" } },
+      ];
+    }
+
+    const items = await MediaItem.find(filter).sort({ createdAt: -1 }).lean();
+    return NextResponse.json({ items: items || [] });
+  } catch (err: unknown) {
+    console.error("Get media error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to fetch media" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
@@ -87,8 +87,12 @@ export async function POST(req: Request) {
       // Ephemeral or read-only filesystem (Vercel serverless) — dataUrl will be used as permanent URL
     }
 
-    const mediaItem: StoredMedia = {
-      _id: `media_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
+    }
+
+    const createdItem = await MediaItem.create({
       title,
       filename,
       url: dataUrl,
@@ -96,33 +100,12 @@ export async function POST(req: Request) {
       mimeType,
       size: file.size,
       folder: "general",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    saveStoredMedia(mediaItem);
-
-    try {
-      const db = await connectDB();
-      if (db) {
-        await MediaItem.create({
-          title,
-          filename,
-          url: dataUrl,
-          data: dataUrl,
-          mimeType,
-          size: file.size,
-          folder: "general",
-        });
-      }
-    } catch (dbErr) {
-      console.warn("DB media save warning:", dbErr);
-    }
+    });
 
     await logActivity({
       action: "MEDIA_UPLOAD",
       entity: "MediaItem",
-      entityId: mediaItem._id,
+      entityId: String(createdItem._id),
       details: `Uploaded media file "${filename}"`,
       user: {
         _id: String(admin._id),
@@ -135,17 +118,21 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       item: {
-        _id: mediaItem._id,
-        title: mediaItem.title,
-        filename: mediaItem.filename,
-        url: mediaItem.url,
-        mimeType: mediaItem.mimeType,
-        size: mediaItem.size,
-        createdAt: mediaItem.createdAt,
+        _id: String(createdItem._id),
+        title: createdItem.title,
+        filename: createdItem.filename,
+        url: createdItem.url,
+        mimeType: createdItem.mimeType,
+        size: createdItem.size,
+        createdAt: createdItem.createdAt,
       },
     });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Media upload error:", err);
-    return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to upload file" },
+      { status: 500 }
+    );
   }
 }
+
