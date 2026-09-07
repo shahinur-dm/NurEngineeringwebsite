@@ -19,6 +19,8 @@ export default function AdminBlogCategoriesPage() {
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [error, setError] = useState("");
+
   useEffect(() => {
     loadCategories();
   }, []);
@@ -39,6 +41,7 @@ export default function AdminBlogCategoriesPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
+    setError("");
 
     try {
       setSaving(true);
@@ -47,16 +50,30 @@ export default function AdminBlogCategoriesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, slug: slug.trim() || undefined, description }),
       });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create category");
+      }
+      setName("");
+      setSlug("");
+      setDescription("");
+      loadCategories();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string, catName: string) {
+    if (!confirm(`Are you sure you want to delete category "${catName}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/blogs/categories/${id}`, { method: "DELETE" });
       if (res.ok) {
-        setName("");
-        setSlug("");
-        setDescription("");
         loadCategories();
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -85,6 +102,13 @@ export default function AdminBlogCategoriesPage() {
           <h3 className="font-display text-sm font-bold uppercase text-navy border-b border-line pb-2">
             Add New Category
           </h3>
+
+          {error && (
+            <div className="mt-3 rounded border border-red-500/30 bg-red-50 p-2.5 text-xs text-red-600">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleCreate} className="mt-4 space-y-3">
             <div>
               <label className="block text-xs font-bold uppercase text-navy">Name *</label>
@@ -147,6 +171,13 @@ export default function AdminBlogCategoriesPage() {
                     <p className="text-[11px] text-mist">{cat.slug}</p>
                     {cat.description && <p className="text-xs text-steel mt-1">{cat.description}</p>}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(cat._id, cat.name)}
+                    className="rounded border border-red-200 bg-red-50/50 px-2.5 py-1 text-[11px] font-bold text-red-600 hover:bg-red-100 transition"
+                  >
+                    Delete
+                  </button>
                 </div>
               ))
             )}
