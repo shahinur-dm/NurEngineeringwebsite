@@ -90,7 +90,13 @@ export async function getCurrentAdminUser(): Promise<IUser | null> {
     try {
       const db = await connectDB();
       if (db) {
-        const user = await User.findById(payload.userId).lean<IUser | null>();
+        let user: IUser | null = null;
+        if (payload.userId && payload.userId.length === 24 && /^[0-9a-fA-F]{24}$/.test(payload.userId)) {
+          user = await User.findById(payload.userId).lean<IUser | null>();
+        }
+        if (!user && payload.email) {
+          user = await User.findOne({ email: payload.email.toLowerCase().trim() }).lean<IUser | null>();
+        }
         if (user && user.active) return user;
       }
     } catch (e) {

@@ -19,7 +19,7 @@ export interface IActivityLog {
 const ActivityLogSchema = new Schema<IActivityLog>(
   {
     user: {
-      _id: { type: Schema.Types.ObjectId, ref: "User" },
+      _id: { type: Schema.Types.Mixed },
       name: String,
       email: String,
       role: String,

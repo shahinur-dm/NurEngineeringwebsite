@@ -16,11 +16,31 @@ export async function GET() {
   try {
     const db = await connectDB();
     if (db) {
+      // Ensure default super admin exists in DB if empty
+      const count = await User.countDocuments();
+      if (count === 0) {
+        const defaultHash = await hashPassword("admin123456");
+        await User.create({
+          name: "Super Administrator",
+          email: "admin@nurengineering.com",
+          passwordHash: defaultHash,
+          role: "super_admin",
+          active: true,
+        });
+      }
+
       const users = await User.find()
         .select("-passwordHash")
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: 1 })
         .lean();
-      return NextResponse.json({ users });
+      return NextResponse.json(
+        { users },
+        {
+          headers: {
+            "Cache-Control": "no-store, max-age=0",
+          },
+        }
+      );
     }
   } catch (err) {
     console.warn("Get users DB error, using fallback admin user:", err);
@@ -44,37 +64,42 @@ export async function GET() {
 export async function POST(req: Request) {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (admin.role !== "super_admin") {
-    return NextResponse.json({ error: "Forbidden: Super Admin only" }, { status: 403 });
+  if (admin.role !== "super_admin" && admin.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden: Administrator permissions required" }, { status: 403 });
   }
 
   try {
-    const { name, email, password, role } = await req.json();
-    if (!name || !email || !password) {
+    const body = await req.json();
+    const { name, email, password, role, active } = body;
+    if (!name || !String(name).trim() || !email || !String(email).trim() || !password) {
       return NextResponse.json(
         { error: "Name, email and password are required" },
         { status: 400 }
       );
     }
 
-    await connectDB();
-    const existing = await User.findOne({
-      email: String(email).toLowerCase().trim(),
-    });
+    const cleanEmail = String(email).toLowerCase().trim();
+
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
+    }
+
+    const existing = await User.findOne({ email: cleanEmail });
     if (existing) {
       return NextResponse.json(
-        { error: "A user with this email already exists" },
+        { error: "A user with this email address already exists" },
         { status: 400 }
       );
     }
 
     const passwordHash = await hashPassword(password);
     const user = await User.create({
-      name,
-      email: String(email).toLowerCase().trim(),
+      name: String(name).trim(),
+      email: cleanEmail,
       passwordHash,
       role: role || "admin",
-      active: true,
+      active: active !== undefined ? Boolean(active) : true,
     });
 
     await logActivity({
@@ -98,10 +123,14 @@ export async function POST(req: Request) {
         email: user.email,
         role: user.role,
         active: user.active,
+        createdAt: user.createdAt,
       },
     });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Create user error:", err);
-    return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to create user" },
+      { status: 500 }
+    );
   }
 }
