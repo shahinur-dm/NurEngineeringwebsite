@@ -69,7 +69,14 @@ export async function GET() {
       };
     }
 
-    return NextResponse.json({ tree });
+    return NextResponse.json(
+      { tree },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
   } catch (err: unknown) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to load catalog tree" },

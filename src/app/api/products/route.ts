@@ -1,6 +1,6 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getProducts } from "@/lib/data";
-import { jsonOk, jsonError } from "@/lib/api";
+import { jsonError } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,14 @@ export async function GET(request: NextRequest) {
     const page = pageParam ? parseInt(pageParam, 10) : undefined;
 
     const data = await getProducts({ featured, categorySlug, subCategorySlug, q, limit, page });
-    return jsonOk(data);
+    return NextResponse.json(
+      { success: true, data },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
   } catch (e) {
     console.error("GET /api/products error:", e);
     return jsonError("Failed to fetch products");
