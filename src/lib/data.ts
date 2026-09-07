@@ -229,7 +229,12 @@ export async function getCategories(
   try {
     const db = await connectDB();
     if (db) {
-      const filter = type ? { type } : {};
+      const filter: Record<string, unknown> = {};
+      if (type === "product") {
+        filter.$or = [{ type: "product" }, { type: { $exists: false } }, { type: null }];
+      } else if (type === "service") {
+        filter.type = "service";
+      }
       const docs = await Category.find(filter)
         .sort({ order: 1, name: 1 })
         .lean<ICategory[]>();
@@ -255,7 +260,12 @@ export async function getSubCategories(
         if (mongoose.Types.ObjectId.isValid(categorySlugOrId)) {
           filter.category = new mongoose.Types.ObjectId(categorySlugOrId);
         } else {
-          const cat = await Category.findOne({ slug: categorySlugOrId }).lean<ICategory | null>();
+          const cat = await Category.findOne({
+            $or: [
+              { slug: categorySlugOrId },
+              { slug: { $regex: new RegExp(`^${categorySlugOrId}$`, "i") } },
+            ],
+          }).lean<ICategory | null>();
           if (cat) {
             filter.$or = [
               { category: cat._id },
@@ -329,7 +339,7 @@ export async function getServices(opts?: {
   try {
     const db = await connectDB();
     if (db) {
-      const filter: Record<string, unknown> = { published: true };
+      const filter: Record<string, unknown> = { published: { $ne: false } };
       if (opts?.featured) filter.featured = true;
       const docs = await Service.find(filter)
         .populate("category")
@@ -371,7 +381,13 @@ export async function getServiceBySlug(
   try {
     const db = await connectDB();
     if (db) {
-      const doc = await Service.findOne({ slug, published: true })
+      const doc = await Service.findOne({
+        $or: [
+          { slug },
+          { slug: { $regex: new RegExp(`^${slug}$`, "i") } },
+        ],
+        published: { $ne: false },
+      })
         .populate("category")
         .populate({ path: "relatedProducts", populate: { path: "category" } })
         .lean<PopulatedService | null>();
@@ -395,7 +411,7 @@ export async function getProducts(opts?: {
   try {
     const db = await connectDB();
     if (db) {
-      const filter: Record<string, unknown> = { published: true };
+      const filter: Record<string, unknown> = { published: { $ne: false } };
       if (opts?.featured) filter.featured = true;
 
       if (opts?.categorySlug) {
@@ -404,7 +420,13 @@ export async function getProducts(opts?: {
           catDoc = await Category.findById(opts.categorySlug).lean<ICategory | null>();
         }
         if (!catDoc) {
-          catDoc = await Category.findOne({ slug: opts.categorySlug }).lean<ICategory | null>();
+          catDoc = await Category.findOne({
+            $or: [
+              { slug: opts.categorySlug },
+              { slug: { $regex: new RegExp(`^${opts.categorySlug}$`, "i") } },
+              { name: { $regex: new RegExp(`^${opts.categorySlug.replace(/-/g, " ")}$`, "i") } },
+            ],
+          }).lean<ICategory | null>();
         }
         if (catDoc) {
           filter.$or = [
@@ -423,7 +445,13 @@ export async function getProducts(opts?: {
           subDoc = await SubCategory.findById(opts.subCategorySlug).lean<ISubCategory | null>();
         }
         if (!subDoc) {
-          subDoc = await SubCategory.findOne({ slug: opts.subCategorySlug }).lean<ISubCategory | null>();
+          subDoc = await SubCategory.findOne({
+            $or: [
+              { slug: opts.subCategorySlug },
+              { slug: { $regex: new RegExp(`^${opts.subCategorySlug}$`, "i") } },
+              { name: { $regex: new RegExp(`^${opts.subCategorySlug.replace(/-/g, " ")}$`, "i") } },
+            ],
+          }).lean<ISubCategory | null>();
         }
         if (subDoc) {
           const subCondition = {
@@ -477,8 +505,52 @@ export async function getProducts(opts?: {
         query = query.limit(opts.limit);
       }
 
-      const docs = await query.lean<PopulatedProduct[]>();
-      return serialize(docs);
+      const rawDocs = await query.lean<PopulatedProduct[]>();
+
+      if (rawDocs && rawDocs.length > 0) {
+        const allCats = await Category.find().lean<ICategory[]>();
+        const catMap = new Map<string, ICategory>();
+        for (const c of allCats) {
+          catMap.set(String(c._id), c);
+          catMap.set(c.slug, c);
+        }
+
+        const allSubs = await SubCategory.find().lean<ISubCategory[]>();
+        const subMap = new Map<string, ISubCategory>();
+        for (const s of allSubs) {
+          subMap.set(String(s._id), s);
+          subMap.set(s.slug, s);
+        }
+
+        const populated = rawDocs.map((p) => {
+          let cat = p.category;
+          if (!cat || typeof cat !== "object" || !("name" in cat)) {
+            const ref = String(cat);
+            cat = catMap.get(ref) || ({
+              _id: ref,
+              name: ref.replace(/-/g, " "),
+              slug: ref,
+              order: 0,
+            } as unknown as ICategory);
+          }
+
+          let sub = p.subCategory;
+          if (sub && (typeof sub !== "object" || !("name" in sub))) {
+            const subRef = String(sub);
+            sub = subMap.get(subRef) || null;
+          }
+
+          return {
+            ...p,
+            category: cat,
+            subCategory: sub,
+            relatedServices: p.relatedServices || [],
+          };
+        });
+
+        return serialize(populated);
+      }
+      return [];
     }
   } catch (err) {
     console.error("getProducts DB error:", err);
@@ -528,7 +600,7 @@ export async function getProductsTotalCount(opts?: {
   try {
     const db = await connectDB();
     if (db) {
-      const filter: Record<string, unknown> = { published: true };
+      const filter: Record<string, unknown> = { published: { $ne: false } };
       if (opts?.featured) filter.featured = true;
 
       if (opts?.categorySlug) {
@@ -537,7 +609,13 @@ export async function getProductsTotalCount(opts?: {
           catDoc = await Category.findById(opts.categorySlug).lean<ICategory | null>();
         }
         if (!catDoc) {
-          catDoc = await Category.findOne({ slug: opts.categorySlug }).lean<ICategory | null>();
+          catDoc = await Category.findOne({
+            $or: [
+              { slug: opts.categorySlug },
+              { slug: { $regex: new RegExp(`^${opts.categorySlug}$`, "i") } },
+              { name: { $regex: new RegExp(`^${opts.categorySlug.replace(/-/g, " ")}$`, "i") } },
+            ],
+          }).lean<ICategory | null>();
         }
         if (catDoc) {
           filter.$or = [
@@ -556,7 +634,13 @@ export async function getProductsTotalCount(opts?: {
           subDoc = await SubCategory.findById(opts.subCategorySlug).lean<ISubCategory | null>();
         }
         if (!subDoc) {
-          subDoc = await SubCategory.findOne({ slug: opts.subCategorySlug }).lean<ISubCategory | null>();
+          subDoc = await SubCategory.findOne({
+            $or: [
+              { slug: opts.subCategorySlug },
+              { slug: { $regex: new RegExp(`^${opts.subCategorySlug}$`, "i") } },
+              { name: { $regex: new RegExp(`^${opts.subCategorySlug.replace(/-/g, " ")}$`, "i") } },
+            ],
+          }).lean<ISubCategory | null>();
         }
         if (subDoc) {
           const subCondition = {
@@ -612,29 +696,62 @@ export async function getProductBySlug(
   try {
     const db = await connectDB();
     if (db) {
-      let doc = await Product.findOne({ slug, published: true })
+      const decodedSlug = decodeURIComponent(slug).trim();
+      const slugRegex = new RegExp(`^${decodedSlug}$`, "i");
+
+      let doc = await Product.findOne({
+        $or: [
+          { slug: decodedSlug },
+          { slug: slugRegex },
+          { sku: decodedSlug },
+          { sku: slugRegex },
+        ],
+        published: { $ne: false },
+      })
         .populate("category")
         .populate("subCategory")
         .populate("relatedServices")
         .lean<PopulatedProduct | null>();
 
-      if (!doc && mongoose.Types.ObjectId.isValid(slug)) {
-        doc = await Product.findOne({ _id: slug, published: true })
+      if (!doc && mongoose.Types.ObjectId.isValid(decodedSlug)) {
+        doc = await Product.findOne({ _id: decodedSlug, published: { $ne: false } })
           .populate("category")
           .populate("subCategory")
           .populate("relatedServices")
           .lean<PopulatedProduct | null>();
       }
 
-      if (!doc) {
-        doc = await Product.findOne({ sku: slug, published: true })
-          .populate("category")
-          .populate("subCategory")
-          .populate("relatedServices")
-          .lean<PopulatedProduct | null>();
-      }
+      if (doc) {
+        if (!doc.category || typeof doc.category !== "object" || !("name" in doc.category)) {
+          const catId = String(doc.category);
+          let foundCat = null;
+          if (mongoose.Types.ObjectId.isValid(catId)) {
+            foundCat = await Category.findById(catId).lean<ICategory | null>();
+          }
+          if (!foundCat) {
+            foundCat = await Category.findOne({
+              $or: [{ slug: catId }, { slug: new RegExp(`^${catId}$`, "i") }, { name: catId }],
+            }).lean<ICategory | null>();
+          }
+          if (foundCat) doc.category = foundCat;
+        }
 
-      if (doc) return serialize(doc);
+        if (doc.subCategory && (typeof doc.subCategory !== "object" || !("name" in doc.subCategory))) {
+          const subId = String(doc.subCategory);
+          let foundSub = null;
+          if (mongoose.Types.ObjectId.isValid(subId)) {
+            foundSub = await SubCategory.findById(subId).lean<ISubCategory | null>();
+          }
+          if (!foundSub) {
+            foundSub = await SubCategory.findOne({
+              $or: [{ slug: subId }, { slug: new RegExp(`^${subId}$`, "i") }, { name: subId }],
+            }).lean<ISubCategory | null>();
+          }
+          if (foundSub) doc.subCategory = foundSub;
+        }
+
+        return serialize(doc);
+      }
     }
   } catch (err) {
     console.error("getProductBySlug DB error:", err);
@@ -645,6 +762,7 @@ export async function getProductBySlug(
   );
   return p ? serialize(p) : null;
 }
+
 
 export async function getRelatedProducts(
   categoryId: string,
@@ -667,7 +785,7 @@ export async function getRelatedProducts(
       const primaryDocs = await Product.find({
         ...catFilter,
         slug: { $ne: excludeSlug },
-        published: true,
+        published: { $ne: false },
       })
         .populate("category")
         .populate("subCategory")
@@ -686,7 +804,7 @@ export async function getRelatedProducts(
       const fallbackDocs = await Product.find({
         _id: { $nin: existingIds },
         slug: { $ne: excludeSlug },
-        published: true,
+        published: { $ne: false },
       })
         .populate("category")
         .populate("subCategory")
@@ -694,6 +812,7 @@ export async function getRelatedProducts(
         .sort({ featured: -1, order: 1, _id: 1 })
         .limit(extraNeeded)
         .lean<PopulatedProduct[]>();
+
 
       return serialize([...(primaryDocs || []), ...(fallbackDocs || [])]);
     }
