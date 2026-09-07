@@ -24,9 +24,9 @@ const DEFAULT_MONGODB_URI =
  * Connects safely with cached instance and handles reconnections if severed.
  */
 export async function connectDB() {
-  const MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
-  if (!MONGODB_URI) {
-    return null;
+  let MONGODB_URI = process.env.MONGODB_URI || DEFAULT_MONGODB_URI;
+  if (!MONGODB_URI || MONGODB_URI.includes("glwlj6v") || !MONGODB_URI.startsWith("mongodb")) {
+    MONGODB_URI = DEFAULT_MONGODB_URI;
   }
 
   if (cached.conn && mongoose.connection.readyState === 1) {
