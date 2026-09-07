@@ -247,14 +247,18 @@ export function AdminSidebar({
                 {group.entries.map((entry) => {
                   if (entry.type === "link") {
                     const ItemIcon = entry.Icon;
-                    const active =
+                    const isExact = pathname === entry.href;
+                    const isChild =
                       entry.href === "/admin/dashboard"
-                        ? pathname === "/admin/dashboard" || pathname === "/admin"
-                        : pathname === entry.href ||
-                          (entry.href !== "/admin/products/new" &&
-                            entry.href !== "/admin/blogs/new" &&
-                            entry.href !== "/admin/blogs/categories" &&
-                            pathname.startsWith(entry.href));
+                        ? pathname === "/admin"
+                        : entry.href === "/admin/products"
+                        ? pathname.startsWith("/admin/products/") && pathname !== "/admin/products/new"
+                        : entry.href === "/admin/blogs"
+                        ? pathname.startsWith("/admin/blogs/") &&
+                          pathname !== "/admin/blogs/new" &&
+                          !pathname.startsWith("/admin/blogs/categories")
+                        : false;
+                    const active = isExact || isChild;
 
                     return (
                       <Link
@@ -286,39 +290,54 @@ export function AdminSidebar({
 
                     return (
                       <div key={entry.label} className="space-y-1">
-                        <button
-                          type="button"
-                          onClick={() => setSettingsOpen((prev) => !prev)}
-                          className={`group flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition ${
-                            isGroupActive && !settingsOpen
-                              ? "bg-orange/20 text-orange font-semibold border border-orange/40"
-                              : isGroupActive
-                              ? "bg-white/10 text-white font-semibold"
-                              : "text-white/75 hover:bg-white/10 hover:text-white"
-                          } ${collapsed ? "justify-center" : ""}`}
-                          title={collapsed ? entry.label : undefined}
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
+                        {collapsed ? (
+                          <Link
+                            href="/admin/settings?tab=branding"
+                            onClick={onMobileClose}
+                            className={`group flex w-full items-center justify-center rounded-md px-3 py-2 text-xs font-medium transition ${
+                              isGroupActive
+                                ? "bg-orange text-white font-semibold shadow-xs"
+                                : "text-white/75 hover:bg-white/10 hover:text-white"
+                            }`}
+                            title={entry.label}
+                          >
                             <GroupIcon
                               size={18}
                               className={`shrink-0 transition ${
-                                isGroupActive ? "text-orange" : "text-white/70 group-hover:text-white"
+                                isGroupActive ? "text-white" : "text-white/70 group-hover:text-white"
                               }`}
                             />
-                            {!collapsed && (
+                          </Link>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSettingsOpen((prev) => !prev)}
+                            className={`group flex w-full items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition ${
+                              isGroupActive && !settingsOpen
+                                ? "bg-orange/20 text-orange font-semibold border border-orange/40"
+                                : isGroupActive
+                                ? "bg-white/10 text-white font-semibold"
+                                : "text-white/75 hover:bg-white/10 hover:text-white"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <GroupIcon
+                                size={18}
+                                className={`shrink-0 transition ${
+                                  isGroupActive ? "text-orange" : "text-white/70 group-hover:text-white"
+                                }`}
+                              />
                               <span className="truncate font-semibold">{entry.label}</span>
-                            )}
-                          </div>
+                            </div>
 
-                          {!collapsed && (
                             <ChevronDownIcon
                               size={14}
                               className={`shrink-0 text-white/50 transition-transform duration-200 ${
                                 settingsOpen ? "rotate-180 text-white" : ""
                               }`}
                             />
-                          )}
-                        </button>
+                          </button>
+                        )}
 
                         {/* Collapsible Submenu */}
                         {!collapsed && settingsOpen && (
