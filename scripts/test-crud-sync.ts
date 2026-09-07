@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { connectDB } from "../src/lib/mongodb";
-import { Category, Brand, Product, SubCategory } from "../src/lib/models";
-import { getCategories, getBrands, getProducts, getProductBySlug } from "../src/lib/data";
+import { Category, Brand, Product, SubCategory, SiteSettings, MediaItem } from "../src/lib/models";
+import { getCategories, getBrands, getProducts, getProductBySlug, getSettings } from "../src/lib/data";
 
 async function runTests() {
   console.log("=== STARTING FULL DATABASE SYNC & PERSISTENCE ACCEPTANCE TEST ===");
@@ -125,9 +125,67 @@ async function runTests() {
   console.log(`✓ Public getProductBySlug() reflected updated price: BDT ${updatedDetailedProduct.price}`);
 
   // -------------------------------------------------------------
-  // 4. CLEANUP TEST DATA (Preserve existing production data!)
+  // 4. SITE SETTINGS & CMS TEST
   // -------------------------------------------------------------
-  console.log("\n[TEST 4: Cleanup Test Records]");
+  console.log("\n[TEST 4: Site Settings & CMS Lifecycle]");
+  const originalSettingsDoc = (await SiteSettings.findOne().lean()) as any;
+  const testLogoUrl = `https://example.com/test-logo-${timestamp}.png`;
+  const testNotice = `Special Test Notice ${timestamp}`;
+
+  if (originalSettingsDoc) {
+    await SiteSettings.findByIdAndUpdate(originalSettingsDoc._id, {
+      logoUrl: testLogoUrl,
+      notice: testNotice,
+    });
+  } else {
+    await SiteSettings.create({
+      logoUrl: testLogoUrl,
+      notice: testNotice,
+    });
+  }
+
+
+  const liveSettings = await getSettings();
+  if (liveSettings.logoUrl !== testLogoUrl || liveSettings.notice !== testNotice) {
+    throw new Error(`getSettings() failed to reflect updated settings. Got logoUrl=${liveSettings.logoUrl}, notice=${liveSettings.notice}`);
+  }
+  console.log(`✓ Public getSettings() loaded live settings from MongoDB: logoUrl=${liveSettings.logoUrl}, notice="${liveSettings.notice}"`);
+
+  // Restore original settings
+  if (originalSettingsDoc) {
+    await SiteSettings.findByIdAndUpdate(originalSettingsDoc._id, {
+      logoUrl: originalSettingsDoc.logoUrl || "",
+      notice: originalSettingsDoc.notice || "",
+    });
+  }
+  console.log("✓ Restored original site settings");
+
+  // -------------------------------------------------------------
+  // 5. MEDIA ITEM PERSISTENCE TEST
+  // -------------------------------------------------------------
+  console.log("\n[TEST 5: Media Item Lifecycle]");
+  const testMedia = await MediaItem.create({
+    title: `Test Media Item ${timestamp}`,
+    filename: `test-${timestamp}.jpg`,
+    url: `https://images.unsplash.com/photo-test-${timestamp}`,
+    mimeType: "image/jpeg",
+    size: 10240,
+    folder: "general",
+  });
+  console.log(`✓ Created MediaItem in MongoDB: ID=${testMedia._id}`);
+
+  const foundMedia = await MediaItem.findById(testMedia._id).lean();
+  if (!foundMedia || foundMedia.title !== `Test Media Item ${timestamp}`) {
+    throw new Error("Failed to find created media item in MongoDB");
+  }
+  console.log(`✓ Verified persistent media item in database: filename=${foundMedia.filename}`);
+  await MediaItem.findByIdAndDelete(testMedia._id);
+  console.log("✓ Cleaned up test media item");
+
+  // -------------------------------------------------------------
+  // 6. CLEANUP TEST DATA (Preserve existing production data!)
+  // -------------------------------------------------------------
+  console.log("\n[TEST 6: Cleanup Test Records]");
   await Product.findByIdAndDelete(testProduct._id);
   await Brand.findByIdAndDelete(testBrand._id);
   await Category.findByIdAndDelete(testCat._id);
@@ -144,3 +202,4 @@ runTests().catch((err) => {
   console.error("Test failed:", err);
   process.exit(1);
 });
+
