@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
-import { connectDB } from "@/lib/db";
-import { Product } from "@/lib/models";
+import { connectDB } from "@/lib/mongodb";
+import { Product, Category, SubCategory, type IProduct } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import {
-  getStoredProductByIdOrSlug,
-  updateStoredProduct,
-  deleteStoredProduct,
-} from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   _req: Request,
@@ -19,39 +16,38 @@ export async function GET(
 
   try {
     const { id } = await params;
-    let product = null;
-
-    try {
-      const db = await connectDB();
-      if (db) {
-        if (mongoose.Types.ObjectId.isValid(id)) {
-          product = await Product.findById(id)
-            .populate("category")
-            .populate("relatedServices")
-            .lean();
-        }
-        if (!product) {
-          product = await Product.findOne({ $or: [{ slug: id }, { sku: id }] })
-            .populate("category")
-            .populate("relatedServices")
-            .lean();
-        }
-      }
-    } catch (dbErr) {
-      console.warn("Product find DB warning:", dbErr);
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
 
+    let product = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      product = await Product.findById(id)
+        .populate("category")
+        .populate("subCategory")
+        .populate("relatedServices")
+        .lean<IProduct | null>();
+    }
     if (!product) {
-      product = getStoredProductByIdOrSlug(id);
+      product = await Product.findOne({ $or: [{ slug: id }, { sku: id }] })
+        .populate("category")
+        .populate("subCategory")
+        .populate("relatedServices")
+        .lean<IProduct | null>();
     }
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
+
     return NextResponse.json({ product });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Get product error:", err);
-    return NextResponse.json({ error: "Failed to fetch product" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to fetch product" },
+      { status: 500 }
+    );
   }
 }
 
@@ -69,36 +65,71 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    // Update in unified store
-    const updatedInStore = updateStoredProduct(id, body);
-
-    // Also attempt DB update
-    try {
-      const db = await connectDB();
-      if (db) {
-        if (mongoose.Types.ObjectId.isValid(id)) {
-          await Product.findByIdAndUpdate(id, body, {
-            new: true,
-            runValidators: false,
-          });
-        } else {
-          await Product.findOneAndUpdate({ $or: [{ slug: id }, { sku: id }] }, body, {
-            new: true,
-            runValidators: false,
-          });
-        }
-      }
-    } catch (dbErr) {
-      console.warn("Product update DB warning:", dbErr);
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
 
-    const finalProduct = updatedInStore || { ...body, _id: id };
+    const updateData: Record<string, unknown> = { ...body };
+
+    // Resolve Category ID if passed
+    if (body.category !== undefined) {
+      if (typeof body.category === "object" && body.category !== null && "_id" in body.category) {
+        updateData.category = new mongoose.Types.ObjectId(String(body.category._id));
+      } else if (mongoose.Types.ObjectId.isValid(String(body.category))) {
+        updateData.category = new mongoose.Types.ObjectId(String(body.category));
+      } else {
+        const foundCat = await Category.findOne({
+          $or: [{ slug: body.category }, { name: body.category }],
+        });
+        if (foundCat) updateData.category = foundCat._id;
+      }
+    }
+
+    // Resolve SubCategory ID if passed
+    if (body.subCategory !== undefined) {
+      if (!body.subCategory) {
+        updateData.subCategory = null;
+      } else if (typeof body.subCategory === "object" && body.subCategory !== null && "_id" in body.subCategory) {
+        updateData.subCategory = new mongoose.Types.ObjectId(String(body.subCategory._id));
+      } else if (mongoose.Types.ObjectId.isValid(String(body.subCategory))) {
+        updateData.subCategory = new mongoose.Types.ObjectId(String(body.subCategory));
+      } else {
+        const foundSub = await SubCategory.findOne({
+          $or: [{ slug: body.subCategory }, { name: body.subCategory }],
+        });
+        if (foundSub) updateData.subCategory = foundSub._id;
+      }
+    }
+
+    if (body.price !== undefined) {
+      updateData.price = body.price !== null && body.price !== "" ? Number(body.price) : undefined;
+    }
+
+    let updatedProduct: IProduct | null = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: false,
+      }).lean<IProduct | null>();
+    }
+    if (!updatedProduct) {
+      updatedProduct = await Product.findOneAndUpdate(
+        { $or: [{ slug: id }, { sku: id }] },
+        updateData,
+        { new: true, runValidators: false }
+      ).lean<IProduct | null>();
+    }
+
+    if (!updatedProduct) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
 
     await logActivity({
       action: "PRODUCT_UPDATE",
       entity: "Product",
-      entityId: String(finalProduct._id || id),
-      details: `Updated product "${finalProduct.name || body.name || id}"`,
+      entityId: String(updatedProduct._id),
+      details: `Updated product "${updatedProduct.name}"`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -111,17 +142,21 @@ export async function PUT(
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
-      if (finalProduct?.slug) revalidatePath(`/products/${finalProduct.slug}`);
+      if (updatedProduct.slug) revalidatePath(`/products/${updatedProduct.slug}`);
+      revalidatePath("/admin/products");
       revalidatePath("/api/catalog-tree");
       revalidatePath("/api/products");
     } catch {
-      // ignore
+      // ignore revalidation error
     }
 
-    return NextResponse.json({ success: true, product: finalProduct });
-  } catch (err) {
+    return NextResponse.json({ success: true, product: updatedProduct });
+  } catch (err: unknown) {
     console.error("Update product error:", err);
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to update product" },
+      { status: 500 }
+    );
   }
 }
 
@@ -137,29 +172,28 @@ export async function DELETE(
 
   try {
     const { id } = await params;
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
+    }
 
-    // Delete from unified store
-    deleteStoredProduct(id);
+    let deleted: IProduct | null = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      deleted = await Product.findByIdAndDelete(id).lean<IProduct | null>();
+    }
+    if (!deleted) {
+      deleted = await Product.findOneAndDelete({ $or: [{ slug: id }, { sku: id }] }).lean<IProduct | null>();
+    }
 
-    // Also attempt DB deletion
-    try {
-      const db = await connectDB();
-      if (db) {
-        if (mongoose.Types.ObjectId.isValid(id)) {
-          await Product.findByIdAndDelete(id);
-        } else {
-          await Product.findOneAndDelete({ $or: [{ slug: id }, { sku: id }] });
-        }
-      }
-    } catch (dbErr) {
-      console.warn("Product delete DB warning:", dbErr);
+    if (!deleted) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
     await logActivity({
       action: "PRODUCT_DELETE",
       entity: "Product",
-      entityId: id,
-      details: `Deleted product ${id}`,
+      entityId: String(deleted._id),
+      details: `Deleted product "${deleted.name}"`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -172,15 +206,19 @@ export async function DELETE(
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
+      revalidatePath("/admin/products");
       revalidatePath("/api/catalog-tree");
       revalidatePath("/api/products");
     } catch {
-      // ignore
+      // ignore revalidation error
     }
 
     return NextResponse.json({ success: true, message: "Product deleted" });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Delete product error:", err);
-    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to delete product" },
+      { status: 500 }
+    );
   }
 }

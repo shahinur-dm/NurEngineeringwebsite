@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { connectDB } from "@/lib/db";
+import { connectDB } from "@/lib/mongodb";
 import { Brand } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import {
-  getStoredBrands,
-  saveStoredBrand,
-} from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -16,56 +12,61 @@ export async function GET() {
 
   try {
     const db = await connectDB();
-    if (db) {
-      const brands = await Brand.find().sort({ order: 1, name: 1 }).lean();
-      if (brands.length > 0) {
-        return NextResponse.json({ brands });
-      }
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
-  } catch (err) {
-    console.warn("Get brands DB error, using store:", err);
-  }
 
-  const stored = getStoredBrands();
-  return NextResponse.json({ brands: stored });
+    const brands = await Brand.find().sort({ order: 1, name: 1 }).lean();
+    return NextResponse.json({ brands });
+  } catch (err: unknown) {
+    console.error("Get brands error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to load brands" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (admin.role === "viewer") {
+    return NextResponse.json({ error: "Forbidden: Viewer cannot edit" }, { status: 403 });
+  }
 
   try {
     const body = await req.json();
-    if (!body.name) {
+    if (!body.name || !String(body.name).trim()) {
       return NextResponse.json({ error: "Brand name is required" }, { status: 400 });
     }
 
-    // Save to store
-    const brand = saveStoredBrand({
-      name: body.name,
-      slug: body.slug,
-      logo: body.logo || "",
-      description: body.description || "",
-      order: body.order || 0,
-      active: body.active !== undefined ? body.active : true,
-    });
-
-    // Also attempt DB write
-    try {
-      const db = await connectDB();
-      if (db) {
-        await Brand.create({
-          name: brand.name,
-          slug: brand.slug,
-          logo: brand.logo,
-          description: brand.description,
-          order: brand.order,
-          active: brand.active,
-        });
-      }
-    } catch (dbErr) {
-      console.warn("DB brand save warning:", dbErr);
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
+
+    let slug = (body.slug || body.name || "brand")
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    if (!slug) slug = `brand-${Date.now()}`;
+
+    const existing = await Brand.findOne({ slug });
+    if (existing) {
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const brand = await Brand.create({
+      name: String(body.name).trim(),
+      slug,
+      logo: body.logo ? String(body.logo).trim() : "",
+      description: body.description ? String(body.description).trim() : "",
+      order: Number(body.order) || 0,
+      active: body.active !== false,
+    });
 
     await logActivity({
       action: "BRAND_CREATE",
@@ -84,15 +85,18 @@ export async function POST(req: Request) {
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
-      revalidatePath("/api/catalog-tree");
-      revalidatePath("/api/products");
+      revalidatePath("/admin/brands");
+      revalidatePath("/admin/products");
     } catch {
-      // ignore
+      // ignore revalidation error
     }
 
     return NextResponse.json({ success: true, brand });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Create brand error:", err);
-    return NextResponse.json({ error: "Failed to create brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to create brand" },
+      { status: 500 }
+    );
   }
 }

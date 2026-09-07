@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { connectDB } from "@/lib/db";
-import { Category, Product } from "@/lib/models";
+import { connectDB } from "@/lib/mongodb";
+import { Category, SubCategory, type ICategory } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import {
-  updateStoredCategory,
-  deleteStoredCategory,
-  getStoredCategoryByIdOrSlug,
-} from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 export async function PUT(
   req: Request,
@@ -15,31 +12,44 @@ export async function PUT(
 ) {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (admin.role === "viewer") {
+    return NextResponse.json({ error: "Forbidden: Viewer cannot edit" }, { status: 403 });
+  }
 
   try {
     const { id } = await params;
     const body = await req.json();
 
-    // Update in store
-    const updatedInStore = updateStoredCategory(id, body);
-
-    // Also attempt DB update
-    try {
-      const db = await connectDB();
-      if (db) {
-        await Category.findByIdAndUpdate(id, body, { new: true });
-      }
-    } catch (dbErr) {
-      console.warn("DB category update warning:", dbErr);
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
 
-    const updated = updatedInStore || { ...body, _id: id };
+    const updateData: Record<string, unknown> = {};
+    if (body.name) updateData.name = String(body.name).trim();
+    if (body.slug) {
+      updateData.slug = String(body.slug)
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/[\s_-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+    if (body.description !== undefined) updateData.description = String(body.description).trim();
+    if (body.image !== undefined) updateData.image = body.image ? String(body.image).trim() : undefined;
+    if (body.order !== undefined) updateData.order = Number(body.order);
+
+    const category = await Category.findByIdAndUpdate(id, updateData, { new: true }).lean<ICategory | null>();
+
+    if (!category) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
 
     await logActivity({
       action: "CATEGORY_UPDATE",
       entity: "Category",
-      entityId: String(updated._id),
-      details: `Updated category "${updated.name}"`,
+      entityId: String(category._id),
+      details: `Updated category "${category.name}"`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -52,16 +62,21 @@ export async function PUT(
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
+      revalidatePath("/admin/categories");
+      revalidatePath("/admin/products");
       revalidatePath("/api/catalog-tree");
       revalidatePath("/api/products");
     } catch {
-      // ignore
+      // ignore revalidation error
     }
 
-    return NextResponse.json({ success: true, category: updated });
-  } catch (err) {
+    return NextResponse.json({ success: true, category });
+  } catch (err: unknown) {
     console.error("Update category error:", err);
-    return NextResponse.json({ error: "Failed to update category" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to update category" },
+      { status: 500 }
+    );
   }
 }
 
@@ -71,31 +86,30 @@ export async function DELETE(
 ) {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (admin.role !== "super_admin" && admin.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden: Insufficient privileges" }, { status: 403 });
+  }
 
   try {
     const { id } = await params;
-
-    const existing = getStoredCategoryByIdOrSlug(id);
-    const catName = existing?.name || id;
-
-    // Delete from store
-    deleteStoredCategory(id);
-
-    // Also attempt DB deletion
-    try {
-      const db = await connectDB();
-      if (db) {
-        await Category.findByIdAndDelete(id);
-      }
-    } catch (dbErr) {
-      console.warn("DB category delete warning:", dbErr);
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
+
+    const category = await Category.findByIdAndDelete(id).lean<ICategory | null>();
+    if (!category) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    // Also delete associated subcategories
+    await SubCategory.deleteMany({ category: id });
 
     await logActivity({
       action: "CATEGORY_DELETE",
       entity: "Category",
       entityId: id,
-      details: `Deleted category "${catName}"`,
+      details: `Deleted category "${category.name}"`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -108,15 +122,20 @@ export async function DELETE(
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
+      revalidatePath("/admin/categories");
+      revalidatePath("/admin/products");
       revalidatePath("/api/catalog-tree");
       revalidatePath("/api/products");
     } catch {
-      // ignore
+      // ignore revalidation error
     }
 
     return NextResponse.json({ success: true, message: "Category deleted" });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Delete category error:", err);
-    return NextResponse.json({ error: "Failed to delete category" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to delete category" },
+      { status: 500 }
+    );
   }
 }

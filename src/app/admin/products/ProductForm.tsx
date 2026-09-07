@@ -61,6 +61,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [brandsList, setBrandsList] = useState<Array<{ _id: string; name: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -161,6 +162,13 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
         if (d.categories) setCategories(d.categories);
       })
       .catch((err) => console.error("Categories fetch error:", err));
+
+    fetch("/api/admin/brands")
+      .then((res) => res.json())
+      .then((d) => {
+        if (d.brands) setBrandsList(d.brands);
+      })
+      .catch((err) => console.error("Brands fetch error:", err));
   }, []);
 
   useEffect(() => {
@@ -487,11 +495,17 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 </label>
                 <input
                   type="text"
+                  list="brands-datalist"
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                   placeholder="e.g. Weintek / Delta class"
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
                 />
+                <datalist id="brands-datalist">
+                  {brandsList.map((b) => (
+                    <option key={b._id} value={b.name} />
+                  ))}
+                </datalist>
               </div>
 
               <div>

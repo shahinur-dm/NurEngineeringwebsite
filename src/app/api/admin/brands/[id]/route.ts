@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { connectDB } from "@/lib/db";
-import { Brand } from "@/lib/models";
+import { connectDB } from "@/lib/mongodb";
+import { Brand, type IBrand } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import {
-  updateStoredBrand,
-  deleteStoredBrand,
-  getStoredBrandByIdOrSlug,
-} from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 export async function PUT(
   req: Request,
@@ -15,31 +12,45 @@ export async function PUT(
 ) {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (admin.role === "viewer") {
+    return NextResponse.json({ error: "Forbidden: Viewer cannot edit" }, { status: 403 });
+  }
 
   try {
     const { id } = await params;
     const body = await req.json();
 
-    // Update in store
-    const updatedInStore = updateStoredBrand(id, body);
-
-    // Also attempt DB update
-    try {
-      const db = await connectDB();
-      if (db) {
-        await Brand.findByIdAndUpdate(id, body, { new: true });
-      }
-    } catch (dbErr) {
-      console.warn("DB brand update warning:", dbErr);
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
 
-    const updated = updatedInStore || { ...body, _id: id };
+    const updateData: Record<string, unknown> = {};
+    if (body.name) updateData.name = String(body.name).trim();
+    if (body.slug) {
+      updateData.slug = String(body.slug)
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/[\s_-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+    if (body.logo !== undefined) updateData.logo = String(body.logo).trim();
+    if (body.description !== undefined) updateData.description = String(body.description).trim();
+    if (body.order !== undefined) updateData.order = Number(body.order);
+    if (body.active !== undefined) updateData.active = Boolean(body.active);
+
+    const brand = await Brand.findByIdAndUpdate(id, updateData, { new: true }).lean<IBrand | null>();
+
+    if (!brand) {
+      return NextResponse.json({ error: "Brand not found" }, { status: 404 });
+    }
 
     await logActivity({
       action: "BRAND_UPDATE",
       entity: "Brand",
-      entityId: String(updated._id),
-      details: `Updated brand "${updated.name}"`,
+      entityId: String(brand._id),
+      details: `Updated brand "${brand.name}"`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -52,16 +63,19 @@ export async function PUT(
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
-      revalidatePath("/api/catalog-tree");
-      revalidatePath("/api/products");
+      revalidatePath("/admin/brands");
+      revalidatePath("/admin/products");
     } catch {
-      // ignore
+      // ignore revalidation error
     }
 
-    return NextResponse.json({ success: true, brand: updated });
-  } catch (err) {
+    return NextResponse.json({ success: true, brand });
+  } catch (err: unknown) {
     console.error("Update brand error:", err);
-    return NextResponse.json({ error: "Failed to update brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to update brand" },
+      { status: 500 }
+    );
   }
 }
 
@@ -71,31 +85,27 @@ export async function DELETE(
 ) {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (admin.role !== "super_admin" && admin.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden: Insufficient privileges" }, { status: 403 });
+  }
 
   try {
     const { id } = await params;
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
+    }
 
-    const existing = getStoredBrandByIdOrSlug(id);
-    const brandName = existing?.name || id;
-
-    // Delete from store
-    deleteStoredBrand(id);
-
-    // Also attempt DB deletion
-    try {
-      const db = await connectDB();
-      if (db) {
-        await Brand.findByIdAndDelete(id);
-      }
-    } catch (dbErr) {
-      console.warn("DB brand delete warning:", dbErr);
+    const brand = await Brand.findByIdAndDelete(id).lean<IBrand | null>();
+    if (!brand) {
+      return NextResponse.json({ error: "Brand not found" }, { status: 404 });
     }
 
     await logActivity({
       action: "BRAND_DELETE",
       entity: "Brand",
       entityId: id,
-      details: `Deleted brand "${brandName}"`,
+      details: `Deleted brand "${brand.name}"`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -108,15 +118,18 @@ export async function DELETE(
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
-      revalidatePath("/api/catalog-tree");
-      revalidatePath("/api/products");
+      revalidatePath("/admin/brands");
+      revalidatePath("/admin/products");
     } catch {
-      // ignore
+      // ignore revalidation error
     }
 
     return NextResponse.json({ success: true, message: "Brand deleted" });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Delete brand error:", err);
-    return NextResponse.json({ error: "Failed to delete brand" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to delete brand" },
+      { status: 500 }
+    );
   }
 }

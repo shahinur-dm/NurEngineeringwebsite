@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { connectDB } from "@/lib/db";
+import { connectDB } from "@/lib/mongodb";
 import { Category, Product } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import {
-  getStoredCategories,
-  saveStoredCategory,
-  updateStoredCategory,
-} from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -17,66 +12,78 @@ export async function GET() {
 
   try {
     const db = await connectDB();
-    if (db) {
-      const categories = await Category.find({ type: "product" })
-        .sort({ order: 1, name: 1 })
-        .lean();
-
-      if (categories.length > 0) {
-        // Attach product counts
-        const withCounts = await Promise.all(
-          categories.map(async (cat) => {
-            const count = await Product.countDocuments({ category: cat._id });
-            return { ...cat, productCount: count };
-          })
-        );
-
-        return NextResponse.json({ categories: withCounts });
-      }
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
     }
-  } catch (err) {
-    console.warn("Get categories DB error, using store:", err);
-  }
 
-  // Fallback to store
-  const storedCats = getStoredCategories("product");
-  return NextResponse.json({ categories: storedCats });
+    const categories = await Category.find({ type: "product" })
+      .sort({ order: 1, name: 1 })
+      .lean();
+
+    // Attach accurate product counts
+    const withCounts = await Promise.all(
+      categories.map(async (cat) => {
+        const count = await Product.countDocuments({
+          $or: [
+            { category: cat._id },
+            { category: String(cat._id) },
+            { category: cat.slug },
+          ],
+        });
+        return { ...cat, productCount: count };
+      })
+    );
+
+    return NextResponse.json({ categories: withCounts });
+  } catch (err: unknown) {
+    console.error("Get categories error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to load categories" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (admin.role === "viewer") {
+    return NextResponse.json({ error: "Forbidden: Viewer cannot edit" }, { status: 403 });
+  }
 
   try {
     const body = await req.json();
-    if (!body.name) {
+    if (!body.name || !String(body.name).trim()) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
     }
 
-    // Save to store
-    const category = saveStoredCategory({
-      name: body.name,
-      slug: body.slug,
-      description: body.description || "",
-      order: body.order || 0,
+    const db = await connectDB();
+    if (!db) {
+      return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
+    }
+
+    let slug = (body.slug || body.name || "cat")
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    if (!slug) slug = `category-${Date.now()}`;
+
+    const existing = await Category.findOne({ slug });
+    if (existing) {
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const category = await Category.create({
+      name: String(body.name).trim(),
+      slug,
+      description: body.description ? String(body.description).trim() : "",
+      image: body.image ? String(body.image).trim() : undefined,
+      order: Number(body.order) || 0,
       type: "product",
     });
-
-    // Also attempt DB write
-    try {
-      const db = await connectDB();
-      if (db) {
-        await Category.create({
-          name: category.name,
-          slug: category.slug,
-          description: category.description,
-          order: category.order,
-          type: "product",
-        });
-      }
-    } catch (dbErr) {
-      console.warn("DB category save warning:", dbErr);
-    }
 
     await logActivity({
       action: "CATEGORY_CREATE",
@@ -95,58 +102,64 @@ export async function POST(req: Request) {
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
+      revalidatePath("/admin/categories");
+      revalidatePath("/admin/products");
       revalidatePath("/api/catalog-tree");
       revalidatePath("/api/products");
     } catch {
-      // ignore
+      // ignore revalidation error
     }
 
     return NextResponse.json({ success: true, category });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Create category error:", err);
-    return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to create category" },
+      { status: 500 }
+    );
   }
 }
 
 export async function PUT(req: Request) {
   const admin = await getCurrentAdminUser();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (admin.role === "viewer") {
+    return NextResponse.json({ error: "Forbidden: Viewer cannot edit" }, { status: 403 });
+  }
 
   try {
     const { items } = await req.json(); // Array of { _id, order } for bulk reordering
     if (Array.isArray(items)) {
-      items.forEach((item) => {
-        updateStoredCategory(item._id, { order: item.order });
-      });
-
-      try {
-        const db = await connectDB();
-        if (db) {
-          await Promise.all(
-            items.map((item) =>
-              Category.findByIdAndUpdate(item._id, { order: item.order })
-            )
-          );
-        }
-      } catch (dbErr) {
-        console.warn("DB category reorder warning:", dbErr);
+      const db = await connectDB();
+      if (!db) {
+        return NextResponse.json({ error: "Database connection failed" }, { status: 500 });
       }
+
+      await Promise.all(
+        items.map((item) =>
+          Category.findByIdAndUpdate(item._id, { order: Number(item.order) || 0 })
+        )
+      );
 
       try {
         revalidatePath("/", "layout");
         revalidatePath("/");
         revalidatePath("/products");
+        revalidatePath("/admin/categories");
         revalidatePath("/api/catalog-tree");
         revalidatePath("/api/products");
       } catch {
-        // ignore
+        // ignore revalidation error
       }
 
       return NextResponse.json({ success: true, message: "Reordered categories" });
     }
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Reorder categories error:", err);
-    return NextResponse.json({ error: "Failed to reorder" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to reorder" },
+      { status: 500 }
+    );
   }
 }
