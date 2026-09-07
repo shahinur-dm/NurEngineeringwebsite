@@ -3,7 +3,11 @@ import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { Product } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import { mockProducts, mockCategories } from "@/lib/mock-data";
+import {
+  getStoredProducts,
+  saveStoredProduct,
+  StoredProduct,
+} from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +16,10 @@ export async function GET(req: Request) {
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const url = new URL(req.url);
-  const q = url.searchParams.get("q");
-  const category = url.searchParams.get("category");
-  const stock = url.searchParams.get("stock");
-  const published = url.searchParams.get("published");
+  const q = url.searchParams.get("q") || undefined;
+  const category = url.searchParams.get("category") || undefined;
+  const stock = url.searchParams.get("stock") || undefined;
+  const published = url.searchParams.get("published") || undefined;
   const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
   const limit = Math.max(1, parseInt(url.searchParams.get("limit") || "20", 10));
 
@@ -47,43 +51,39 @@ export async function GET(req: Request) {
         Product.countDocuments(filter),
       ]);
 
-      return NextResponse.json({
-        items,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
-      });
+      if (items.length > 0) {
+        return NextResponse.json({
+          items,
+          pagination: {
+            page,
+            limit,
+            total,
+            pages: Math.ceil(total / limit) || 1,
+          },
+        });
+      }
     }
   } catch (err) {
-    console.warn("Fetch products DB error, using fallback catalog:", err);
+    console.warn("Fetch products DB error, using store:", err);
   }
 
-  // Fallback to mock products
-  const catMap = new Map(mockCategories.map((c) => [String(c._id), c]));
-  let list = mockProducts.map((p) => ({
-    ...p,
-    category: catMap.get(String(p.category)) || { name: "General", slug: "general" },
-  }));
-
-  if (q) {
-    const lq = q.toLowerCase();
-    list = list.filter(
-      (p) =>
-        p.name.toLowerCase().includes(lq) ||
-        (p.sku ? p.sku.toLowerCase().includes(lq) : false)
-    );
-  }
+  // Fallback to store
+  const stored = getStoredProducts({
+    q,
+    categorySlug: category,
+    stock,
+    published,
+    page,
+    limit,
+  });
 
   return NextResponse.json({
-    items: list.slice((page - 1) * limit, page * limit),
+    items: stored.items,
     pagination: {
       page,
       limit,
-      total: list.length,
-      pages: Math.ceil(list.length / limit),
+      total: stored.total,
+      pages: Math.ceil(stored.total / limit) || 1,
     },
   });
 }
@@ -101,42 +101,55 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Name and Category are required" }, { status: 400 });
     }
 
-    await connectDB();
+    let createdProduct: StoredProduct | null = null;
 
-    // Auto-generate slug if not provided
-    let slug = (body.slug || body.name)
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-
-    // Check slug uniqueness
-    const existing = await Product.findOne({ slug });
-    if (existing) {
-      slug = `${slug}-${Date.now().toString().slice(-4)}`;
-    }
-
-    const newProduct = await Product.create({
+    // Save to unified persistent store
+    createdProduct = saveStoredProduct({
       ...body,
-      slug,
-      gallery: body.gallery || [],
-      videoUrl: body.videoUrl || undefined,
-      specs: body.specs || [],
-      specTable: body.specTable || [],
-      condition: body.condition || undefined,
-      packing: body.packing || undefined,
-      warranty: body.warranty || undefined,
-      warrantyAndReturns: body.warrantyAndReturns || undefined,
-      availabilityText: body.availabilityText || undefined,
-      relatedServices: body.relatedServices || [],
+      price: Number(body.price) || 0,
+      inStock: body.inStock !== false,
+      published: body.published !== false,
+      featured: Boolean(body.featured),
     });
+
+    // Also attempt DB write
+    try {
+      const db = await connectDB();
+      if (db) {
+        let slug = createdProduct.slug;
+        const existing = await Product.findOne({ slug });
+        if (existing) {
+          slug = `${slug}-${Date.now().toString().slice(-4)}`;
+        }
+
+        await Product.create({
+          ...body,
+          slug,
+          gallery: body.gallery || [],
+          videoUrl: body.videoUrl || undefined,
+          specs: body.specs || [],
+          specTable: body.specTable || [],
+          atAGlance: body.atAGlance || [],
+          includedItems: body.includedItems || [],
+          beforeYouOrder: body.beforeYouOrder || [],
+          condition: body.condition || undefined,
+          packing: body.packing || undefined,
+          warranty: body.warranty || undefined,
+          warrantyAndReturns: body.warrantyAndReturns || undefined,
+          availabilityText: body.availabilityText || undefined,
+          relatedProducts: body.relatedProducts || [],
+          relatedServices: body.relatedServices || [],
+        });
+      }
+    } catch (dbErr) {
+      console.warn("DB product save warning:", dbErr);
+    }
 
     await logActivity({
       action: "PRODUCT_CREATE",
       entity: "Product",
-      entityId: String(newProduct._id),
-      details: `Created product "${newProduct.name}" (SKU: ${newProduct.sku || "N/A"})`,
+      entityId: String(createdProduct._id),
+      details: `Created product "${createdProduct.name}" (SKU: ${createdProduct.sku || "N/A"})`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -149,12 +162,14 @@ export async function POST(req: Request) {
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
-      revalidatePath(`/products/${slug}`);
+      revalidatePath(`/products/${createdProduct.slug}`);
+      revalidatePath("/api/catalog-tree");
+      revalidatePath("/api/products");
     } catch {
       // ignore
     }
 
-    return NextResponse.json({ success: true, product: newProduct });
+    return NextResponse.json({ success: true, product: createdProduct });
   } catch (err) {
     console.error("Create product error:", err);
     return NextResponse.json({ error: "Failed to create product" }, { status: 500 });

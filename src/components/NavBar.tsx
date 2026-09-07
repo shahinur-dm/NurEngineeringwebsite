@@ -127,6 +127,10 @@ export function NavBar() {
     router.push(`/products?q=${encodeURIComponent(value)}`);
   }
 
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)]">
       <div className="shell flex items-center justify-between py-2 md:py-2.5 gap-3">
@@ -231,6 +235,8 @@ export function NavBar() {
                 {isProducts && (
                   <svg
                     viewBox="0 0 24 24"
+                    width="12"
+                    height="12"
                     className="h-3 w-3 fill-none stroke-current opacity-70 shrink-0"
                     strokeWidth="2.5"
                   >
@@ -285,6 +291,8 @@ export function NavBar() {
               >
                 <svg
                   viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
                   className="h-3.5 w-3.5 fill-none stroke-current shrink-0"
                   strokeWidth="2.5"
                 >
@@ -381,6 +389,8 @@ export function NavBar() {
           >
             <svg
               viewBox="0 0 24 24"
+              width="16"
+              height="16"
               className="h-4 w-4 fill-none stroke-current"
               strokeWidth="2.2"
             >
@@ -398,6 +408,8 @@ export function NavBar() {
           >
             <svg
               viewBox="0 0 24 24"
+              width="20"
+              height="20"
               className="h-5 w-5 fill-none stroke-current"
               strokeWidth="2"
             >

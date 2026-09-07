@@ -17,7 +17,7 @@ const SubCategorySchema = new Schema<ISubCategory>(
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true },
     category: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.Mixed,
       ref: "Category",
       required: true,
       index: true,

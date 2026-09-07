@@ -12,6 +12,7 @@ import {
   UseCase,
   BlogPost,
   BlogCategory,
+  Brand,
   type ISiteSettings,
   type ICategory,
   type ISubCategory,
@@ -23,6 +24,7 @@ import {
   type IUseCase,
   type IBlogPost,
   type IBlogCategory,
+  type IBrand,
 } from "@/lib/models";
 import { navLinks, useCaseContent } from "@/lib/use-cases";
 import {
@@ -38,6 +40,14 @@ import {
   type IMockBlogCategory,
   type IMockSpecialFeature,
 } from "@/lib/mock-data";
+import {
+  getStoredCategories,
+  getStoredSubCategories,
+  getStoredBrands,
+  getStoredProducts,
+  getStoredProductByIdOrSlug,
+  getStoredSettings,
+} from "@/lib/store";
 
 export type PopulatedProduct = Omit<IProduct, "category" | "subCategory" | "relatedServices"> & {
   category: ICategory;
@@ -133,32 +143,42 @@ export async function getSettings(): Promise<ISiteSettings> {
     console.warn("getSettings DB warning:", err);
   }
 
+  const stored = getStoredSettings();
   const mem = (global as unknown as { inMemorySettingsCache?: Record<string, unknown> }).inMemorySettingsCache;
   const merged: Record<string, unknown> = {
     ...fallbackSettings,
-    ...(doc || {}),
+    ...stored,
     ...(mem || {}),
+    ...(doc || {}),
   };
 
-  const rawSocial = ((doc?.social as Record<string, string>) ||
-    (mem?.social as Record<string, string>) ||
-    fallbackSettings.social ||
-    {}) as Record<string, string>;
+  const rawSocial = {
+    ...fallbackSettings.social,
+    ...((stored.social as Record<string, string>) || {}),
+    ...((mem?.social as Record<string, string>) || {}),
+    ...((doc?.social as Record<string, string>) || {}),
+  };
 
-  const rawFooterQr = ((doc?.footerQr as Record<string, unknown>) ||
-    (mem?.footerQr as Record<string, unknown>) ||
-    fallbackSettings.footerQr ||
-    {}) as Record<string, unknown>;
+  const rawFooterQr = {
+    ...fallbackSettings.footerQr,
+    ...((stored.footerQr as Record<string, unknown>) || {}),
+    ...((mem?.footerQr as Record<string, unknown>) || {}),
+    ...((doc?.footerQr as Record<string, unknown>) || {}),
+  };
 
-  const rawSeo = ((doc?.seo as Record<string, unknown>) ||
-    (mem?.seo as Record<string, unknown>) ||
-    fallbackSettings.seo ||
-    {}) as Record<string, unknown>;
+  const rawSeo = {
+    ...fallbackSettings.seo,
+    ...((stored.seo as Record<string, unknown>) || {}),
+    ...((mem?.seo as Record<string, unknown>) || {}),
+    ...((doc?.seo as Record<string, unknown>) || {}),
+  };
 
-  const rawAnalytics = ((doc?.analytics as Record<string, string>) ||
-    (mem?.analytics as Record<string, string>) ||
-    fallbackSettings.analytics ||
-    {}) as Record<string, string>;
+  const rawAnalytics = {
+    ...fallbackSettings.analytics,
+    ...((stored.analytics as Record<string, string>) || {}),
+    ...((mem?.analytics as Record<string, string>) || {}),
+    ...((doc?.analytics as Record<string, string>) || {}),
+  };
 
   return {
     _id: (merged._id as string) || "site-settings",
@@ -236,9 +256,10 @@ export async function getCategories(
             await Category.create({
               name: cat.name,
               slug: cat.slug,
-              type: cat.type,
+              type: cat.type || "product",
               order: cat.order,
               description: cat.description,
+              published: true,
             });
           } catch {
             // ignore duplicate
@@ -247,15 +268,15 @@ export async function getCategories(
       }
       const filter = type ? { type } : {};
       const docs = await Category.find(filter)
-        .sort({ order: 1 })
+        .sort({ order: 1, name: 1 })
         .lean<ICategory[]>();
-      if (docs.length) return serialize(docs);
+      return serialize(docs);
     }
   } catch {
-    // fall through to mock
+    // fall through to store
   }
-  const filtered = type ? mockCategories.filter((c) => c.type === type) : mockCategories;
-  return serialize(filtered);
+  const storedCats = getStoredCategories(type);
+  return serialize(storedCats) as unknown as ICategory[];
 }
 
 export async function getSubCategories(
@@ -298,32 +319,60 @@ export async function getSubCategories(
         }
       }
       const docs = await SubCategory.find(filter)
-        .sort({ order: 1 })
+        .sort({ order: 1, name: 1 })
         .lean<ISubCategory[]>();
-      if (docs.length) return serialize(docs);
+      return serialize(docs);
     }
   } catch {
-    // fall through to mock
+    // fall through to store
   }
-  let list = mockSubCategories;
-  if (categorySlugOrId) {
-    const targetCat = mockCategories.find(
-      (c) => c.slug === categorySlugOrId || String(c._id) === categorySlugOrId
-    );
-    if (targetCat) {
-      list = list.filter((s) => String(s.category) === String(targetCat._id));
+  const storedSubs = getStoredSubCategories(categorySlugOrId);
+  return serialize(storedSubs) as unknown as ISubCategory[];
+}
+
+export async function getBrands(): Promise<IBrand[]> {
+  try {
+    const db = await connectDB();
+    if (db) {
+      const count = await Brand.countDocuments();
+      if (count === 0) {
+        const defaultBrands = [
+          { name: "Siemens", slug: "siemens", description: "Industrial Automation & Drives", active: true, order: 1 },
+          { name: "Delta Electronics", slug: "delta", description: "VFD, PLC & Motion Control", active: true, order: 2 },
+          { name: "Mitsubishi Electric", slug: "mitsubishi", description: "PLC, HMI & Inverters", active: true, order: 3 },
+          { name: "Omron", slug: "omron", description: "Sensors, Relays & Timers", active: true, order: 4 },
+          { name: "Schneider Electric", slug: "schneider", description: "Switchgear, Contactors & Breakers", active: true, order: 5 },
+          { name: "ABB", slug: "abb", description: "Drives, Motors & Robotics", active: true, order: 6 },
+        ];
+        for (const b of defaultBrands) {
+          try {
+            await Brand.create(b);
+          } catch {
+            // ignore duplicate
+          }
+        }
+      }
+      const docs = await Brand.find({ active: { $ne: false } })
+        .sort({ order: 1, name: 1 })
+        .lean<IBrand[]>();
+      return serialize(docs);
     }
+  } catch {
+    // fall through to store
   }
-  return serialize(list);
+  const storedBrands = getStoredBrands();
+  return serialize(storedBrands) as unknown as IBrand[];
 }
 
 export async function getBanners(): Promise<IBanner[]> {
   try {
-    await connectDB();
-    const docs = await Banner.find({ active: true })
-      .sort({ order: 1 })
-      .lean<IBanner[]>();
-    if (docs.length) return serialize(docs);
+    const db = await connectDB();
+    if (db) {
+      const docs = await Banner.find({ active: true })
+        .sort({ order: 1 })
+        .lean<IBanner[]>();
+      if (docs.length) return serialize(docs);
+    }
   } catch {
     // fall through to mock
   }
@@ -363,7 +412,7 @@ export async function getServices(opts?: {
         .populate({ path: "relatedProducts", populate: { path: "category" } })
         .sort({ order: 1, _id: 1 })
         .lean<PopulatedService[]>();
-      if (docs.length) return serialize(docs);
+      return serialize(docs);
     }
   } catch {
     // fall through to mock
@@ -395,7 +444,7 @@ export async function getFeatures(): Promise<IFeature[]> {
       const docs = await Feature.find({ active: { $ne: false } })
         .sort({ order: 1, _id: 1 })
         .lean<IFeature[]>();
-      if (docs.length) return serialize(docs);
+      return serialize(docs);
     }
   } catch {
     // fall through to mock
@@ -407,12 +456,14 @@ export async function getServiceBySlug(
   slug: string
 ): Promise<PopulatedService | null> {
   try {
-    await connectDB();
-    const doc = await Service.findOne({ slug, published: true })
-      .populate("category")
-      .populate({ path: "relatedProducts", populate: { path: "category" } })
-      .lean<PopulatedService | null>();
-    if (doc) return serialize(doc);
+    const db = await connectDB();
+    if (db) {
+      const doc = await Service.findOne({ slug, published: true })
+        .populate("category")
+        .populate({ path: "relatedProducts", populate: { path: "category" } })
+        .lean<PopulatedService | null>();
+      return doc ? serialize(doc) : null;
+    }
   } catch {
     // fall through to mock
   }
@@ -429,70 +480,103 @@ export async function getProducts(opts?: {
   limit?: number;
 }): Promise<PopulatedProduct[]> {
   try {
-    await connectDB();
-    const filter: Record<string, unknown> = { published: true };
-    if (opts?.featured) filter.featured = true;
-    if (opts?.categorySlug) {
-      const cat = await Category.findOne({
-        slug: opts.categorySlug,
-        type: "product",
-      }).lean<ICategory | null>();
-      if (cat) filter.category = cat._id;
-      else return [];
+    const db = await connectDB();
+    if (db) {
+      const count = await Product.countDocuments();
+      if (count === 0) {
+        // Seed mock products into DB if DB is empty
+        for (const p of mockProducts) {
+          try {
+            const mockCat = mockCategories.find((c) => c._id === p.category);
+            let catId = undefined;
+            if (mockCat) {
+              const dbCat = await Category.findOne({ slug: mockCat.slug });
+              if (dbCat) catId = dbCat._id;
+            }
+            const mockSub = mockSubCategories.find((s) => s._id === p.subCategory);
+            let subId = undefined;
+            if (mockSub) {
+              const dbSub = await SubCategory.findOne({ slug: mockSub.slug });
+              if (dbSub) subId = dbSub._id;
+            }
+            await Product.create({
+              name: p.name,
+              slug: p.slug,
+              sku: p.sku,
+              brand: p.brand,
+              category: catId,
+              subCategory: subId,
+              shortDescription: p.shortDescription,
+              description: p.description,
+              price: p.price,
+              currency: p.currency || "BDT",
+              image: p.image,
+              gallery: p.gallery || [],
+              videoUrl: p.videoUrl,
+              specs: p.specs || [],
+              specTable: p.specTable || [],
+              atAGlance: p.atAGlance || [],
+              includedItems: p.includedItems || [],
+              beforeYouOrder: p.beforeYouOrder || [],
+              condition: p.condition,
+              packing: p.packing,
+              warranty: p.warranty,
+              warrantyAndReturns: p.warrantyAndReturns,
+              availabilityText: p.availabilityText,
+              inStock: p.inStock !== false,
+              featured: Boolean(p.featured),
+              published: true,
+              order: p.order || 0,
+            });
+          } catch {
+            // ignore duplicate
+          }
+        }
+      }
+
+      const filter: Record<string, unknown> = { published: true };
+      if (opts?.featured) filter.featured = true;
+      if (opts?.categorySlug) {
+        const cat = await Category.findOne({
+          slug: opts.categorySlug,
+          type: "product",
+        }).lean<ICategory | null>();
+        if (cat) filter.category = cat._id;
+        else return [];
+      }
+      if (opts?.subCategorySlug) {
+        const sub = await SubCategory.findOne({
+          slug: opts.subCategorySlug,
+        }).lean<ISubCategory | null>();
+        if (sub) filter.subCategory = sub._id;
+        else return [];
+      }
+      if (opts?.q) {
+        filter.$or = [
+          { name: { $regex: opts.q, $options: "i" } },
+          { shortDescription: { $regex: opts.q, $options: "i" } },
+          { sku: { $regex: opts.q, $options: "i" } },
+          { brand: { $regex: opts.q, $options: "i" } },
+        ];
+      }
+      let query = Product.find(filter)
+        .populate("category")
+        .populate("subCategory")
+        .populate("relatedServices")
+        .sort({ order: 1, featured: -1, createdAt: -1 });
+      if (opts?.page && opts?.limit) {
+        query = query.skip((opts.page - 1) * opts.limit).limit(opts.limit);
+      } else if (opts?.limit) {
+        query = query.limit(opts.limit);
+      }
+      const docs = await query.lean<PopulatedProduct[]>();
+      return serialize(docs);
     }
-    if (opts?.subCategorySlug) {
-      const sub = await SubCategory.findOne({
-        slug: opts.subCategorySlug,
-      }).lean<ISubCategory | null>();
-      if (sub) filter.subCategory = sub._id;
-      else return [];
-    }
-    if (opts?.q) {
-      filter.$or = [
-        { name: { $regex: opts.q, $options: "i" } },
-        { shortDescription: { $regex: opts.q, $options: "i" } },
-        { sku: { $regex: opts.q, $options: "i" } },
-        { brand: { $regex: opts.q, $options: "i" } },
-      ];
-    }
-    let query = Product.find(filter)
-      .populate("category")
-      .populate("subCategory")
-      .populate("relatedServices")
-      .sort({ order: 1, featured: -1, createdAt: -1 });
-    if (opts?.page && opts?.limit) {
-      query = query.skip((opts.page - 1) * opts.limit).limit(opts.limit);
-    } else if (opts?.limit) {
-      query = query.limit(opts.limit);
-    }
-    const docs = await query.lean<PopulatedProduct[]>();
-    if (docs.length) return serialize(docs);
   } catch {
-    // fall through to mock
+    // fall through to store
   }
-  let list = getMockPopulatedProducts();
-  if (opts?.featured) list = list.filter((p) => p.featured);
-  if (opts?.categorySlug) list = list.filter((p) => p.category.slug === opts.categorySlug);
-  if (opts?.subCategorySlug) {
-    list = list.filter((p) => p.subCategory?.slug === opts.subCategorySlug);
-  }
-  if (opts?.q) {
-    const qLower = opts.q.toLowerCase();
-    list = list.filter(
-      (p) =>
-        p.name.toLowerCase().includes(qLower) ||
-        p.shortDescription.toLowerCase().includes(qLower) ||
-        (p.sku && p.sku.toLowerCase().includes(qLower))
-    );
-  }
-  list.sort((a, b) => (a.order || 999) - (b.order || 999));
-  if (opts?.page && opts?.limit) {
-    const start = (opts.page - 1) * opts.limit;
-    list = list.slice(start, start + opts.limit);
-  } else if (opts?.limit) {
-    list = list.slice(0, opts.limit);
-  }
-  return serialize(list);
+  const stored = getStoredProducts(opts);
+  return serialize(stored.items) as unknown as PopulatedProduct[];
 }
 
 export async function getProductsTotalCount(opts?: {
@@ -502,70 +586,60 @@ export async function getProductsTotalCount(opts?: {
   q?: string;
 }): Promise<number> {
   try {
-    await connectDB();
-    const filter: Record<string, unknown> = { published: true };
-    if (opts?.featured) filter.featured = true;
-    if (opts?.categorySlug) {
-      const cat = await Category.findOne({
-        slug: opts.categorySlug,
-        type: "product",
-      }).lean<ICategory | null>();
-      if (cat) filter.category = cat._id;
-      else return 0;
+    const db = await connectDB();
+    if (db) {
+      const filter: Record<string, unknown> = { published: true };
+      if (opts?.featured) filter.featured = true;
+      if (opts?.categorySlug) {
+        const cat = await Category.findOne({
+          slug: opts.categorySlug,
+          type: "product",
+        }).lean<ICategory | null>();
+        if (cat) filter.category = cat._id;
+        else return 0;
+      }
+      if (opts?.subCategorySlug) {
+        const sub = await SubCategory.findOne({
+          slug: opts.subCategorySlug,
+        }).lean<ISubCategory | null>();
+        if (sub) filter.subCategory = sub._id;
+        else return 0;
+      }
+      if (opts?.q) {
+        filter.$or = [
+          { name: { $regex: opts.q, $options: "i" } },
+          { shortDescription: { $regex: opts.q, $options: "i" } },
+          { sku: { $regex: opts.q, $options: "i" } },
+          { brand: { $regex: opts.q, $options: "i" } },
+        ];
+      }
+      return await Product.countDocuments(filter);
     }
-    if (opts?.subCategorySlug) {
-      const sub = await SubCategory.findOne({
-        slug: opts.subCategorySlug,
-      }).lean<ISubCategory | null>();
-      if (sub) filter.subCategory = sub._id;
-      else return 0;
-    }
-    if (opts?.q) {
-      filter.$or = [
-        { name: { $regex: opts.q, $options: "i" } },
-        { shortDescription: { $regex: opts.q, $options: "i" } },
-        { sku: { $regex: opts.q, $options: "i" } },
-        { brand: { $regex: opts.q, $options: "i" } },
-      ];
-    }
-    const count = await Product.countDocuments(filter);
-    if (count > 0) return count;
   } catch {
     // fall through
   }
-  let list = getMockPopulatedProducts();
-  if (opts?.featured) list = list.filter((p) => p.featured);
-  if (opts?.categorySlug) list = list.filter((p) => p.category.slug === opts.categorySlug);
-  if (opts?.subCategorySlug) {
-    list = list.filter((p) => p.subCategory?.slug === opts.subCategorySlug);
-  }
-  if (opts?.q) {
-    const qLower = opts.q.toLowerCase();
-    list = list.filter(
-      (p) =>
-        p.name.toLowerCase().includes(qLower) ||
-        p.shortDescription.toLowerCase().includes(qLower) ||
-        (p.sku && p.sku.toLowerCase().includes(qLower))
-    );
-  }
-  return list.length;
+  const stored = getStoredProducts(opts);
+  return stored.total;
 }
 
 export async function getProductBySlug(
   slug: string
 ): Promise<PopulatedProduct | null> {
   try {
-    await connectDB();
-    const doc = await Product.findOne({ slug, published: true })
-      .populate("category")
-      .populate("relatedServices")
-      .lean<PopulatedProduct | null>();
-    if (doc) return serialize(doc);
+    const db = await connectDB();
+    if (db) {
+      const doc = await Product.findOne({ slug, published: true })
+        .populate("category")
+        .populate("subCategory")
+        .populate("relatedServices")
+        .lean<PopulatedProduct | null>();
+      return doc ? serialize(doc) : null;
+    }
   } catch {
-    // fall through to mock
+    // fall through to store
   }
-  const p = getMockPopulatedProducts().find((item) => item.slug === slug);
-  return p ? serialize(p) : null;
+  const p = getStoredProductByIdOrSlug(slug);
+  return p ? (serialize(p) as unknown as PopulatedProduct) : null;
 }
 
 export async function getRelatedProducts(
@@ -574,37 +648,41 @@ export async function getRelatedProducts(
   limit = 4
 ): Promise<PopulatedProduct[]> {
   try {
-    await connectDB();
-    const primaryDocs = await Product.find({
-      category: categoryId,
-      slug: { $ne: excludeSlug },
-      published: true,
-    })
-      .populate("category")
-      .populate("relatedServices")
-      .sort({ order: 1, _id: 1 })
-      .limit(limit)
-      .lean<PopulatedProduct[]>();
+    const db = await connectDB();
+    if (db) {
+      const primaryDocs = await Product.find({
+        category: categoryId,
+        slug: { $ne: excludeSlug },
+        published: true,
+      })
+        .populate("category")
+        .populate("subCategory")
+        .populate("relatedServices")
+        .sort({ order: 1, _id: 1 })
+        .limit(limit)
+        .lean<PopulatedProduct[]>();
 
-    if (primaryDocs && primaryDocs.length >= limit) {
-      return serialize(primaryDocs);
+      if (primaryDocs && primaryDocs.length >= limit) {
+        return serialize(primaryDocs);
+      }
+
+      const existingIds = (primaryDocs || []).map((d) => String(d._id));
+      const extraNeeded = limit - (primaryDocs ? primaryDocs.length : 0);
+
+      const fallbackDocs = await Product.find({
+        _id: { $nin: existingIds },
+        slug: { $ne: excludeSlug },
+        published: true,
+      })
+        .populate("category")
+        .populate("subCategory")
+        .populate("relatedServices")
+        .sort({ featured: -1, order: 1, _id: 1 })
+        .limit(extraNeeded)
+        .lean<PopulatedProduct[]>();
+
+      return serialize([...(primaryDocs || []), ...(fallbackDocs || [])]);
     }
-
-    const existingIds = (primaryDocs || []).map((d) => String(d._id));
-    const extraNeeded = limit - (primaryDocs ? primaryDocs.length : 0);
-
-    const fallbackDocs = await Product.find({
-      _id: { $nin: existingIds },
-      slug: { $ne: excludeSlug },
-      published: true,
-    })
-      .populate("category")
-      .populate("relatedServices")
-      .sort({ featured: -1, order: 1, _id: 1 })
-      .limit(extraNeeded)
-      .lean<PopulatedProduct[]>();
-
-    return serialize([...(primaryDocs || []), ...(fallbackDocs || [])]);
   } catch {
     // fall through to mock
   }

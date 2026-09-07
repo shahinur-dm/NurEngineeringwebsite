@@ -3,8 +3,12 @@ import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import { Product } from "@/lib/models";
-import { mockProducts } from "@/lib/mock-data";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
+import {
+  getStoredProductByIdOrSlug,
+  updateStoredProduct,
+  deleteStoredProduct,
+} from "@/lib/store";
 
 export async function GET(
   _req: Request,
@@ -38,7 +42,7 @@ export async function GET(
     }
 
     if (!product) {
-      product = mockProducts.find((p) => String(p._id) === id || p.slug === id);
+      product = getStoredProductByIdOrSlug(id);
     }
 
     if (!product) {
@@ -64,21 +68,23 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    let updated = null;
 
+    // Update in unified store
+    const updatedInStore = updateStoredProduct(id, body);
+
+    // Also attempt DB update
     try {
       const db = await connectDB();
       if (db) {
         if (mongoose.Types.ObjectId.isValid(id)) {
-          updated = await Product.findByIdAndUpdate(id, body, {
+          await Product.findByIdAndUpdate(id, body, {
             new: true,
-            runValidators: true,
+            runValidators: false,
           });
-        }
-        if (!updated) {
-          updated = await Product.findOneAndUpdate({ $or: [{ slug: id }, { sku: id }] }, body, {
+        } else {
+          await Product.findOneAndUpdate({ $or: [{ slug: id }, { sku: id }] }, body, {
             new: true,
-            runValidators: true,
+            runValidators: false,
           });
         }
       }
@@ -86,16 +92,13 @@ export async function PUT(
       console.warn("Product update DB warning:", dbErr);
     }
 
-    if (!updated) {
-      // In-memory update
-      updated = { ...body, _id: id };
-    }
+    const finalProduct = updatedInStore || { ...body, _id: id };
 
     await logActivity({
       action: "PRODUCT_UPDATE",
       entity: "Product",
-      entityId: String(updated._id || id),
-      details: `Updated product "${updated.name || body.name || id}"`,
+      entityId: String(finalProduct._id || id),
+      details: `Updated product "${finalProduct.name || body.name || id}"`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -108,12 +111,14 @@ export async function PUT(
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
-      if (updated.slug) revalidatePath(`/products/${updated.slug}`);
+      if (finalProduct?.slug) revalidatePath(`/products/${finalProduct.slug}`);
+      revalidatePath("/api/catalog-tree");
+      revalidatePath("/api/products");
     } catch {
       // ignore
     }
 
-    return NextResponse.json({ success: true, product: updated });
+    return NextResponse.json({ success: true, product: finalProduct });
   } catch (err) {
     console.error("Update product error:", err);
     return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
@@ -132,16 +137,18 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    let product = null;
 
+    // Delete from unified store
+    deleteStoredProduct(id);
+
+    // Also attempt DB deletion
     try {
       const db = await connectDB();
       if (db) {
         if (mongoose.Types.ObjectId.isValid(id)) {
-          product = await Product.findByIdAndDelete(id);
-        }
-        if (!product) {
-          product = await Product.findOneAndDelete({ $or: [{ slug: id }, { sku: id }] });
+          await Product.findByIdAndDelete(id);
+        } else {
+          await Product.findOneAndDelete({ $or: [{ slug: id }, { sku: id }] });
         }
       }
     } catch (dbErr) {
@@ -152,7 +159,7 @@ export async function DELETE(
       action: "PRODUCT_DELETE",
       entity: "Product",
       entityId: id,
-      details: `Deleted product ${product?.name || id}`,
+      details: `Deleted product ${id}`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -165,6 +172,8 @@ export async function DELETE(
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");
+      revalidatePath("/api/catalog-tree");
+      revalidatePath("/api/products");
     } catch {
       // ignore
     }

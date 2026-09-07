@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { Category, Product } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import { mockCategories, mockProducts } from "@/lib/mock-data";
+import {
+  getStoredCategories,
+  saveStoredCategory,
+  updateStoredCategory,
+} from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -17,27 +22,25 @@ export async function GET() {
         .sort({ order: 1, name: 1 })
         .lean();
 
-      // Attach product counts
-      const withCounts = await Promise.all(
-        categories.map(async (cat) => {
-          const count = await Product.countDocuments({ category: cat._id });
-          return { ...cat, productCount: count };
-        })
-      );
+      if (categories.length > 0) {
+        // Attach product counts
+        const withCounts = await Promise.all(
+          categories.map(async (cat) => {
+            const count = await Product.countDocuments({ category: cat._id });
+            return { ...cat, productCount: count };
+          })
+        );
 
-      return NextResponse.json({ categories: withCounts });
+        return NextResponse.json({ categories: withCounts });
+      }
     }
   } catch (err) {
-    console.warn("Get categories DB error, using fallback categories:", err);
+    console.warn("Get categories DB error, using store:", err);
   }
 
-  // Fallback
-  const fallback = mockCategories.map((c) => ({
-    ...c,
-    productCount: mockProducts.filter((p) => String(p.category) === String(c._id)).length,
-  }));
-
-  return NextResponse.json({ categories: fallback });
+  // Fallback to store
+  const storedCats = getStoredCategories("product");
+  return NextResponse.json({ categories: storedCats });
 }
 
 export async function POST(req: Request) {
@@ -50,20 +53,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Category name is required" }, { status: 400 });
     }
 
-    await connectDB();
-    const slug = (body.slug || body.name)
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-");
-
-    const category = await Category.create({
+    // Save to store
+    const category = saveStoredCategory({
       name: body.name,
-      slug,
+      slug: body.slug,
       description: body.description || "",
       order: body.order || 0,
       type: "product",
     });
+
+    // Also attempt DB write
+    try {
+      const db = await connectDB();
+      if (db) {
+        await Category.create({
+          name: category.name,
+          slug: category.slug,
+          description: category.description,
+          order: category.order,
+          type: "product",
+        });
+      }
+    } catch (dbErr) {
+      console.warn("DB category save warning:", dbErr);
+    }
 
     await logActivity({
       action: "CATEGORY_CREATE",
@@ -77,6 +90,16 @@ export async function POST(req: Request) {
         role: admin.role,
       },
     });
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/products");
+      revalidatePath("/api/catalog-tree");
+      revalidatePath("/api/products");
+    } catch {
+      // ignore
+    }
 
     return NextResponse.json({ success: true, category });
   } catch (err) {
@@ -92,12 +115,33 @@ export async function PUT(req: Request) {
   try {
     const { items } = await req.json(); // Array of { _id, order } for bulk reordering
     if (Array.isArray(items)) {
-      await connectDB();
-      await Promise.all(
-        items.map((item) =>
-          Category.findByIdAndUpdate(item._id, { order: item.order })
-        )
-      );
+      items.forEach((item) => {
+        updateStoredCategory(item._id, { order: item.order });
+      });
+
+      try {
+        const db = await connectDB();
+        if (db) {
+          await Promise.all(
+            items.map((item) =>
+              Category.findByIdAndUpdate(item._id, { order: item.order })
+            )
+          );
+        }
+      } catch (dbErr) {
+        console.warn("DB category reorder warning:", dbErr);
+      }
+
+      try {
+        revalidatePath("/", "layout");
+        revalidatePath("/");
+        revalidatePath("/products");
+        revalidatePath("/api/catalog-tree");
+        revalidatePath("/api/products");
+      } catch {
+        // ignore
+      }
+
       return NextResponse.json({ success: true, message: "Reordered categories" });
     }
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });

@@ -17,11 +17,15 @@ export interface IProduct {
   videoUrl?: string;
   specs: string[];
   specTable?: { label: string; value: string }[];
+  atAGlance?: { label: string; value: string }[];
+  includedItems?: string[];
+  beforeYouOrder?: string[];
   condition?: string;
   packing?: string;
   warranty?: string;
   warrantyAndReturns?: string;
   availabilityText?: string;
+  relatedProducts?: (Types.ObjectId | string)[];
   relatedServices?: (Types.ObjectId | string)[];
   inStock: boolean;
   featured: boolean;
@@ -38,13 +42,13 @@ const ProductSchema = new Schema<IProduct>(
     sku: String,
     brand: String,
     category: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.Mixed,
       ref: "Category",
       required: true,
       index: true,
     },
     subCategory: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.Mixed,
       ref: "SubCategory",
       index: true,
     },
@@ -57,11 +61,15 @@ const ProductSchema = new Schema<IProduct>(
     videoUrl: String,
     specs: [{ type: String }],
     specTable: [{ label: String, value: String }],
+    atAGlance: [{ label: String, value: String }],
+    includedItems: [{ type: String }],
+    beforeYouOrder: [{ type: String }],
     condition: String,
     packing: String,
     warranty: String,
     warrantyAndReturns: String,
     availabilityText: String,
+    relatedProducts: [{ type: Schema.Types.ObjectId, ref: "Product" }],
     relatedServices: [{ type: Schema.Types.ObjectId, ref: "Service" }],
     inStock: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
@@ -75,4 +83,5 @@ ProductSchema.index({ name: "text", shortDescription: "text", sku: "text" });
 
 export const Product =
   models.Product || model<IProduct>("Product", ProductSchema);
+
 

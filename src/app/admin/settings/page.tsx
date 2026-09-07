@@ -183,17 +183,26 @@ export default function AdminSettingsPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let data: Record<string, unknown> | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        const text = await res.text().catch(() => "");
+        data = { error: text || `Server responded with status ${res.status}` };
+      }
 
-      if (res.ok && data.success) {
+      if (res.ok && data?.success) {
         setSavedSuccess(true);
         setTimeout(() => setSavedSuccess(false), 4000);
       } else {
-        setErrorMessage(data.error || "Failed to save settings. Please try again.");
+        setErrorMessage(
+          (data?.error as string) || "Failed to save settings. Please try again."
+        );
       }
-    } catch (err) {
-      console.error(err);
-      setErrorMessage("Network error while saving settings.");
+    } catch (err: unknown) {
+      console.error("Settings save error:", err);
+      const msg = err instanceof Error ? err.message : "Network error while saving settings.";
+      setErrorMessage(msg);
     } finally {
       setSaving(false);
     }

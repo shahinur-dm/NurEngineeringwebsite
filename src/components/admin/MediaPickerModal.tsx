@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Img } from "@/components/Img";
 import { ImageIcon } from "@/components/admin/AdminIcons";
+import { compressImageFile } from "@/lib/image-compression";
 
 interface MediaItem {
   _id: string;
@@ -49,20 +50,42 @@ export function MediaPickerModal({
   }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
+
+    // Validate type
+    if (!rawFile.type.startsWith("image/")) {
+      setUploadError("Please select a valid image file (PNG, JPG, WebP, GIF, SVG).");
+      return;
+    }
+
+    // Validate size (< 15MB)
+    if (rawFile.size > 15 * 1024 * 1024) {
+      setUploadError("File size is too large (maximum 15MB).");
+      return;
+    }
 
     try {
       setUploading(true);
       setUploadError(null);
+
+      // Compress and optimize image on client side
+      const optimizedFile = await compressImageFile(rawFile, 1600, 0.85);
+
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", file.name);
+      formData.append("file", optimizedFile);
+      formData.append("title", rawFile.name);
 
       const res = await fetch("/api/admin/media", {
         method: "POST",
         body: formData,
       });
+
+      if (res.status === 413) {
+        setUploadError("Upload payload too large. Please choose a smaller image.");
+        return;
+      }
+
       const data = await res.json();
       if (data.success && data.item) {
         setItems((prev) => [data.item, ...prev]);

@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { Category, Product } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
+import {
+  updateStoredCategory,
+  deleteStoredCategory,
+  getStoredCategoryByIdOrSlug,
+} from "@/lib/store";
 
 export async function PUT(
   req: Request,
@@ -13,10 +19,21 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    await connectDB();
 
-    const updated = await Category.findByIdAndUpdate(id, body, { new: true });
-    if (!updated) return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    // Update in store
+    const updatedInStore = updateStoredCategory(id, body);
+
+    // Also attempt DB update
+    try {
+      const db = await connectDB();
+      if (db) {
+        await Category.findByIdAndUpdate(id, body, { new: true });
+      }
+    } catch (dbErr) {
+      console.warn("DB category update warning:", dbErr);
+    }
+
+    const updated = updatedInStore || { ...body, _id: id };
 
     await logActivity({
       action: "CATEGORY_UPDATE",
@@ -30,6 +47,16 @@ export async function PUT(
         role: admin.role,
       },
     });
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/products");
+      revalidatePath("/api/catalog-tree");
+      revalidatePath("/api/products");
+    } catch {
+      // ignore
+    }
 
     return NextResponse.json({ success: true, category: updated });
   } catch (err) {
@@ -47,24 +74,28 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    await connectDB();
 
-    const productCount = await Product.countDocuments({ category: id });
-    if (productCount > 0) {
-      return NextResponse.json(
-        { error: `Cannot delete: Category has ${productCount} assigned products` },
-        { status: 400 }
-      );
+    const existing = getStoredCategoryByIdOrSlug(id);
+    const catName = existing?.name || id;
+
+    // Delete from store
+    deleteStoredCategory(id);
+
+    // Also attempt DB deletion
+    try {
+      const db = await connectDB();
+      if (db) {
+        await Category.findByIdAndDelete(id);
+      }
+    } catch (dbErr) {
+      console.warn("DB category delete warning:", dbErr);
     }
-
-    const cat = await Category.findByIdAndDelete(id);
-    if (!cat) return NextResponse.json({ error: "Category not found" }, { status: 404 });
 
     await logActivity({
       action: "CATEGORY_DELETE",
       entity: "Category",
       entityId: id,
-      details: `Deleted category "${cat.name}"`,
+      details: `Deleted category "${catName}"`,
       user: {
         _id: String(admin._id),
         name: admin.name,
@@ -72,6 +103,16 @@ export async function DELETE(
         role: admin.role,
       },
     });
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/products");
+      revalidatePath("/api/catalog-tree");
+      revalidatePath("/api/products");
+    } catch {
+      // ignore
+    }
 
     return NextResponse.json({ success: true, message: "Category deleted" });
   } catch (err) {

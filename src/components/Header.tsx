@@ -10,7 +10,7 @@ export function Header() {
     <header className="border-b border-line bg-white">
       <div className="h-[3px] bg-orange" />
       <div className="shell flex items-center justify-between gap-5 py-3 md:py-3.5">
-        <Logo size={76} />
+        <Logo size={76} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
 
         <div className="text-right">
           <p className="kicker">Call / WhatsApp</p>

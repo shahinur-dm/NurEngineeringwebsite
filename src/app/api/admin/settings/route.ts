@@ -5,12 +5,9 @@ import { SiteSettings, CompanyProfile } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
 import { fallbackSettings } from "@/lib/data";
 import { serialize } from "@/lib/serialize";
+import { getStoredSettings, updateStoredSettings } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
-
-declare global {
-  var inMemorySettingsCache: Record<string, unknown> | undefined;
-}
 
 export async function GET() {
   const admin = await getCurrentAdminUser();
@@ -33,30 +30,36 @@ export async function GET() {
     console.warn("Get settings DB warning:", err);
   }
 
-  const mem = global.inMemorySettingsCache || {};
+  const stored = getStoredSettings();
+  const mem = (global as unknown as { inMemorySettingsCache?: Record<string, unknown> }).inMemorySettingsCache || {};
   const merged = {
     ...fallbackSettings,
-    ...(doc || {}),
+    ...stored,
     ...mem,
+    ...(doc || {}),
     social: {
       ...fallbackSettings.social,
-      ...((doc?.social as Record<string, string>) || {}),
+      ...((stored.social as Record<string, string>) || {}),
       ...((mem.social as Record<string, string>) || {}),
+      ...((doc?.social as Record<string, string>) || {}),
     },
     footerQr: {
       ...fallbackSettings.footerQr,
-      ...((doc?.footerQr as Record<string, unknown>) || {}),
+      ...((stored.footerQr as Record<string, unknown>) || {}),
       ...((mem.footerQr as Record<string, unknown>) || {}),
+      ...((doc?.footerQr as Record<string, unknown>) || {}),
     },
     seo: {
       ...fallbackSettings.seo,
-      ...((doc?.seo as Record<string, unknown>) || {}),
+      ...((stored.seo as Record<string, unknown>) || {}),
       ...((mem.seo as Record<string, unknown>) || {}),
+      ...((doc?.seo as Record<string, unknown>) || {}),
     },
     analytics: {
       ...fallbackSettings.analytics,
-      ...((doc?.analytics as Record<string, string>) || {}),
+      ...((stored.analytics as Record<string, string>) || {}),
       ...((mem.analytics as Record<string, string>) || {}),
+      ...((doc?.analytics as Record<string, string>) || {}),
     },
   };
 
@@ -72,52 +75,101 @@ export async function PUT(req: Request) {
 
   try {
     const { settings, profile } = await req.json();
-    let updatedSettings = null;
-    let updatedProfile = null;
+    let updatedSettings: Record<string, unknown> | null = null;
+    let updatedProfile: Record<string, unknown> | null = null;
+
+    let existingDoc: Record<string, unknown> | null = null;
+    try {
+      const db = await connectDB();
+      if (db) {
+        const found = await SiteSettings.findOne().lean();
+        if (found) existingDoc = serialize(found) as unknown as Record<string, unknown>;
+      }
+    } catch (dbReadErr) {
+      console.warn("Settings read before update warning:", dbReadErr);
+    }
+
+    const stored = getStoredSettings();
+    const mem = (global as unknown as { inMemorySettingsCache?: Record<string, unknown> }).inMemorySettingsCache || {};
+
+    const mergedSettingsToPersist = {
+      ...fallbackSettings,
+      ...stored,
+      ...(existingDoc || {}),
+      ...mem,
+      ...(settings || {}),
+      social: {
+        ...fallbackSettings.social,
+        ...((stored.social as Record<string, string>) || {}),
+        ...((existingDoc?.social as Record<string, string>) || {}),
+        ...((mem.social as Record<string, string>) || {}),
+        ...(settings?.social || {}),
+      },
+      footerQr: {
+        ...fallbackSettings.footerQr,
+        ...((stored.footerQr as Record<string, unknown>) || {}),
+        ...((existingDoc?.footerQr as Record<string, unknown>) || {}),
+        ...((mem.footerQr as Record<string, unknown>) || {}),
+        ...(settings?.footerQr || {}),
+      },
+      seo: {
+        ...fallbackSettings.seo,
+        ...((stored.seo as Record<string, unknown>) || {}),
+        ...((existingDoc?.seo as Record<string, unknown>) || {}),
+        ...((mem.seo as Record<string, unknown>) || {}),
+        ...(settings?.seo || {}),
+      },
+      analytics: {
+        ...fallbackSettings.analytics,
+        ...((stored.analytics as Record<string, string>) || {}),
+        ...((existingDoc?.analytics as Record<string, string>) || {}),
+        ...((mem.analytics as Record<string, string>) || {}),
+        ...(settings?.analytics || {}),
+      },
+    };
 
     if (settings) {
-      global.inMemorySettingsCache = {
-        ...fallbackSettings,
-        ...(global.inMemorySettingsCache || {}),
-        ...settings,
-        social: {
-          ...fallbackSettings.social,
-          ...((global.inMemorySettingsCache?.social as Record<string, string>) || {}),
-          ...(settings.social || {}),
-        },
-        footerQr: {
-          ...fallbackSettings.footerQr,
-          ...((global.inMemorySettingsCache?.footerQr as Record<string, unknown>) || {}),
-          ...(settings.footerQr || {}),
-        },
-        seo: {
-          ...fallbackSettings.seo,
-          ...((global.inMemorySettingsCache?.seo as Record<string, unknown>) || {}),
-          ...(settings.seo || {}),
-        },
-        analytics: {
-          ...fallbackSettings.analytics,
-          ...((global.inMemorySettingsCache?.analytics as Record<string, string>) || {}),
-          ...(settings.analytics || {}),
-        },
-      };
+      (global as unknown as { inMemorySettingsCache?: Record<string, unknown> }).inMemorySettingsCache = mergedSettingsToPersist;
+      updateStoredSettings(mergedSettingsToPersist);
     }
 
     try {
       const db = await connectDB();
       if (db) {
         if (settings) {
-          updatedSettings = await SiteSettings.findOneAndUpdate({}, { $set: settings }, {
-            new: true,
-            upsert: true,
-          }).lean();
+          const existing = await SiteSettings.findOne();
+          if (existing) {
+            const resDoc = await SiteSettings.findByIdAndUpdate(
+              existing._id,
+              { $set: mergedSettingsToPersist },
+              { new: true, runValidators: false }
+            ).lean();
+            if (resDoc) updatedSettings = serialize(resDoc) as unknown as Record<string, unknown>;
+          } else {
+            const created = await SiteSettings.create(mergedSettingsToPersist);
+            if (created) {
+              const obj = typeof created.toObject === "function" ? created.toObject() : created;
+              updatedSettings = serialize(obj) as unknown as Record<string, unknown>;
+            }
+          }
         }
 
         if (profile) {
-          updatedProfile = await CompanyProfile.findOneAndUpdate({}, { $set: profile }, {
-            new: true,
-            upsert: true,
-          }).lean();
+          const existingProf = await CompanyProfile.findOne();
+          if (existingProf) {
+            const resProf = await CompanyProfile.findByIdAndUpdate(
+              existingProf._id,
+              { $set: profile },
+              { new: true, runValidators: false }
+            ).lean();
+            if (resProf) updatedProfile = serialize(resProf) as unknown as Record<string, unknown>;
+          } else {
+            const createdProf = await CompanyProfile.create(profile);
+            if (createdProf) {
+              const obj = typeof createdProf.toObject === "function" ? createdProf.toObject() : createdProf;
+              updatedProfile = serialize(obj) as unknown as Record<string, unknown>;
+            }
+          }
         }
       }
     } catch (dbErr) {
@@ -141,17 +193,22 @@ export async function PUT(req: Request) {
       revalidatePath("/");
       revalidatePath("/about");
       revalidatePath("/contact");
+      revalidatePath("/products");
+      revalidatePath("/services");
+      revalidatePath("/use-cases");
+      revalidatePath("/blog");
     } catch {
       // ignore
     }
 
     return NextResponse.json({
       success: true,
-      settings: updatedSettings ? serialize(updatedSettings) : global.inMemorySettingsCache || settings,
-      profile: updatedProfile ? serialize(updatedProfile) : profile,
+      settings: updatedSettings || mergedSettingsToPersist,
+      profile: updatedProfile || profile,
     });
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("Update settings error:", err);
-    return NextResponse.json({ error: "Failed to update settings" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : "Failed to update settings";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

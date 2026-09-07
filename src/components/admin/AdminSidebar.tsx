@@ -25,6 +25,8 @@ import {
   ExternalLinkIcon,
 } from "@/components/admin/AdminIcons";
 
+import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
+
 interface NavSingleItem {
   type: "link";
   label: string;
@@ -133,6 +135,37 @@ export function AdminSidebar({
   // Auto-expand settings accordion if user is currently on settings page
   const isSettingsActive = pathname.startsWith("/admin/settings");
   const [settingsOpen, setSettingsOpen] = useState(true);
+  const [logoUrl, setLogoUrl] = useState<string>("");
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.settings?.logoUrl || data.settings?.logo) {
+          setLogoUrl(data.settings.logoUrl || data.settings.logo);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function handleLogoSelect(newUrl: string) {
+    setLogoUrl(newUrl);
+    try {
+      await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          settings: {
+            logoUrl: newUrl,
+            logo: newUrl,
+          },
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to update logo:", err);
+    }
+  }
 
   useEffect(() => {
     if (isSettingsActive) {
@@ -159,22 +192,36 @@ export function AdminSidebar({
       >
         {/* Header Branding */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-4">
-          <Link
-            href="/admin/dashboard"
-            className="flex items-center gap-3 overflow-hidden"
-          >
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded bg-orange font-display text-base font-bold text-white shadow-sm">
-              NES
-            </div>
+          <div className="flex items-center gap-3 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              title="Click to upload/change NES Logo"
+              className="group relative grid h-10 w-10 shrink-0 place-items-center rounded bg-orange font-display text-base font-bold text-white shadow-sm overflow-hidden hover:opacity-90 transition cursor-pointer"
+            >
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrl}
+                  alt="NES Logo"
+                  className="h-full w-full object-contain p-0.5 bg-white"
+                />
+              ) : (
+                <span>NES</span>
+              )}
+              <span className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition text-[9px] font-bold text-white uppercase tracking-tighter">
+                Upload
+              </span>
+            </button>
             {!collapsed && (
-              <div className="flex flex-col leading-tight">
-                <span className="font-display text-sm font-bold tracking-wider text-white">
+              <Link href="/admin/dashboard" className="flex flex-col leading-tight">
+                <span className="font-display text-sm font-bold tracking-wider text-white hover:text-orange transition">
                   NUR CMS
                 </span>
                 <span className="text-[10px] text-white/50 tracking-wide">ADMIN PANEL</span>
-              </div>
+              </Link>
             )}
-          </Link>
+          </div>
 
           <button
             type="button"
@@ -337,6 +384,12 @@ export function AdminSidebar({
           </Link>
         </div>
       </aside>
+
+      <MediaPickerModal
+        isOpen={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={handleLogoSelect}
+      />
     </>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Img } from "@/components/Img";
 import { ImageIcon, TrashIcon, SearchIcon } from "@/components/admin/AdminIcons";
+import { compressImageFile } from "@/lib/image-compression";
 
 interface MediaItem {
   _id: string;
@@ -40,25 +41,42 @@ export default function AdminMediaPage() {
   }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
+
+    if (!rawFile.type.startsWith("image/")) {
+      alert("Please select a valid image file.");
+      return;
+    }
 
     try {
       setUploading(true);
+
+      const optimizedFile = await compressImageFile(rawFile, 1600, 0.85);
+
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", file.name);
+      formData.append("file", optimizedFile);
+      formData.append("title", rawFile.name);
 
       const res = await fetch("/api/admin/media", {
         method: "POST",
         body: formData,
       });
+
+      if (res.status === 413) {
+        alert("Upload failed: File size too large for serverless transfer. Please choose a smaller image.");
+        return;
+      }
+
       const data = await res.json();
       if (data.success && data.item) {
         setItems((prev) => [data.item, ...prev]);
+      } else {
+        alert(data.error || "Failed to upload image.");
       }
     } catch (err) {
       console.error("Upload error:", err);
+      alert("Failed to upload image. Please try again.");
     } finally {
       setUploading(false);
     }

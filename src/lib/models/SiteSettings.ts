@@ -42,26 +42,30 @@ export interface ISiteSettings {
 
 const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
-    brandName: { type: String, required: true },
-    tagline: { type: String, required: true },
-    description: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
-    address: { type: String, required: true },
+    brandName: { type: String, default: "Nur Engineering Solution" },
+    tagline: { type: String, default: "Machine, spare parts and Technical service provider" },
+    description: {
+      type: String,
+      default:
+        "EEE-led supplier of PLC, motors, drives, sensors, and industrial spare parts with technical service across Bangladesh.",
+    },
+    email: { type: String, default: "info@nurengineering.com" },
+    phone: { type: String, default: "+880 1700-000000" },
+    address: { type: String, default: "Dhaka, Bangladesh" },
     hours: { type: String, default: "Sat–Thu 9:00–18:00" },
     mapEmbedUrl: { type: String, default: "" },
-    logoUrl: String,
-    favicon: String,
+    logoUrl: { type: String, default: "" },
+    favicon: { type: String, default: "" },
     notice: {
       type: String,
       default: "Out of stock products will be delivered within 3-5 days.",
     },
     social: {
-      facebook: String,
-      linkedin: String,
-      instagram: String,
-      youtube: String,
-      whatsapp: String,
+      facebook: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      instagram: { type: String, default: "" },
+      youtube: { type: String, default: "" },
+      whatsapp: { type: String, default: "" },
     },
     footerQr: {
       wechatQr: { type: String, default: "" },
@@ -72,24 +76,31 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
       whatsappQrEnabled: { type: Boolean, default: true },
     },
     seo: {
-      defaultTitle: { type: String, required: true },
-      defaultDescription: { type: String, required: true },
+      defaultTitle: {
+        type: String,
+        default: "Nur Engineering Solution | Machine Parts & Technical Service",
+      },
+      defaultDescription: {
+        type: String,
+        default:
+          "Buy PLC, motors, VFD, sensors, contactors and industrial spare parts. Technical service from an EEE engineering desk in Bangladesh.",
+      },
       keywords: [{ type: String }],
     },
     analytics: {
-      gaMeasurementId: String,
-      googleSiteVerification: String,
+      gaMeasurementId: { type: String, default: "" },
+      googleSiteVerification: { type: String, default: "" },
     },
     nav: [
       {
-        href: { type: String, required: true },
-        label: { type: String, required: true },
+        href: { type: String, default: "" },
+        label: { type: String, default: "" },
         order: { type: Number, default: 0 },
         _id: false,
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export const SiteSettings =

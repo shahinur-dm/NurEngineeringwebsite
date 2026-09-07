@@ -34,7 +34,7 @@ In the event of verified factory defects or incorrect part delivery, replacement
 Physical damage, electrical overload, or incorrect installation is not covered under warranty.`;
 
   return (
-    <div className={`mt-5 pt-4 border-t border-[#e2e8f0] ${className}`}>
+    <div className={`w-full ${className}`}>
       {/* Tabs Header */}
       <div className="border-b border-[#e2e8f0] flex items-center gap-5 sm:gap-7 overflow-x-auto scrollbar-none">
         <button

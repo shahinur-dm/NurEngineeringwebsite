@@ -97,17 +97,14 @@ export async function getCurrentAdminUser(): Promise<IUser | null> {
       console.warn("DB user lookup error, using verified session token:", e);
     }
 
-    // Verified super admin session payload fallback
-    if (
-      payload.userId === "default_super_admin" ||
-      payload.email === "admin@nurengineering.com"
-    ) {
+    // Verified admin session payload fallback if DB is temporarily disconnected/slow
+    if (payload.role === "super_admin" || payload.role === "admin" || payload.role === "editor") {
       return {
-        _id: "default_super_admin",
-        name: "Super Administrator",
+        _id: payload.userId || "default_super_admin",
+        name: payload.email ? payload.email.split("@")[0] : "Administrator",
         email: payload.email || "admin@nurengineering.com",
         passwordHash: "",
-        role: (payload.role as UserRole) || "super_admin",
+        role: payload.role as UserRole,
         active: true,
         lastLogin: new Date(),
         createdAt: new Date(),
@@ -135,23 +132,25 @@ export async function logActivity({
   user?: { _id: string; name: string; email: string; role: string };
 }) {
   try {
-    await connectDB();
-    await ActivityLog.create({
-      action,
-      entity,
-      entityId,
-      details,
-      user: user
-        ? {
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-          }
-        : undefined,
-    });
+    const db = await connectDB();
+    if (db) {
+      await ActivityLog.create({
+        action,
+        entity,
+        entityId,
+        details,
+        user: user
+          ? {
+              _id: user._id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+            }
+          : undefined,
+      });
+    }
   } catch (err) {
-    console.error("Failed to log activity:", err);
+    console.warn("Failed to log activity to DB:", err);
   }
 }
 

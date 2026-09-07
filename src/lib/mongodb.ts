@@ -18,7 +18,7 @@ global.mongooseCache = cached;
 
 /**
  * Next.js catalog site: database connection manager.
- * Safely connects with cached instance and handles reconnections if severed.
+ * Connects safely with cached instance and handles reconnections if severed.
  */
 export async function connectDB() {
   const MONGODB_URI = process.env.MONGODB_URI;
@@ -39,6 +39,8 @@ export async function connectDB() {
         maxIdleTimeMS: 60_000,
         serverSelectionTimeoutMS: 5_000,
         connectTimeoutMS: 8_000,
+        family: 4,
+        autoIndex: process.env.NODE_ENV !== "production",
       })
       .then((m) => {
         cached.conn = m;
@@ -61,4 +63,3 @@ export async function connectDB() {
     return null;
   }
 }
-

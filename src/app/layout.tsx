@@ -48,6 +48,13 @@ export async function generateMetadata(): Promise<Metadata> {
     description: site.seo?.defaultDescription || site.description,
     keywords: site.seo?.keywords || [],
     applicationName: site.brandName,
+    icons: site.favicon
+      ? {
+          icon: site.favicon,
+          shortcut: site.favicon,
+          apple: site.favicon,
+        }
+      : undefined,
     openGraph: {
       type: "website",
       locale: "en_BD",

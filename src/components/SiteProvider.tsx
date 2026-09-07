@@ -1,17 +1,18 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { ISiteSettings, IUseCase } from "@/lib/models";
 
 type SiteContextValue = {
   settings: ISiteSettings;
   useCases: IUseCase[];
+  updateSettings?: (newSettings: Partial<ISiteSettings>) => void;
 };
 
 const SiteContext = createContext<SiteContextValue | null>(null);
 
 export function SiteProvider({
-  settings,
+  settings: initialSettings,
   useCases,
   children,
 }: {
@@ -19,6 +20,51 @@ export function SiteProvider({
   useCases: IUseCase[];
   children: ReactNode;
 }) {
+  const [settings, setSettings] = useState<ISiteSettings>(initialSettings);
+
+  useEffect(() => {
+    setSettings(initialSettings);
+  }, [initialSettings]);
+
+  // Client-side dynamic synchronization for live logo, favicon and branding updates
+  useEffect(() => {
+    function fetchLatestSettings() {
+      fetch("/api/settings")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.settings) {
+            setSettings((prev) => ({
+              ...prev,
+              ...data.settings,
+              logoUrl: data.settings.logoUrl || data.settings.logo || prev.logoUrl,
+              favicon: data.settings.favicon || prev.favicon,
+            }));
+
+            // Dynamically update document favicon links in real time
+            const favUrl = data.settings.favicon;
+            if (favUrl) {
+              const rels = ["icon", "shortcut icon", "apple-touch-icon"];
+              rels.forEach((rel) => {
+                let link: HTMLLinkElement | null = document.querySelector(`link[rel='${rel}']`);
+                if (!link) {
+                  link = document.createElement("link");
+                  link.rel = rel;
+                  document.head.appendChild(link);
+                }
+                link.href = favUrl;
+              });
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+    // Refresh on mount and when returning to the tab
+    fetchLatestSettings();
+    window.addEventListener("focus", fetchLatestSettings);
+    return () => window.removeEventListener("focus", fetchLatestSettings);
+  }, []);
+
   return (
     <SiteContext.Provider value={{ settings, useCases }}>
       {children}

@@ -18,7 +18,7 @@ interface SubCategory {
   category: string | { _id: string };
 }
 
-interface SpecRow {
+interface KeyValueRow {
   label: string;
   value: string;
 }
@@ -40,7 +40,10 @@ interface ProductFormProps {
     gallery?: string[];
     videoUrl?: string;
     specs?: string[];
-    specTable?: SpecRow[];
+    specTable?: KeyValueRow[];
+    atAGlance?: KeyValueRow[];
+    includedItems?: string[];
+    beforeYouOrder?: string[];
     condition?: string;
     packing?: string;
     warranty?: string;
@@ -85,7 +88,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   );
 
   // Specifications
-  const [specTable, setSpecTable] = useState<SpecRow[]>(
+  const [specTable, setSpecTable] = useState<KeyValueRow[]>(
     initialData?.specTable || []
   );
   const [specLabelInput, setSpecLabelInput] = useState("");
@@ -93,6 +96,25 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
 
   const [specs, setSpecs] = useState<string[]>(initialData?.specs || []);
   const [specInput, setSpecInput] = useState("");
+
+  // At a Glance
+  const [atAGlance, setAtAGlance] = useState<KeyValueRow[]>(
+    initialData?.atAGlance || []
+  );
+  const [atAGlanceLabel, setAtAGlanceLabel] = useState("");
+  const [atAGlanceValue, setAtAGlanceValue] = useState("");
+
+  // In the Pack
+  const [includedItems, setIncludedItems] = useState<string[]>(
+    initialData?.includedItems || []
+  );
+  const [packItemInput, setPackItemInput] = useState("");
+
+  // Before You Order
+  const [beforeYouOrder, setBeforeYouOrder] = useState<string[]>(
+    initialData?.beforeYouOrder || []
+  );
+  const [beforeOrderInput, setBeforeOrderInput] = useState("");
 
   // Warranty, Condition, Packing, Availability
   const [warranty, setWarranty] = useState(
@@ -230,6 +252,46 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
     setSpecs(specs.filter((_, i) => i !== index));
   }
 
+  // At a Glance handlers
+  function handleAddAtAGlance() {
+    if (atAGlanceLabel.trim() && atAGlanceValue.trim()) {
+      setAtAGlance([
+        ...atAGlance,
+        { label: atAGlanceLabel.trim(), value: atAGlanceValue.trim() },
+      ]);
+      setAtAGlanceLabel("");
+      setAtAGlanceValue("");
+    }
+  }
+
+  function handleRemoveAtAGlance(index: number) {
+    setAtAGlance(atAGlance.filter((_, i) => i !== index));
+  }
+
+  // In the Pack handlers
+  function handleAddPackItem() {
+    if (packItemInput.trim()) {
+      setIncludedItems([...includedItems, packItemInput.trim()]);
+      setPackItemInput("");
+    }
+  }
+
+  function handleRemovePackItem(index: number) {
+    setIncludedItems(includedItems.filter((_, i) => i !== index));
+  }
+
+  // Before You Order handlers
+  function handleAddBeforeOrderItem() {
+    if (beforeOrderInput.trim()) {
+      setBeforeYouOrder([...beforeYouOrder, beforeOrderInput.trim()]);
+      setBeforeOrderInput("");
+    }
+  }
+
+  function handleRemoveBeforeOrderItem(index: number) {
+    setBeforeYouOrder(beforeYouOrder.filter((_, i) => i !== index));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -260,6 +322,9 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
         videoUrl: videoUrl.trim() || undefined,
         specs,
         specTable,
+        atAGlance,
+        includedItems,
+        beforeYouOrder,
         condition,
         packing,
         warranty,
@@ -324,7 +389,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="btn-orange px-5 sm:px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50 flex-1 sm:flex-none text-center"
+            className="btn-orange px-5 sm:px-6 py-2 text-xs font-bold uppercase shadow-sm disabled:opacity-50 flex-1 sm:flex-none text-center cursor-pointer"
           >
             {loading ? "Saving..." : isEdit ? "Update Product" : "Create Product"}
           </button>
@@ -344,7 +409,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
       )}
 
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-[1.6fr_1.1fr]">
-        {/* Main Left Column: Content, Specs, Warranty */}
+        {/* Main Left Column: Content, Specs, Warranty, Info Blocks */}
         <div className="space-y-6">
           {/* General Info */}
           <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
@@ -493,7 +558,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                   Technical Specifications Table
                 </h3>
                 <p className="text-[11px] text-steel">
-                  Add Parameter / Value pairs displayed in the Specifications Tab & technical view.
+                  Add Parameter / Value pairs displayed in the Specifications Tab.
                 </p>
               </div>
             </div>
@@ -522,7 +587,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               <button
                 type="button"
                 onClick={handleAddSpecRow}
-                className="btn-orange px-4 py-2 text-xs font-bold uppercase"
+                className="btn-orange px-4 py-2 text-xs font-bold uppercase cursor-pointer"
               >
                 + Add Row
               </button>
@@ -547,7 +612,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                           <button
                             type="button"
                             onClick={() => handleRemoveSpecRow(i)}
-                            className="text-red-500 hover:text-red-700 font-bold px-2 py-1 text-xs"
+                            className="text-red-500 hover:text-red-700 font-bold px-2 py-1 text-xs cursor-pointer"
                           >
                             ✕
                           </button>
@@ -561,7 +626,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               <p className="text-xs text-mist">No specification rows added yet.</p>
             )}
 
-            {/* Quick Specs Tags (Optional) */}
+            {/* Quick Specs Tags */}
             <div className="pt-3 border-t border-line">
               <label className="block text-xs font-bold uppercase tracking-wider text-navy mb-2">
                 Quick Feature Bullet Points (Optional)
@@ -583,7 +648,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 <button
                   type="button"
                   onClick={handleAddSpec}
-                  className="btn-navy px-4 py-2 text-xs font-bold"
+                  className="btn-navy px-4 py-2 text-xs font-bold cursor-pointer"
                 >
                   + Add
                 </button>
@@ -600,11 +665,178 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                       <button
                         type="button"
                         onClick={() => handleRemoveSpec(i)}
-                        className="text-red-500 hover:text-red-700 font-bold"
+                        className="text-red-500 hover:text-red-700 font-bold cursor-pointer"
                       >
                         ✕
                       </button>
                     </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* At A Glance Section Builder */}
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
+            <div className="border-b border-line pb-3">
+              <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
+                At a Glance Attributes (Optional)
+              </h3>
+              <p className="text-[11px] text-steel">
+                Displays compact highlight parameters below the product gallery (e.g. Size, Network, Serial).
+              </p>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+              <input
+                type="text"
+                placeholder="Attribute (e.g. Size)"
+                value={atAGlanceLabel}
+                onChange={(e) => setAtAGlanceLabel(e.target.value)}
+                className="rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+              />
+              <input
+                type="text"
+                placeholder="Value (e.g. 7 inch)"
+                value={atAGlanceValue}
+                onChange={(e) => setAtAGlanceValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddAtAGlance();
+                  }
+                }}
+                className="rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+              />
+              <button
+                type="button"
+                onClick={handleAddAtAGlance}
+                className="btn-orange px-4 py-2 text-xs font-bold uppercase cursor-pointer"
+              >
+                + Add
+              </button>
+            </div>
+
+            {atAGlance.length > 0 && (
+              <div className="overflow-x-auto border border-line">
+                <table className="w-full text-left text-xs border-collapse">
+                  <tbody className="divide-y divide-line">
+                    {atAGlance.map((row, i) => (
+                      <tr key={i} className="hover:bg-paper/30">
+                        <td className="py-2 px-3 font-medium text-steel w-1/2">{row.label}</td>
+                        <td className="py-2 px-3 font-semibold text-navy w-1/2">{row.value}</td>
+                        <td className="py-2 px-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAtAGlance(i)}
+                            className="text-red-500 hover:text-red-700 font-bold px-2 py-1 text-xs cursor-pointer"
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* In the Pack & Before You Order */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            {/* In the Pack */}
+            <div className="rounded-lg border border-line bg-white p-4 shadow-xs space-y-3">
+              <h3 className="font-display text-xs font-bold uppercase tracking-wider text-navy border-b border-line pb-2">
+                In The Pack (Optional)
+              </h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. HMI, Panel Clamps"
+                  value={packItemInput}
+                  onChange={(e) => setPackItemInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddPackItem();
+                    }
+                  }}
+                  className="flex-1 rounded border border-line px-2.5 py-1.5 text-xs outline-none focus:border-orange"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddPackItem}
+                  className="btn-navy px-3 py-1.5 text-xs font-bold cursor-pointer"
+                >
+                  + Add
+                </button>
+              </div>
+
+              {includedItems.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {includedItems.map((item, i) => (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded border border-line bg-paper px-2 py-0.5 text-xs text-navy font-medium"
+                    >
+                      {item}
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePackItem(i)}
+                        className="text-red-500 hover:text-red-700 font-bold cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Before You Order */}
+            <div className="rounded-lg border border-line bg-white p-4 shadow-xs space-y-3">
+              <h3 className="font-display text-xs font-bold uppercase tracking-wider text-navy border-b border-line pb-2">
+                Before You Order (Optional)
+              </h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. Confirm cut-out dimensions"
+                  value={beforeOrderInput}
+                  onChange={(e) => setBeforeOrderInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddBeforeOrderItem();
+                    }
+                  }}
+                  className="flex-1 rounded border border-line px-2.5 py-1.5 text-xs outline-none focus:border-orange"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddBeforeOrderItem}
+                  className="btn-navy px-3 py-1.5 text-xs font-bold cursor-pointer"
+                >
+                  + Add
+                </button>
+              </div>
+
+              {beforeYouOrder.length > 0 && (
+                <div className="space-y-1">
+                  {beforeYouOrder.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between gap-1.5 rounded border border-line bg-paper px-2 py-1 text-xs text-navy"
+                    >
+                      <span className="truncate">{item}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveBeforeOrderItem(i)}
+                        className="text-red-500 hover:text-red-700 font-bold shrink-0 cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -702,7 +934,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               <button
                 type="button"
                 onClick={() => openMediaPicker("main")}
-                className="text-xs font-bold text-orange hover:underline"
+                className="text-xs font-bold text-orange hover:underline cursor-pointer"
               >
                 Media Library
               </button>
@@ -740,7 +972,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               <button
                 type="button"
                 onClick={() => openMediaPicker("gallery")}
-                className="text-xs font-bold text-orange hover:underline flex items-center gap-1"
+                className="text-xs font-bold text-orange hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <span>+ Pick Media</span>
               </button>
@@ -758,7 +990,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
               <button
                 type="button"
                 onClick={handleAddGalleryUrl}
-                className="rounded border border-line bg-paper px-3 py-1.5 text-xs font-bold text-navy hover:bg-paper/80"
+                className="rounded border border-line bg-paper px-3 py-1.5 text-xs font-bold text-navy hover:bg-paper/80 cursor-pointer"
               >
                 Add URL
               </button>
@@ -787,7 +1019,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                       <button
                         type="button"
                         onClick={() => handleSetAsMainImage(i)}
-                        className="rounded bg-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow"
+                        className="rounded bg-orange px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow cursor-pointer"
                         title="Set this image as primary product image"
                       >
                         ★ Set Main
@@ -798,7 +1030,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                           type="button"
                           disabled={i === 0}
                           onClick={() => handleMoveGalleryImage(i, -1)}
-                          className="h-6 w-6 rounded bg-white/20 hover:bg-white/40 text-xs font-bold disabled:opacity-30"
+                          className="h-6 w-6 rounded bg-white/20 hover:bg-white/40 text-xs font-bold disabled:opacity-30 cursor-pointer"
                           title="Move Left"
                         >
                           ◀
@@ -807,7 +1039,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                           type="button"
                           disabled={i === gallery.length - 1}
                           onClick={() => handleMoveGalleryImage(i, 1)}
-                          className="h-6 w-6 rounded bg-white/20 hover:bg-white/40 text-xs font-bold disabled:opacity-30"
+                          className="h-6 w-6 rounded bg-white/20 hover:bg-white/40 text-xs font-bold disabled:opacity-30 cursor-pointer"
                           title="Move Right"
                         >
                           ▶
@@ -815,7 +1047,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                         <button
                           type="button"
                           onClick={() => handleRemoveGalleryImage(i)}
-                          className="h-6 w-6 rounded bg-red-600 hover:bg-red-700 text-xs font-bold"
+                          className="h-6 w-6 rounded bg-red-600 hover:bg-red-700 text-xs font-bold cursor-pointer"
                           title="Delete image"
                         >
                           ✕
@@ -843,7 +1075,7 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 <button
                   type="button"
                   onClick={() => setVideoUrl("")}
-                  className="text-xs font-bold text-red-500 hover:underline"
+                  className="text-xs font-bold text-red-500 hover:underline cursor-pointer"
                 >
                   Remove Video
                 </button>
