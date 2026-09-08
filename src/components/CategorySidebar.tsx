@@ -116,28 +116,28 @@ export function CategorySidebar({
   return (
     <>
       {/* Mobile Collapsible Category Accordion / Dropdown */}
-      <div className="block lg:hidden border border-line bg-white shadow-[0_1px_0_rgba(11,31,51,0.03)]">
+      <div className="block lg:hidden border border-line bg-white shadow-[0_1px_0_rgba(11,31,51,0.03)] w-full max-w-full min-w-0">
         <button
           type="button"
           onClick={() => setMobileOpen((v) => !v)}
-          className="flex w-full items-center justify-between bg-navy px-4 py-3 text-left transition"
+          className="flex w-full items-center justify-between bg-navy px-3 sm:px-4 py-2.5 sm:py-3 text-left transition min-w-0"
           aria-expanded={mobileOpen}
         >
-          <div className="flex items-center gap-2">
-            <span className="font-display text-[13px] font-bold uppercase tracking-[0.16em] text-white">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 truncate">
+            <span className="font-display text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.14em] sm:tracking-[0.16em] text-white shrink-0">
               Category
             </span>
             {activeCategory ? (
-              <span className="rounded bg-orange px-2 py-0.5 text-[11px] font-bold uppercase text-white">
+              <span className="rounded bg-orange px-1.5 sm:px-2 py-0.5 text-[10.5px] sm:text-[11px] font-bold uppercase text-white truncate">
                 {activeCategory.name}
               </span>
             ) : (
-              <span className="rounded bg-white/20 px-2 py-0.5 text-[11px] font-bold uppercase text-white/90">
+              <span className="rounded bg-white/20 px-1.5 sm:px-2 py-0.5 text-[10.5px] sm:text-[11px] font-bold uppercase text-white/90 shrink-0">
                 All Products
               </span>
             )}
           </div>
-          <span className="flex items-center gap-1.5 text-xs text-orange font-bold">
+          <span className="flex items-center gap-1 text-xs text-orange font-bold shrink-0 ml-2">
             <span>{mobileOpen ? "Hide" : "Filter"}</span>
             <span className="text-sm">{mobileOpen ? "▲" : "▼"}</span>
           </span>

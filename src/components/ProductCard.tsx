@@ -60,11 +60,11 @@ export function ProductCard({
         </Link>
 
         {/* 3. Action Buttons: ASK PRICE (Orange) & VIEW DETAILS (Green) */}
-        <div className="pt-2.5 sm:pt-3 border-t border-line mt-auto flex items-center gap-1.5 sm:gap-2">
+        <div className="pt-2.5 sm:pt-3 border-t border-line mt-auto flex items-center gap-1 sm:gap-2 min-w-0">
           {/* ASK PRICE (Orange) */}
           <Link
             href={`/contact?product=${product.slug}`}
-            className="flex-1 min-w-0 inline-flex items-center justify-center bg-orange font-display font-bold uppercase text-white transition hover:bg-[#e05300] active:scale-95 shadow-2xs py-1.5 sm:py-2 text-[9.5px] sm:text-[11px] tracking-[0.05em] sm:tracking-[0.06em] rounded-[2px] text-center"
+            className="flex-1 min-w-0 inline-flex items-center justify-center bg-orange font-display font-bold uppercase text-white transition hover:bg-[#e05300] active:scale-95 shadow-2xs py-1.5 sm:py-2 px-1 text-[9px] sm:text-[11px] tracking-tight sm:tracking-[0.06em] rounded-[2px] text-center"
             title={`Ask price for ${product.name}`}
           >
             <span className="truncate">ASK PRICE</span>
@@ -73,7 +73,7 @@ export function ProductCard({
           {/* VIEW DETAILS (Green) */}
           <Link
             href={`/products/${product.slug}`}
-            className="flex-1 min-w-0 inline-flex items-center justify-center bg-[#16a34a] font-display font-bold uppercase text-white transition hover:bg-[#15803d] active:scale-95 shadow-2xs py-1.5 sm:py-2 text-[9.5px] sm:text-[11px] tracking-[0.05em] sm:tracking-[0.06em] rounded-[2px] text-center"
+            className="flex-1 min-w-0 inline-flex items-center justify-center bg-[#16a34a] font-display font-bold uppercase text-white transition hover:bg-[#15803d] active:scale-95 shadow-2xs py-1.5 sm:py-2 px-1 text-[9px] sm:text-[11px] tracking-tight sm:tracking-[0.06em] rounded-[2px] text-center"
             title={`View details for ${product.name}`}
           >
             <span className="truncate">VIEW DETAILS</span>

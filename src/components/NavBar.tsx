@@ -132,19 +132,19 @@ export function NavBar() {
   }
 
   return (
-    <header className="md:sticky md:top-0 md:z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)]">
-      <div className="shell flex items-center justify-between py-2 md:py-2.5 gap-2 sm:gap-3">
+    <header className="sticky top-[50px] md:top-0 z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)] w-full max-w-full">
+      <div className="shell flex items-center justify-between py-2 md:py-2.5 gap-2 sm:gap-3 w-full max-w-full min-w-0">
         {/* Left: Logo & Company Name Branding (Slightly Larger) */}
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 md:shrink-0 group min-w-0 mr-2 md:mr-4 lg:mr-8">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0 flex-1 md:flex-initial mr-1 sm:mr-2 md:mr-4 lg:mr-8">
           <div className="shrink-0">
-            <Logo size={52} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
+            <Logo size={46} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
           </div>
-          <div className="flex flex-col justify-center min-w-0">
-            <div className="font-display text-[18px] sm:text-[22px] md:text-[24px] font-extrabold uppercase leading-none tracking-[0.03em] sm:tracking-[0.04em] truncate">
+          <div className="flex flex-col justify-center min-w-0 truncate">
+            <div className="font-display text-[16px] sm:text-[22px] md:text-[24px] font-extrabold uppercase leading-none tracking-[0.02em] sm:tracking-[0.04em] truncate">
               <span className="text-navy">{(site.brandName || "NUR ENGINEERING").split(" ")[0]} </span>
               <span className="text-orange">{(site.brandName || "NUR ENGINEERING").split(" ").slice(1).join(" ")}</span>
             </div>
-            <span className="mt-0.5 sm:mt-1 text-[10px] sm:text-[11.5px] font-medium leading-none tracking-tight text-steel truncate">
+            <span className="mt-0.5 sm:mt-1 text-[9.5px] sm:text-[11.5px] font-medium leading-none tracking-tight text-steel truncate">
               {site.tagline || "Machine, Spare Parts & Technical Service"}
             </span>
           </div>

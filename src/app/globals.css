@@ -62,13 +62,18 @@ button {
 .shell,
 .container-page {
   width: min(100% - 2rem, 80rem);
+  max-width: 100%;
+  min-width: 0;
   margin-inline: auto;
+  box-sizing: border-box;
 }
 
 @media (max-width: 640px) {
   .shell,
   .container-page {
     width: min(100% - 1.25rem, 80rem);
+    max-width: 100%;
+    min-width: 0;
   }
 }
 
