@@ -81,10 +81,12 @@ export default async function RootLayout({
         <SiteProvider settings={settings} useCases={useCases}>
           <JsonLd />
           <Analytics gaId={gaId} />
-          <TopBar />
-          <Suspense fallback={<div className="h-11 bg-navy" />}>
-            <NavBar />
-          </Suspense>
+          <div className="sticky top-0 z-40 md:static">
+            <TopBar />
+            <Suspense fallback={<div className="h-11 bg-navy" />}>
+              <NavBar />
+            </Suspense>
+          </div>
           <main id="main-content">{children}</main>
           <Footer />
         </SiteProvider>

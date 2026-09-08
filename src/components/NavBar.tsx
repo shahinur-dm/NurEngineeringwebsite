@@ -132,10 +132,10 @@ export function NavBar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)]">
-      <div className="shell flex items-center justify-between py-2 md:py-2.5 gap-3">
+    <header className="md:sticky md:top-0 md:z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)]">
+      <div className="shell flex items-center justify-between py-2 md:py-2.5 gap-2 sm:gap-3">
         {/* Left: Logo & Company Name Branding (Slightly Larger) */}
-        <Link href="/" className="flex items-center gap-2.5 sm:gap-3.5 shrink-0 group min-w-0 mr-2 md:mr-4 lg:mr-8">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 md:shrink-0 group min-w-0 mr-2 md:mr-4 lg:mr-8">
           <div className="shrink-0">
             <Logo size={52} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
           </div>

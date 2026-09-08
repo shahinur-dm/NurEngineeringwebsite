@@ -19,6 +19,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 body {
@@ -26,7 +28,8 @@ body {
     linear-gradient(180deg, #f7f8fa 0%, #f3f5f8 180px, #f3f5f8 100%);
   color: var(--color-ink);
   font-family: var(--font-body), system-ui, sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 /* Ensure all inline and library SVGs never expand uncontrollably */
