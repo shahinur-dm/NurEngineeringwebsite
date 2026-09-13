@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CatalogShell } from "@/components/CatalogShell";
 import { ProductCard } from "@/components/ProductCard";
 import { SubCategoryBar } from "@/components/SubCategoryBar";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import { getCategories, getSubCategories, getProducts, getSettings } from "@/lib/data";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -69,7 +70,7 @@ export default async function ProductsPage({
         />
       )}
 
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex items-end justify-between gap-3">
         <div>
           <div className="section-label">{heading}</div>
           {activeCategory?.description && !sp.subcategory && (
@@ -83,11 +84,23 @@ export default async function ProductsPage({
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((product) => (
           <ProductCard key={String(product._id)} product={product} />
         ))}
       </div>
+
+      <RelatedSearch
+        currentHref={
+          sp.subcategory && sp.category
+            ? `/products?category=${sp.category}&subcategory=${sp.subcategory}`
+            : sp.category
+              ? `/products?category=${sp.category}`
+              : "/products"
+        }
+        categorySlug={sp.category}
+        subcategorySlug={sp.subcategory}
+      />
 
       {!products.length && (
         <div className="border border-line bg-white p-8 text-center text-sm text-steel rounded-[2px]">

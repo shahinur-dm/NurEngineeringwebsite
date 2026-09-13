@@ -27,6 +27,7 @@ import {
   type IBrand,
 } from "@/lib/models";
 import { navLinks, useCaseContent } from "@/lib/use-cases";
+import { OFFICIAL_CONTACT, officialOrExisting } from "@/lib/official-contact";
 import {
   mockCategories,
   mockSubCategories,
@@ -58,19 +59,27 @@ export const fallbackSettings: ISiteSettings = {
   tagline: "Machine, spare parts and Technical service provider",
   description:
     "EEE-led supplier of PLC, motors, drives, sensors, and industrial spare parts with technical service across Bangladesh.",
-  email: "info@nurengineering.com",
-  phone: "+880 1700-000000",
-  address: "Dhaka, Bangladesh",
+  email: OFFICIAL_CONTACT.email,
+  phone: OFFICIAL_CONTACT.phone,
+  phone2: OFFICIAL_CONTACT.phone2,
+  phone3: OFFICIAL_CONTACT.phone3,
+  wechatId: OFFICIAL_CONTACT.wechatId,
+  address: OFFICIAL_CONTACT.address,
+  addressHouse: OFFICIAL_CONTACT.addressHouse,
+  addressRoad: OFFICIAL_CONTACT.addressRoad,
+  addressBlock: OFFICIAL_CONTACT.addressBlock,
   hours: "Sat–Thu 9:00–18:00",
   mapEmbedUrl:
     "https://maps.google.com/maps?q=Dhaka%2C%20Bangladesh&t=&z=13&ie=UTF8&iwloc=&output=embed",
-  notice: "Out of stock products will be delivered within 3-5 days.",
+  notice: "Out of stock products will be delivered within 3–5 days.",
+  noticeBn:
+    "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★",
   social: {
     facebook: "https://www.facebook.com/",
     linkedin: "https://www.linkedin.com/",
     instagram: "https://www.instagram.com/",
     youtube: "https://www.youtube.com/",
-    whatsapp: "+880 1700-000000",
+    whatsapp: OFFICIAL_CONTACT.whatsapp,
   },
   footerQr: {
     wechatQr: "",
@@ -165,9 +174,24 @@ export async function getSettings(): Promise<ISiteSettings> {
     brandName: (merged.brandName as string) || fallbackSettings.brandName,
     tagline: (merged.tagline as string) || fallbackSettings.tagline,
     description: (merged.description as string) || fallbackSettings.description,
-    email: (merged.email as string) || fallbackSettings.email,
-    phone: (merged.phone as string) || fallbackSettings.phone,
-    address: (merged.address as string) || fallbackSettings.address,
+    email: officialOrExisting(merged.email as string, fallbackSettings.email),
+    phone: officialOrExisting(merged.phone as string, fallbackSettings.phone),
+    phone2: officialOrExisting(merged.phone2 as string, fallbackSettings.phone2 || ""),
+    phone3: officialOrExisting(merged.phone3 as string, fallbackSettings.phone3 || ""),
+    wechatId: officialOrExisting(merged.wechatId as string, fallbackSettings.wechatId || ""),
+    address: officialOrExisting(merged.address as string, fallbackSettings.address),
+    addressHouse: officialOrExisting(
+      merged.addressHouse as string,
+      fallbackSettings.addressHouse || ""
+    ),
+    addressRoad: officialOrExisting(
+      merged.addressRoad as string,
+      fallbackSettings.addressRoad || ""
+    ),
+    addressBlock: officialOrExisting(
+      merged.addressBlock as string,
+      fallbackSettings.addressBlock || ""
+    ),
     hours: (merged.hours as string) || fallbackSettings.hours,
     mapEmbedUrl: (merged.mapEmbedUrl as string) || fallbackSettings.mapEmbedUrl,
     logoUrl: ((merged.logoUrl || merged.logo) as string) || "",
@@ -175,13 +199,20 @@ export async function getSettings(): Promise<ISiteSettings> {
     notice:
       (merged.notice as string) ||
       fallbackSettings.notice ||
-      "Out of stock products will be delivered within 3-5 days.",
+      "Out of stock products will be delivered within 3–5 days.",
+    noticeBn:
+      (merged.noticeBn as string) ||
+      fallbackSettings.noticeBn ||
+      "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★",
     social: {
       facebook: rawSocial.facebook || fallbackSettings.social?.facebook || "",
       linkedin: rawSocial.linkedin || fallbackSettings.social?.linkedin || "",
       instagram: rawSocial.instagram || fallbackSettings.social?.instagram || "",
       youtube: rawSocial.youtube || fallbackSettings.social?.youtube || "",
-      whatsapp: rawSocial.whatsapp || fallbackSettings.social?.whatsapp || "+880170000000",
+      whatsapp: officialOrExisting(
+        rawSocial.whatsapp,
+        fallbackSettings.social?.whatsapp || OFFICIAL_CONTACT.whatsapp
+      ),
     },
     footerQr: {
       wechatQr: (rawFooterQr.wechatQr as string) || "",
@@ -768,7 +799,7 @@ export async function getProductBySlug(
 export async function getRelatedProducts(
   categoryId: string,
   excludeSlug: string,
-  limit = 4
+  limit = 15
 ): Promise<PopulatedProduct[]> {
   try {
     const db = await connectDB();
@@ -796,14 +827,14 @@ export async function getRelatedProducts(
         .lean<PopulatedProduct[]>();
 
       if (primaryDocs && primaryDocs.length >= limit) {
-        return serialize(primaryDocs);
+        return serialize(dedupeRelatedProducts(primaryDocs, excludeSlug));
       }
 
-      const existingIds = (primaryDocs || []).map((d) => String(d._id));
+      const existingIds = (primaryDocs || []).map((d) => d._id);
       const extraNeeded = limit - (primaryDocs ? primaryDocs.length : 0);
 
       const fallbackDocs = await Product.find({
-        _id: { $nin: existingIds },
+        _id: { $nin: existingIds.length ? existingIds : [null] },
         slug: { $ne: excludeSlug },
         published: { $ne: false },
       })
@@ -815,7 +846,9 @@ export async function getRelatedProducts(
         .lean<PopulatedProduct[]>();
 
 
-      return serialize([...(primaryDocs || []), ...(fallbackDocs || [])]);
+      return serialize(
+        dedupeRelatedProducts([...(primaryDocs || []), ...(fallbackDocs || [])], excludeSlug)
+      );
     }
   } catch (err) {
     console.error("getRelatedProducts DB error:", err);
@@ -836,7 +869,19 @@ export async function getRelatedProducts(
   sameCat.sort((a, b) => (a.order || 999) - (b.order || 999));
   otherCat.sort((a, b) => (a.order || 999) - (b.order || 999));
 
-  return serialize([...sameCat, ...otherCat].slice(0, limit));
+  return serialize(dedupeRelatedProducts([...sameCat, ...otherCat], excludeSlug).slice(0, limit));
+}
+
+function dedupeRelatedProducts(items: PopulatedProduct[], excludeSlug: string) {
+  const seen = new Set<string>();
+  return items.filter((p) => {
+    if (!p || p.slug === excludeSlug) return false;
+    const id = String(p._id);
+    if (seen.has(id) || seen.has(p.slug)) return false;
+    seen.add(id);
+    seen.add(p.slug);
+    return true;
+  });
 }
 
 function toUseCaseDoc(item: (typeof useCaseContent)[number]): IUseCase {

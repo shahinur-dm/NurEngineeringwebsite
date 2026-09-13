@@ -30,16 +30,27 @@ export default function AdminSettingsPage() {
   const [description, setDescription] = useState("");
   const [logo, setLogo] = useState("");
   const [favicon, setFavicon] = useState("");
-  const [phone, setPhone] = useState("+880 1700-000000");
-  const [email, setEmail] = useState("info@nurengineering.com");
+  const [phone, setPhone] = useState("+8801805030940");
+  const [phone2, setPhone2] = useState("01805030941");
+  const [phone3, setPhone3] = useState("01805030947");
+  const [wechatId, setWechatId] = useState("nurul01713798987");
+  const [email, setEmail] = useState("ceo@nurengineering.bd.com");
   const [hours, setHours] = useState("Sat–Thu 9:00–18:00");
-  const [notice, setNotice] = useState("Out of stock products will be delivered within 3-5 days.");
-  const [address, setAddress] = useState("Dhaka, Bangladesh");
+  const [notice, setNotice] = useState("Out of stock products will be delivered within 3–5 days.");
+  const [noticeBn, setNoticeBn] = useState(
+    "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★"
+  );
+  const [address, setAddress] = useState(
+    "House#43-44, Road-1, Block -B, Mirpur-1 (Beside Shah Ali Thana), Dhaka-1216"
+  );
+  const [addressHouse, setAddressHouse] = useState("");
+  const [addressRoad, setAddressRoad] = useState("");
+  const [addressBlock, setAddressBlock] = useState("");
   const [mapsEmbed, setMapsEmbed] = useState("");
   const [facebook, setFacebook] = useState("https://www.facebook.com/");
   const [linkedin, setLinkedin] = useState("https://www.linkedin.com/");
   const [youtube, setYoutube] = useState("https://www.youtube.com/");
-  const [whatsapp, setWhatsapp] = useState("+880170000000");
+  const [whatsapp, setWhatsapp] = useState("+8801713798987");
 
   // Footer QR Codes state
   const [wechatQr, setWechatQr] = useState("");
@@ -83,10 +94,17 @@ export default function AdminSettingsPage() {
           if (s.logoUrl || s.logo) setLogo(s.logoUrl || s.logo);
           if (s.favicon) setFavicon(s.favicon);
           if (s.phone) setPhone(s.phone);
+          if (s.phone2 !== undefined) setPhone2(s.phone2 || "");
+          if (s.phone3 !== undefined) setPhone3(s.phone3 || "");
+          if (s.wechatId !== undefined) setWechatId(s.wechatId || "");
           if (s.email) setEmail(s.email);
           if (s.hours) setHours(s.hours);
           if (s.notice) setNotice(s.notice);
+          if (s.noticeBn !== undefined) setNoticeBn(s.noticeBn || "");
           if (s.address) setAddress(s.address);
+          if (s.addressHouse !== undefined) setAddressHouse(s.addressHouse || "");
+          if (s.addressRoad !== undefined) setAddressRoad(s.addressRoad || "");
+          if (s.addressBlock !== undefined) setAddressBlock(s.addressBlock || "");
           if (s.mapEmbedUrl) setMapsEmbed(s.mapEmbedUrl);
           if (s.social?.facebook) setFacebook(s.social.facebook);
           if (s.social?.linkedin) setLinkedin(s.social.linkedin);
@@ -146,10 +164,17 @@ export default function AdminSettingsPage() {
           logo,
           favicon,
           phone,
+          phone2,
+          phone3,
+          wechatId,
           email,
           hours,
           notice,
+          noticeBn,
           address,
+          addressHouse,
+          addressRoad,
+          addressBlock,
           mapEmbedUrl: mapsEmbed,
           social: {
             facebook,
@@ -419,6 +444,24 @@ export default function AdminSettingsPage() {
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Phone 2</label>
+                <input
+                  type="text"
+                  value={phone2}
+                  onChange={(e) => setPhone2(e.target.value)}
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Phone 3</label>
+                <input
+                  type="text"
+                  value={phone3}
+                  onChange={(e) => setPhone3(e.target.value)}
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase text-navy">Email Address</label>
@@ -451,22 +494,49 @@ export default function AdminSettingsPage() {
                   Live Ticker Banner
                 </span>
               </div>
-              <input
-                type="text"
-                value={notice}
-                onChange={(e) => setNotice(e.target.value)}
-                placeholder="e.g. Out of stock products will be delivered within 3-5 days."
-                className="w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
-              />
-              <div className="rounded border border-line bg-paper/60 p-3 flex items-center gap-2">
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-navy mb-1">
+                  Bangla Notice
+                </label>
+                <textarea
+                  value={noticeBn}
+                  onChange={(e) => setNoticeBn(e.target.value)}
+                  rows={3}
+                  lang="bn"
+                  placeholder="★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★"
+                  className="w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium leading-relaxed"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-navy mb-1">
+                  English Notice
+                </label>
+                <input
+                  type="text"
+                  value={notice}
+                  onChange={(e) => setNotice(e.target.value)}
+                  placeholder="e.g. Out of stock products will be delivered within 3–5 days."
+                  className="w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+              <div className="rounded border border-line bg-paper/60 p-3 space-y-1.5">
                 <span className="text-[10px] font-bold text-mist uppercase">Preview:</span>
-                <span className="text-[11.5px] font-bold text-amber-500">NOTICE:</span>
-                <span className="text-[11.5px] font-medium text-navy truncate">
-                  {notice || "Out of stock products will be delivered within 3-5 days."}
-                </span>
+                <div className="flex items-start gap-2 min-w-0">
+                  <span className="text-[11.5px] font-bold text-amber-500 shrink-0">NOTICE:</span>
+                  <span className="text-[11.5px] font-medium text-navy break-words" lang="bn">
+                    {noticeBn ||
+                      "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★"}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2 min-w-0">
+                  <span className="text-[11.5px] font-bold text-amber-500 shrink-0">NOTICE:</span>
+                  <span className="text-[11.5px] font-medium text-navy break-words">
+                    {notice || "Out of stock products will be delivered within 3–5 days."}
+                  </span>
+                </div>
               </div>
               <p className="text-[10.5px] text-mist">
-                This notice continuously animates from right to left in the top blue contact bar. Hovering over it pauses the movement for easy reading.
+                Both notices appear in the header and footer ticker: Bangla first, then English. Hovering pauses the movement for easy reading.
               </p>
             </div>
           </div>
@@ -479,13 +549,46 @@ export default function AdminSettingsPage() {
               Office Location & Maps
             </h3>
 
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">House Number</label>
+                <input
+                  type="text"
+                  value={addressHouse}
+                  onChange={(e) => setAddressHouse(e.target.value)}
+                  placeholder="e.g. 12"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Road Number</label>
+                <input
+                  type="text"
+                  value={addressRoad}
+                  onChange={(e) => setAddressRoad(e.target.value)}
+                  placeholder="e.g. 7"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Block Number</label>
+                <input
+                  type="text"
+                  value={addressBlock}
+                  onChange={(e) => setAddressBlock(e.target.value)}
+                  placeholder="e.g. C"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-xs font-bold uppercase text-navy">Physical Address</label>
-              <input
-                type="text"
+              <label className="block text-xs font-bold uppercase text-navy">Other Address Details</label>
+              <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="e.g. House #, Road #, Sector #, Dhaka, Bangladesh"
+                placeholder="Area, city, country — existing office address"
+                rows={2}
                 className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
               />
             </div>
@@ -545,6 +648,16 @@ export default function AdminSettingsPage() {
               </div>
 
               <div>
+                <label className="block text-xs font-bold uppercase text-navy">WeChat ID</label>
+                <input
+                  type="text"
+                  value={wechatId}
+                  onChange={(e) => setWechatId(e.target.value)}
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold uppercase text-navy">WhatsApp Phone / Direct Link</label>
                 <input
                   type="text"
@@ -598,6 +711,33 @@ export default function AdminSettingsPage() {
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">House Number</label>
+                  <input
+                    type="text"
+                    value={addressHouse}
+                    onChange={(e) => setAddressHouse(e.target.value)}
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Road Number</label>
+                  <input
+                    type="text"
+                    value={addressRoad}
+                    onChange={(e) => setAddressRoad(e.target.value)}
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Block Number</label>
+                  <input
+                    type="text"
+                    value={addressBlock}
+                    onChange={(e) => setAddressBlock(e.target.value)}
                     className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
                   />
                 </div>

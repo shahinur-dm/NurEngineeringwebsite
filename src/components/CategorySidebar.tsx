@@ -38,7 +38,7 @@ export function CategorySidebar({
     ? rawWa
     : `https://wa.me/${rawWa.replace(/[^\d+]/g, "").replace(/^\+/, "")}`;
   const whatsappDisplay = site.social?.whatsapp || site.phone || "+880 1700-000000";
-  const emailDisplay = "ceo@nurengineeringbd.com";
+  const emailDisplay = site.email || "ceo@nurengineering.bd.com";
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpandedCat, setMobileExpandedCat] = useState<string | null>(null);

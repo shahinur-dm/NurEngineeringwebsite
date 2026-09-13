@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Img } from "@/components/Img";
-import { getBlogPosts, getBlogCategories, type PopulatedBlogPost } from "@/lib/data";
+import { RelatedSearch } from "@/components/RelatedSearch";
+import { getBlogPosts, getBlogCategories, getSettings, type PopulatedBlogPost } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Engineering Blog & Technical Guides | Nur Engineering Solution",
@@ -18,10 +19,12 @@ export default async function BlogListingPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category: selectedCategory } = await searchParams;
-  const [posts, categories] = await Promise.all([
+  const [posts, categories, site] = await Promise.all([
     getBlogPosts({ categorySlug: selectedCategory }),
     getBlogCategories(),
+    getSettings(),
   ]);
+  const wa = (site.social?.whatsapp || site.phone || "").replace(/[^\d]/g, "");
 
   const featuredPost = posts.find((p) => p.featured) || posts[0];
   const gridPosts = featuredPost
@@ -276,7 +279,7 @@ export default async function BlogListingPage({
                 Contact Engineering Desk
               </Link>
               <a
-                href="https://wa.me/880170000000"
+                href={wa ? `https://wa.me/${wa}` : "/contact"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white hover:text-navy transition"
@@ -286,6 +289,7 @@ export default async function BlogListingPage({
             </div>
           </div>
         </div>
+        <RelatedSearch currentHref="/blog" />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useSite } from "@/components/SiteProvider";
+import { NoticeTickerItems } from "@/components/NoticeTickerItems";
 
 export function TopBar() {
   const pathname = usePathname();
@@ -15,9 +16,6 @@ export function TopBar() {
   const whatsappUrl = rawWa.startsWith("http")
     ? rawWa
     : `https://wa.me/${cleanPhone}`;
-
-  const noticeText =
-    site.notice || "Out of stock products will be delivered within 3-5 days.";
 
   return (
     <div className="sticky top-0 z-50 md:static bg-[#1F456E] text-white/90 border-b border-white/10">
@@ -34,7 +32,7 @@ export function TopBar() {
               viewBox="0 0 24 24"
               width="16"
               height="16"
-              className="h-4 w-4 text-orange fill-none stroke-current shrink-0"
+              className="h-4 w-4 text-[#fde047] fill-none stroke-current shrink-0"
               strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -56,7 +54,7 @@ export function TopBar() {
               viewBox="0 0 24 24"
               width="16"
               height="16"
-              className="h-4 w-4 text-orange fill-none stroke-current shrink-0"
+              className="h-4 w-4 text-[#fde047] fill-none stroke-current shrink-0"
               strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -76,20 +74,22 @@ export function TopBar() {
           <div className="notice-ticker-track">
             {/* Primary Content Group */}
             <div className="notice-ticker-group">
-              {[0, 1, 2, 3].map((i) => (
-                <span key={`g1-${i}`} className="notice-ticker-item">
-                  <span className="notice-label">NOTICE:</span>
-                  <span className="notice-text">{noticeText}</span>
-                </span>
+              {[0, 1].map((i) => (
+                <NoticeTickerItems
+                  key={`g1-${i}`}
+                  noticeBn={site.noticeBn}
+                  noticeEn={site.notice}
+                />
               ))}
             </div>
             {/* Exact Duplicated Group for Infinite Seamless Loop */}
             <div className="notice-ticker-group" aria-hidden="true">
-              {[0, 1, 2, 3].map((i) => (
-                <span key={`g2-${i}`} className="notice-ticker-item">
-                  <span className="notice-label">NOTICE:</span>
-                  <span className="notice-text">{noticeText}</span>
-                </span>
+              {[0, 1].map((i) => (
+                <NoticeTickerItems
+                  key={`g2-${i}`}
+                  noticeBn={site.noticeBn}
+                  noticeEn={site.notice}
+                />
               ))}
             </div>
           </div>
@@ -168,7 +168,7 @@ export function TopBar() {
               viewBox="0 0 24 24"
               width="13"
               height="13"
-              className="h-3.5 w-3.5 text-orange fill-none stroke-current shrink-0"
+              className="h-3.5 w-3.5 text-[#fde047] fill-none stroke-current shrink-0"
               strokeWidth="2.2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -243,20 +243,28 @@ export function TopBar() {
             <div className="notice-ticker-track">
               {/* Primary Content Group */}
               <div className="notice-ticker-group">
-                {[0, 1, 2, 3].map((i) => (
-                  <span key={`mg1-${i}`} className="notice-ticker-item !pr-8">
-                    <span className="notice-label !text-[11px]">NOTICE:</span>
-                    <span className="notice-text !text-[11px]">{noticeText}</span>
-                  </span>
+                {[0, 1].map((i) => (
+                  <NoticeTickerItems
+                    key={`mg1-${i}`}
+                    noticeBn={site.noticeBn}
+                    noticeEn={site.notice}
+                    itemClassName="notice-ticker-item !pr-8"
+                    labelClassName="notice-label !text-[11px]"
+                    textClassName="notice-text !text-[11px]"
+                  />
                 ))}
               </div>
               {/* Exact Duplicated Group for Infinite Seamless Loop */}
               <div className="notice-ticker-group" aria-hidden="true">
-                {[0, 1, 2, 3].map((i) => (
-                  <span key={`mg2-${i}`} className="notice-ticker-item !pr-8">
-                    <span className="notice-label !text-[11px]">NOTICE:</span>
-                    <span className="notice-text !text-[11px]">{noticeText}</span>
-                  </span>
+                {[0, 1].map((i) => (
+                  <NoticeTickerItems
+                    key={`mg2-${i}`}
+                    noticeBn={site.noticeBn}
+                    noticeEn={site.notice}
+                    itemClassName="notice-ticker-item !pr-8"
+                    labelClassName="notice-label !text-[11px]"
+                    textClassName="notice-text !text-[11px]"
+                  />
                 ))}
               </div>
             </div>

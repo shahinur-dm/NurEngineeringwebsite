@@ -74,13 +74,13 @@ export function ProductGallery({
       {/* Main Media Box */}
       <div className="relative aspect-[4/3] w-full overflow-hidden border border-line bg-white shadow-xs">
         {current.kind === "image" ? (
-          <div className="relative h-full w-full p-4 sm:p-6 md:p-8 flex items-center justify-center">
+          <div className="relative h-full w-full p-2 sm:p-3 md:p-4 flex items-center justify-center">
             <Img
               src={current.src}
               alt={name}
               fill
               priority
-              className="object-contain p-2 sm:p-4 transition-transform duration-300 hover:scale-[1.02]"
+              className="object-contain p-1 sm:p-2 transition-transform duration-300 hover:scale-[1.02]"
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </div>
@@ -159,7 +159,7 @@ export function ProductGallery({
       {/* Thumbnail Gallery Row */}
       {items.length > 1 && (
         <div
-          className={`mt-3.5 grid gap-2 sm:gap-2.5 ${
+          className={`mt-2.5 grid gap-2 sm:gap-2.5 ${
             items.length === 2
               ? "grid-cols-2 max-w-[200px]"
               : items.length === 3

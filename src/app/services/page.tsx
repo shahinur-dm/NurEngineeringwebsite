@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CatalogShell } from "@/components/CatalogShell";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import { ServiceCard } from "@/components/ServiceCard";
 import { getCategories, getServices, getSettings } from "@/lib/data";
 import { buildPageMetadata } from "@/lib/seo";
@@ -48,6 +49,7 @@ export default async function ServicesPage() {
           Contact
         </Link>
       </div>
+      <RelatedSearch currentHref="/services" />
     </CatalogShell>
   );
 }

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CatalogShell } from "@/components/CatalogShell";
 import { Img } from "@/components/Img";
 import { ProductCard } from "@/components/ProductCard";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import {
   getCategories,
   getServiceBySlug,
@@ -86,6 +87,7 @@ export default async function ServiceDetailPage({
           </div>
         </section>
       )}
+      <RelatedSearch currentHref={`/services/${service.slug}`} />
     </CatalogShell>
   );
 }

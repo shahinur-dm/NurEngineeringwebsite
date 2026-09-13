@@ -38,7 +38,7 @@ export function ProductCard({
       </Link>
 
       {/* 2. Product Information & Action Buttons */}
-      <div className="flex-1 flex flex-col justify-between p-2.5 sm:p-3">
+      <div className="flex-1 flex flex-col justify-between p-2 sm:p-2.5">
         {/* Title and Category */}
         <Link href={`/products/${product.slug}`} className="block mb-2 sm:mb-2.5">
           <p className="kicker text-[10px] sm:text-[11px] truncate text-orange font-bold uppercase tracking-wider">
@@ -60,23 +60,23 @@ export function ProductCard({
         </Link>
 
         {/* 3. Action Buttons: ASK PRICE (Orange) & VIEW DETAILS (Green) */}
-        <div className="pt-2.5 sm:pt-3 border-t border-line mt-auto flex items-center gap-1 sm:gap-2 min-w-0">
+        <div className="pt-2 sm:pt-2.5 border-t border-line mt-auto flex items-center gap-1.5 sm:gap-2 min-w-0">
           {/* ASK PRICE (Orange) */}
           <Link
             href={`/contact?product=${product.slug}`}
-            className="flex-1 min-w-0 inline-flex items-center justify-center bg-orange font-display font-bold uppercase text-white transition hover:bg-[#e05300] active:scale-95 shadow-2xs py-1.5 sm:py-2 px-1 text-[9px] sm:text-[11px] tracking-tight sm:tracking-[0.06em] rounded-[2px] text-center"
+            className="flex-1 min-w-0 inline-flex items-center justify-center bg-orange font-display font-bold uppercase text-white transition hover:bg-[#e05300] active:scale-95 shadow-2xs h-8 sm:h-9 px-1.5 sm:px-2 text-[12.5px] sm:text-[14px] tracking-[0.04em] rounded-[2px] text-center leading-none"
             title={`Ask price for ${product.name}`}
           >
-            <span className="truncate">ASK PRICE</span>
+            <span className="whitespace-nowrap">ASK PRICE</span>
           </Link>
 
           {/* VIEW DETAILS (Green) */}
           <Link
             href={`/products/${product.slug}`}
-            className="flex-1 min-w-0 inline-flex items-center justify-center bg-[#16a34a] font-display font-bold uppercase text-white transition hover:bg-[#15803d] active:scale-95 shadow-2xs py-1.5 sm:py-2 px-1 text-[9px] sm:text-[11px] tracking-tight sm:tracking-[0.06em] rounded-[2px] text-center"
+            className="flex-1 min-w-0 inline-flex items-center justify-center bg-[#16a34a] font-display font-bold uppercase text-white transition hover:bg-[#15803d] active:scale-95 shadow-2xs h-8 sm:h-9 px-1.5 sm:px-2 text-[12.5px] sm:text-[14px] tracking-[0.04em] rounded-[2px] text-center leading-none"
             title={`View details for ${product.name}`}
           >
-            <span className="truncate">VIEW DETAILS</span>
+            <span className="whitespace-nowrap">VIEW DETAILS</span>
           </Link>
         </div>
       </div>

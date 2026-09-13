@@ -7,12 +7,19 @@ export interface ISiteSettings {
   description: string;
   email: string;
   phone: string;
+  phone2?: string;
+  phone3?: string;
+  wechatId?: string;
   address: string;
+  addressHouse?: string;
+  addressRoad?: string;
+  addressBlock?: string;
   hours: string;
   mapEmbedUrl: string;
   logoUrl?: string;
   favicon?: string;
   notice?: string;
+  noticeBn?: string;
   social: {
     facebook?: string;
     linkedin?: string;
@@ -49,16 +56,30 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
       default:
         "EEE-led supplier of PLC, motors, drives, sensors, and industrial spare parts with technical service across Bangladesh.",
     },
-    email: { type: String, default: "info@nurengineering.com" },
-    phone: { type: String, default: "+880 1700-000000" },
-    address: { type: String, default: "Dhaka, Bangladesh" },
+    email: { type: String, default: "ceo@nurengineering.bd.com" },
+    phone: { type: String, default: "+8801805030940" },
+    phone2: { type: String, default: "01805030941" },
+    phone3: { type: String, default: "01805030947" },
+    wechatId: { type: String, default: "nurul01713798987" },
+    address: {
+      type: String,
+      default: "House#43-44, Road-1, Block -B, Mirpur-1 (Beside Shah Ali Thana), Dhaka-1216",
+    },
+    addressHouse: { type: String, default: "43-44" },
+    addressRoad: { type: String, default: "1" },
+    addressBlock: { type: String, default: "B" },
     hours: { type: String, default: "Sat–Thu 9:00–18:00" },
     mapEmbedUrl: { type: String, default: "" },
     logoUrl: { type: String, default: "" },
     favicon: { type: String, default: "" },
     notice: {
       type: String,
-      default: "Out of stock products will be delivered within 3-5 days.",
+      default: "Out of stock products will be delivered within 3–5 days.",
+    },
+    noticeBn: {
+      type: String,
+      default:
+        "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★",
     },
     social: {
       facebook: { type: String, default: "" },

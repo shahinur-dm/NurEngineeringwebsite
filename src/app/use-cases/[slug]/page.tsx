@@ -5,6 +5,7 @@ import { CatalogShell } from "@/components/CatalogShell";
 import { Img } from "@/components/Img";
 import { ProductCard } from "@/components/ProductCard";
 import { ServiceCard } from "@/components/ServiceCard";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import {
   getCategories,
   getProducts,
@@ -219,6 +220,7 @@ export default async function UseCaseDetailPage({
           </div>
         </section>
       )}
+      <RelatedSearch currentHref={`/use-cases/${item.slug}`} />
     </CatalogShell>
   );
 }

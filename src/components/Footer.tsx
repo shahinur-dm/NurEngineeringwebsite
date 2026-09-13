@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSite, useUseCases } from "@/components/SiteProvider";
 import { Logo } from "@/components/Logo";
+import { NoticeTickerItems } from "@/components/NoticeTickerItems";
 
 export function Footer() {
   const pathname = usePathname();
@@ -17,9 +18,6 @@ export function Footer() {
   const nav = [...rawNav]
     .map((item) => (item.href === "/use-cases" ? { ...item, label: "Our Services" } : item))
     .sort((a, b) => a.order - b.order);
-
-  const noticeText =
-    site.notice || "Out of stock products will be delivered within 3-5 days.";
 
   // Safe social links
   const facebookUrl = site.social?.facebook || "https://www.facebook.com/";
@@ -53,20 +51,22 @@ export function Footer() {
           <div className="notice-ticker-track">
             {/* Primary Content Group */}
             <div className="notice-ticker-group">
-              {[0, 1, 2, 3].map((i) => (
-                <span key={`fg1-${i}`} className="notice-ticker-item">
-                  <span className="notice-label">NOTICE:</span>
-                  <span className="notice-text">{noticeText}</span>
-                </span>
+              {[0, 1].map((i) => (
+                <NoticeTickerItems
+                  key={`fg1-${i}`}
+                  noticeBn={site.noticeBn}
+                  noticeEn={site.notice}
+                />
               ))}
             </div>
             {/* Exact Duplicated Group for Infinite Seamless Loop */}
             <div className="notice-ticker-group" aria-hidden="true">
-              {[0, 1, 2, 3].map((i) => (
-                <span key={`fg2-${i}`} className="notice-ticker-item">
-                  <span className="notice-label">NOTICE:</span>
-                  <span className="notice-text">{noticeText}</span>
-                </span>
+              {[0, 1].map((i) => (
+                <NoticeTickerItems
+                  key={`fg2-${i}`}
+                  noticeBn={site.noticeBn}
+                  noticeEn={site.notice}
+                />
               ))}
             </div>
           </div>
@@ -76,13 +76,14 @@ export function Footer() {
       <div className="shell grid gap-8 sm:gap-10 md:gap-10 py-10 sm:py-14 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_0.75fr_1fr_1.35fr]">
         {/* Left Column: Brand, Tagline, Description & Social Icons */}
         <div>
-          <div className="flex items-center gap-3.5">
-            <Logo size={54} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
-            <div>
-              <p className="font-display text-lg font-bold uppercase tracking-[0.08em]">
-                {site.brandName || "NUR ENGINEERING SOLUTION"}
+          <div className="flex items-center gap-3.5 min-w-0">
+            <Logo size={68} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
+            <div className="min-w-0 sm:min-w-max">
+              <p className="font-display text-[18px] sm:text-[20px] lg:text-[22px] font-extrabold uppercase leading-none tracking-[0.03em] whitespace-normal sm:whitespace-nowrap">
+                <span className="text-white">{(site.brandName || "NUR ENGINEERING SOLUTION").split(" ")[0]} </span>
+                <span className="text-orange">{(site.brandName || "NUR ENGINEERING SOLUTION").split(" ").slice(1).join(" ")}</span>
               </p>
-              <p className="mt-1 text-[12px] leading-5 text-white/55">
+              <p className="mt-1 text-[11.5px] sm:text-[12px] font-medium leading-none tracking-tight text-white/55 whitespace-normal sm:whitespace-nowrap">
                 {site.tagline || "Machine, spare parts and Technical service provider"}
               </p>
             </div>
@@ -202,19 +203,19 @@ export function Footer() {
             Contact Us
           </p>
           <ul className="mt-4 space-y-2.5 text-xs sm:text-[13px] leading-relaxed text-white/80">
-            {site.phone && (
-              <li>
+            {[site.phone, site.phone2, site.phone3].filter(Boolean).map((num) => (
+              <li key={num}>
                 <a
-                  href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}
+                  href={`tel:${String(num).replace(/[^\d+]/g, "")}`}
                   className="flex items-center gap-2.5 transition hover:text-orange group"
                 >
                   <svg width="16" height="16" className="h-4 w-4 shrink-0 stroke-orange fill-none group-hover:scale-110 transition-transform" strokeWidth="2" viewBox="0 0 24 24">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
-                  <span>{site.phone}</span>
+                  <span>{num}</span>
                 </a>
               </li>
-            )}
+            ))}
 
             {site.email && (
               <li>
@@ -237,7 +238,10 @@ export function Footer() {
                   <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                <span>{site.address}</span>
+                <span>
+                  {site.brandName ? <span className="block">{site.brandName}</span> : null}
+                  {site.address}
+                </span>
               </li>
             )}
 

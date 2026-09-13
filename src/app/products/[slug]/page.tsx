@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CatalogShell } from "@/components/CatalogShell";
 import { Img } from "@/components/Img";
+import { ProductCard } from "@/components/ProductCard";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductTabs } from "@/components/ProductTabs";
 import { getProductDetail } from "@/lib/product-details";
@@ -52,7 +54,7 @@ export default async function ProductDetailPage({
 
   const [categories, related, siteSettings] = await Promise.all([
     getCategories("product"),
-    getRelatedProducts(categoryId, product.slug, 4),
+    getRelatedProducts(categoryId, product.slug, 15),
     getSettings(),
   ]);
 
@@ -84,7 +86,7 @@ export default async function ProductDetailPage({
   return (
     <CatalogShell categories={categories} activeSlug={categorySlug}>
       {/* Breadcrumb Navigation */}
-      <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-500 mb-3">
+      <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-500 mb-2">
         <Link href="/" className="transition hover:text-orange">
           Home
         </Link>
@@ -106,8 +108,8 @@ export default async function ProductDetailPage({
       </nav>
 
       {/* Main Product Details Card */}
-      <article className="panel p-5 sm:p-7 md:p-8 bg-white border border-[#e2e8f0] rounded-[4px] shadow-xs">
-        <div className="grid items-start gap-7 sm:gap-8 lg:grid-cols-[1fr_1.12fr] lg:gap-10">
+      <article className="panel p-3 sm:p-4 md:p-5 bg-white border border-[#e2e8f0] rounded-[4px] shadow-xs">
+        <div className="grid items-start gap-4 sm:gap-5 lg:grid-cols-[1fr_1.12fr] lg:gap-6">
           {/* Left Side: Image / Video Gallery & Trust Badges */}
           <div className="w-full flex flex-col">
             <ProductGallery
@@ -117,7 +119,7 @@ export default async function ProductDetailPage({
             />
 
             {/* Trust & Service Information Badges (2x2) */}
-            <div className="mt-5 pt-4 border-t border-[#e2e8f0] grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
+            <div className="mt-3 pt-3 border-t border-[#e2e8f0] grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
               <div className="flex items-center gap-2 text-xs sm:text-[12.5px] font-semibold text-slate-700">
                 <svg
                   className="h-4.5 w-4.5 shrink-0 text-[#1ea952]"
@@ -193,17 +195,17 @@ export default async function ProductDetailPage({
             </div>
 
             {/* Product Title */}
-            <h1 className="mt-3 font-display text-2xl sm:text-[26px] lg:text-[28px] font-bold uppercase leading-tight tracking-wide text-navy">
+            <h1 className="mt-1.5 font-display text-2xl sm:text-[26px] lg:text-[28px] font-bold uppercase leading-tight tracking-wide text-navy">
               {product.name}
             </h1>
 
             {/* Short Description */}
-            <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-slate-600 font-normal">
+            <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-600 font-normal">
               {product.shortDescription}
             </p>
 
             {/* Action Buttons: Ask Price & WhatsApp */}
-            <div className="mt-5 border-t border-[#e2e8f0] pt-4 sm:pt-5">
+            <div className="mt-3 border-t border-[#e2e8f0] pt-3">
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href={`/contact?product=${product.slug}`}
@@ -233,18 +235,18 @@ export default async function ProductDetailPage({
                   <span>WHATSAPP</span>
                 </a>
               </div>
-              <p className="mt-2.5 text-xs text-slate-500 leading-normal">
+              <p className="mt-1.5 text-xs text-slate-500 leading-normal">
                 Indicative price. Confirm variant, coil voltage, I/O type and stock on quote.
               </p>
             </div>
 
             {/* Specifications / Product Details Table with Small Green Checkmark Icons */}
-            <div className="mt-5 border-t border-[#e2e8f0] pt-3.5">
+            <div className="mt-3 border-t border-[#e2e8f0] pt-2">
               <dl className="divide-y divide-[#e2e8f0]">
                 {facts.map(([label, value]) => (
                   <div
                     key={label}
-                    className="grid grid-cols-[8.5rem_1fr] sm:grid-cols-[10.5rem_1fr] gap-2 py-2 text-xs sm:text-[13px] items-center"
+                    className="grid grid-cols-[8.5rem_1fr] sm:grid-cols-[10.5rem_1fr] gap-2 py-1 text-xs sm:text-[13px] items-center"
                   >
                     <dt className="text-slate-600 font-medium flex items-center gap-1.5">
                       <svg
@@ -265,7 +267,7 @@ export default async function ProductDetailPage({
 
             {/* Dynamic MORE IN [CATEGORY] Button */}
             {categorySlug && (
-              <div className="mt-5 pt-4 border-t border-[#e2e8f0]">
+              <div className="mt-3 pt-3 border-t border-[#e2e8f0]">
                 <Link
                   href={`/products?category=${categorySlug}`}
                   className="inline-flex items-center justify-center gap-2 bg-navy hover:bg-[#1a2e4c] text-white px-5 py-2.5 font-display text-xs font-bold uppercase tracking-wider rounded-[2px] transition shadow-xs w-full sm:w-auto text-center"
@@ -282,7 +284,7 @@ export default async function ProductDetailPage({
       </article>
 
       {/* Description / Specifications / Warranty & Returns Tab Section (Below Main Card) */}
-      <section className="panel mt-6 sm:mt-8 p-5 sm:p-7 md:p-8 bg-white border border-[#e2e8f0] rounded-[4px] shadow-xs">
+      <section className="panel mt-3 sm:mt-4 p-3 sm:p-4 md:p-5 bg-white border border-[#e2e8f0] rounded-[4px] shadow-xs">
         <ProductTabs
           description={product.description || extra?.overview || ""}
           features={extra?.features || []}
@@ -301,8 +303,8 @@ export default async function ProductDetailPage({
 
       {/* Related Products Section */}
       {related && related.length > 0 && (
-        <section className="panel mt-6 sm:mt-8 p-5 sm:p-7 md:p-8 bg-white border border-[#e2e8f0] rounded-[4px] shadow-xs">
-          <div className="flex items-center justify-between border-b border-[#e2e8f0] pb-3 mb-4 sm:mb-6">
+        <section className="panel mt-4 sm:mt-5 p-3 sm:p-4 bg-white border border-[#e2e8f0] rounded-[4px] shadow-xs">
+          <div className="flex items-center justify-between border-b border-[#e2e8f0] pb-1.5 mb-2">
             <h2 className="font-display text-sm sm:text-base font-bold uppercase tracking-wider text-navy">
               Related Products
             </h2>
@@ -313,48 +315,17 @@ export default async function ProductDetailPage({
               View All
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
-            {related.map((item) => {
-              const catName =
-                typeof item.category === "object" ? item.category?.name : "";
-              return (
-                <Link
-                  key={String(item._id)}
-                  href={`/products/${item.slug}`}
-                  className="group flex flex-col justify-between border border-[#e2e8f0] bg-white p-3.5 rounded-[2px] transition hover:border-orange hover:shadow-sm"
-                >
-                  <div>
-                    <div className="relative aspect-square w-full overflow-hidden border border-[#e2e8f0]/60 bg-paper/20 rounded-[2px]">
-                      <Img
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-contain p-2 transition duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 240px"
-                      />
-                    </div>
-                    <div className="mt-3">
-                      {catName && (
-                        <p className="text-[10.5px] font-semibold uppercase tracking-wider text-mist">
-                          {catName}
-                        </p>
-                      )}
-                      <h3 className="mt-1 font-display text-[13px] font-bold uppercase leading-snug tracking-wide text-navy transition group-hover:text-orange line-clamp-2">
-                        {item.name}
-                      </h3>
-                      {item.shortDescription && (
-                        <p className="mt-1 line-clamp-2 text-[11.5px] leading-4 text-steel">
-                          {item.shortDescription}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 lg:grid-cols-4 xl:grid-cols-5">
+            {related.map((item) => (
+              <ProductCard key={String(item._id)} product={item} size="sm" />
+            ))}
           </div>
         </section>
       )}
+      <RelatedSearch
+        currentHref={`/products/${product.slug}`}
+        categorySlug={categorySlug}
+      />
     </CatalogShell>
   );
 }

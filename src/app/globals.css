@@ -338,6 +338,12 @@ button {
   flex-shrink: 0;
 }
 
+.notice-text[lang="bn"] {
+  word-break: keep-all;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
 @media (min-width: 640px) {
   .notice-text {
     font-size: 0.78125rem;
@@ -366,4 +372,11 @@ button {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Header live search: suppress inner focus box; outer bar uses focus-within */
+.header-live-search-input:focus,
+.header-live-search-input:focus-visible {
+  outline: none;
+  box-shadow: none;
 }

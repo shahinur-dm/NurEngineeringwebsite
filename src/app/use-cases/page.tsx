@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CatalogShell } from "@/components/CatalogShell";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import { Img } from "@/components/Img";
 import { getCategories, getSettings, getUseCases } from "@/lib/data";
 import { buildPageMetadata } from "@/lib/seo";
@@ -83,6 +84,7 @@ export default async function UseCasesPage() {
           </Link>
         ))}
       </div>
+      <RelatedSearch currentHref="/use-cases" />
     </CatalogShell>
   );
 }

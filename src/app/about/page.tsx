@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CatalogShell } from "@/components/CatalogShell";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import { Img } from "@/components/Img";
 import { getCategories, getCompany, getSettings } from "@/lib/data";
 import { buildPageMetadata } from "@/lib/seo";
@@ -72,6 +73,7 @@ export default async function AboutPage() {
           ))}
         </dl>
       </div>
+      <RelatedSearch currentHref="/about" />
     </CatalogShell>
   );
 }

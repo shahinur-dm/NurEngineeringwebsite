@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Img } from "@/components/Img";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
@@ -417,6 +418,7 @@ export default async function BlogDetailsPage({
             </div>
           </section>
         )}
+        <RelatedSearch currentHref={`/blog/${post.slug}`} />
       </div>
     </div>
   );

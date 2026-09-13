@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CatalogShell } from "@/components/CatalogShell";
 import { ContactForm } from "@/components/ContactForm";
 import { GoogleMap } from "@/components/GoogleMap";
+import { RelatedSearch } from "@/components/RelatedSearch";
 import {
   getCategories,
   getProductBySlug,
@@ -45,49 +46,124 @@ export default async function ContactPage({
   return (
     <CatalogShell categories={categories} showSearch={false}>
       <div className="section-label">Contact</div>
-      <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="border border-line bg-navy p-6 text-white md:p-8">
-          <h1 className="font-display text-3xl font-bold uppercase">
+      <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
+        <div className="flex h-full flex-col border border-line bg-navy p-3.5 text-white sm:p-5">
+          <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold uppercase leading-tight">
             Send a part number or photo
           </h1>
-          <p className="mt-3 text-sm leading-6 text-white/70">
+          <p className="mt-1.5 text-sm leading-5 text-white/70">
             We reply with options, stock and pricing. Same desk for products and
             technical service.
           </p>
-          <dl className="mt-8 space-y-4 text-sm">
-            <div>
-              <dt className="text-[10px] uppercase tracking-[0.16em] text-orange-bright">
-                Phone
-              </dt>
-              <dd className="mt-1 font-display text-xl">
-                <a href={`tel:${settings.phone}`}>{settings.phone}</a>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[10px] uppercase tracking-[0.16em] text-orange-bright">
-                Email
-              </dt>
-              <dd className="mt-1">
-                <a href={`mailto:${settings.email}`}>{settings.email}</a>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[10px] uppercase tracking-[0.16em] text-orange-bright">
-                Address
-              </dt>
-              <dd className="mt-1">{settings.address}</dd>
-            </div>
-            <div>
-              <dt className="text-[10px] uppercase tracking-[0.16em] text-orange-bright">
-                Hours
-              </dt>
-              <dd className="mt-1">{settings.hours}</dd>
-            </div>
-          </dl>
+          <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 min-[480px]:flex-row min-[480px]:items-stretch">
+            <dl className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-orange-bright text-white">
+                  <svg className="h-[15px] w-[15px] fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <dt className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-orange-bright">Phone</dt>
+                  <dd className="mt-1 space-y-0.5 font-display text-base sm:text-lg leading-none">
+                    <div><a href={`tel:${settings.phone}`}>{settings.phone}</a></div>
+                    {settings.phone2 ? (
+                      <div><a href={`tel:${settings.phone2}`}>{settings.phone2}</a></div>
+                    ) : null}
+                    {settings.phone3 ? (
+                      <div><a href={`tel:${settings.phone3}`}>{settings.phone3}</a></div>
+                    ) : null}
+                  </dd>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-orange-bright text-white">
+                  <svg className="h-[15px] w-[15px] fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <dt className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-orange-bright">Email</dt>
+                  <dd className="mt-1 break-words text-[15px] sm:text-[17px] font-medium leading-snug">
+                    <a href={`mailto:${settings.email}`}>{settings.email}</a>
+                  </dd>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-orange-bright text-white">
+                  <svg className="h-[15px] w-[15px] fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <dt className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-orange-bright">Address</dt>
+                  <dd className="mt-1 text-[15px] sm:text-base leading-snug text-white/95">
+                    <div className="font-semibold">{settings.brandName}</div>
+                    {settings.addressHouse ? <div>House {settings.addressHouse}</div> : null}
+                    {settings.addressRoad ? <div>Road {settings.addressRoad}</div> : null}
+                    {settings.addressBlock ? <div>Block {settings.addressBlock}</div> : null}
+                    <div>{settings.address}</div>
+                  </dd>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-orange-bright text-white">
+                  <svg className="h-[15px] w-[15px] fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
+                  </svg>
+                </span>
+                <div className="min-w-0">
+                  <dt className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-orange-bright">Hours</dt>
+                  <dd className="mt-1 text-[15px] sm:text-base font-medium">{settings.hours}</dd>
+                </div>
+              </div>
+            </dl>
+
+            {(settings.footerQr?.whatsappQrEnabled !== false || settings.footerQr?.wechatQrEnabled !== false) && (
+              <div className="flex shrink-0 flex-row items-end justify-start gap-3 min-[480px]:h-full min-[480px]:flex-col min-[480px]:items-center min-[480px]:justify-between">
+                {settings.footerQr?.whatsappQrEnabled !== false && (
+                  <div className="flex w-[88px] flex-col items-center">
+                    <div className="h-[88px] w-[88px] overflow-hidden rounded-[2px] border border-white/20 bg-white p-1">
+                      {settings.footerQr?.whatsappQr ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={settings.footerQr.whatsappQr} alt="WhatsApp QR Scan" className="h-full w-full object-contain" />
+                      ) : (
+                        <div className="grid h-full w-full place-items-center bg-[#25D366] text-[9px] font-bold uppercase text-white">WA</div>
+                      )}
+                    </div>
+                    <span className="mt-1 text-center font-display text-[9px] font-bold uppercase leading-tight tracking-wider text-white/85">
+                      WhatsApp QR Scan
+                    </span>
+                  </div>
+                )}
+                {settings.footerQr?.wechatQrEnabled !== false && (
+                  <div className="flex w-[88px] flex-col items-center">
+                    <div className="h-[88px] w-[88px] overflow-hidden rounded-[2px] border border-white/20 bg-white p-1">
+                      {settings.footerQr?.wechatQr ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={settings.footerQr.wechatQr} alt="WeChat QR Scan" className="h-full w-full object-contain" />
+                      ) : (
+                        <div className="grid h-full w-full place-items-center bg-[#07C160] text-[9px] font-bold uppercase text-white">WeChat</div>
+                      )}
+                    </div>
+                    <span className="mt-1 text-center font-display text-[9px] font-bold uppercase leading-tight tracking-wider text-white/85">
+                      WeChat QR Scan
+                    </span>
+                    {settings.wechatId ? (
+                      <span className="mt-0.5 text-center text-[10px] text-white/75">{settings.wechatId}</span>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="border border-line bg-white p-6 md:p-8">
+        <div className="flex h-full flex-col border border-line bg-white p-3 md:p-4">
           {(product || service) && (
-            <p className="mb-4 text-sm text-orange">
+            <p className="mb-1.5 text-sm text-orange">
               Inquiry about: {product?.name || service?.title}
             </p>
           )}
@@ -99,6 +175,7 @@ export default async function ContactPage({
         </div>
       </div>
       <GoogleMap />
+      <RelatedSearch currentHref="/contact" />
     </CatalogShell>
   );
 }
