@@ -160,7 +160,7 @@ export function NavBar() {
 
   // Click outside to close live search dropdown
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function handleClickOutside(e: globalThis.MouseEvent) {
       const target = e.target as Node;
       if (
         searchRef.current &&
