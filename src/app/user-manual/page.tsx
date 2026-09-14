@@ -49,7 +49,7 @@ async function loadItems() {
     if (!db) return [];
     const docs = await DownloadFile.find({ kind: "manual" })
       .sort({ order: 1, createdAt: -1 })
-      .lean();
+      .lean<Array<{ _id: unknown; title: string; filename: string; size: number }>>();
     return docs.map((doc) => ({
       _id: String(doc._id),
       title: doc.title,

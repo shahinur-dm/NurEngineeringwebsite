@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { DownloadFile } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import {
-  deleteDownloadBuffer,
-  isAllowedDownloadFile,
-  storeDownloadBuffer,
-} from "@/lib/download-storage";
+import { isAllowedDownloadFile, storeDownloadBuffer } from "@/lib/download-storage";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,12 +11,12 @@ const MAX_BYTES = 4 * 1024 * 1024;
 
 function serialize(doc: {
   _id: unknown;
-  kind: string;
-  title: string;
-  filename: string;
-  mimeType: string;
-  size: number;
-  order: number;
+  kind?: string;
+  title?: string;
+  filename?: string;
+  mimeType?: string;
+  size?: number;
+  order?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }) {
@@ -49,8 +45,18 @@ export async function GET(req: Request) {
   const filter: Record<string, unknown> = {};
   if (kind === "catalogue" || kind === "manual") filter.kind = kind;
 
-  const items = await DownloadFile.find(filter).sort({ order: 1, createdAt: -1 }).lean();
-  return NextResponse.json({ items: items.map(serialize) });
+  const items = await DownloadFile.find(filter).sort({ order: 1, createdAt: -1 }).lean<Array<{
+    _id: unknown;
+    kind?: string;
+    title?: string;
+    filename?: string;
+    mimeType?: string;
+    size?: number;
+    order?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+  }>>();
+  return NextResponse.json({ items: items.map((doc) => serialize(doc)) });
 }
 
 export async function POST(req: Request) {

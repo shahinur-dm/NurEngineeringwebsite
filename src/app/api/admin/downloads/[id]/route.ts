@@ -15,12 +15,12 @@ const MAX_BYTES = 4 * 1024 * 1024;
 
 function serialize(doc: {
   _id: unknown;
-  kind: string;
-  title: string;
-  filename: string;
-  mimeType: string;
-  size: number;
-  order: number;
+  kind?: string;
+  title?: string;
+  filename?: string;
+  mimeType?: string;
+  size?: number;
+  order?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }) {

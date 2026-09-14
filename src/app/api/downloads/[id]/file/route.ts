@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { DownloadFile } from "@/lib/models";
+import { DownloadFile, type IDownloadFile } from "@/lib/models";
 import { readDownloadBuffer } from "@/lib/download-storage";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function GET(
     return NextResponse.json({ error: "File unavailable" }, { status: 503 });
   }
 
-  const item = await DownloadFile.findById(id).lean();
+  const item = await DownloadFile.findById(id).lean<IDownloadFile | null>();
   if (!item || !item.gridFsId) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
