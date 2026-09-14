@@ -16,6 +16,7 @@ export function NavBar() {
   const [open, setOpen] = useState(false);
   const [casesOpen, setCasesOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const [selectedProductCat, setSelectedProductCat] = useState<string | null>(null);
   const [navServices, setNavServices] = useState<Array<{ _id: string; title: string; slug: string }>>([]);
   const [navCatalog, setNavCatalog] = useState<
@@ -27,6 +28,7 @@ export function NavBar() {
   >([]);
   const closeServicesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeProductsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeDownloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Live search state
   const [q, setQ] = useState("");
@@ -90,37 +92,47 @@ export function NavBar() {
       .catch(() => {});
   }, []);
 
-  function openMenu(kind: "services" | "products") {
+  function openMenu(kind: "services" | "products" | "download") {
     if (kind === "services") {
       if (closeServicesTimer.current) clearTimeout(closeServicesTimer.current);
       setCasesOpen(true);
+      setProductsOpen(false);
+      setDownloadOpen(false);
+    } else if (kind === "download") {
+      if (closeDownloadTimer.current) clearTimeout(closeDownloadTimer.current);
+      setDownloadOpen(true);
+      setCasesOpen(false);
       setProductsOpen(false);
     } else {
       if (closeProductsTimer.current) clearTimeout(closeProductsTimer.current);
       if (!productsOpen) setSelectedProductCat(null);
       setProductsOpen(true);
       setCasesOpen(false);
+      setDownloadOpen(false);
     }
   }
 
-  function closeMenu(kind: "services" | "products") {
+  function closeMenu(kind: "services" | "products" | "download") {
     const timer = setTimeout(() => {
       if (kind === "services") setCasesOpen(false);
+      else if (kind === "download") setDownloadOpen(false);
       else {
         setProductsOpen(false);
         setSelectedProductCat(null);
       }
-    }, kind === "products" || kind === "services" ? 160 : 80);
+    }, kind === "products" || kind === "services" || kind === "download" ? 160 : 80);
     if (kind === "services") closeServicesTimer.current = timer;
+    else if (kind === "download") closeDownloadTimer.current = timer;
     else closeProductsTimer.current = timer;
   }
 
-  function handleMenuClick(e: MouseEvent, kind: "services" | "products") {
+  function handleMenuClick(e: MouseEvent, kind: "services" | "products" | "download") {
     if (typeof window !== "undefined" && window.matchMedia("(hover: none)").matches) {
       e.preventDefault();
-      const isOpen = kind === "services" ? casesOpen : productsOpen;
+      const isOpen = kind === "services" ? casesOpen : kind === "download" ? downloadOpen : productsOpen;
       if (isOpen) {
         if (kind === "services") setCasesOpen(false);
+        else if (kind === "download") setDownloadOpen(false);
         else setProductsOpen(false);
       } else {
         openMenu(kind);
@@ -409,6 +421,45 @@ export function NavBar() {
               </Link>
             );
           })}
+          <div
+            className="relative shrink-0"
+            onMouseEnter={() => openMenu("download")}
+            onMouseLeave={() => closeMenu("download")}
+          >
+            <button
+              type="button"
+              onClick={(e) => handleMenuClick(e, "download")}
+              className={`relative flex items-center gap-1 py-3.5 font-display text-[14px] lg:text-[14.5px] xl:text-[15px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
+                pathname === "/catalogue" || pathname === "/user-manual"
+                  ? "text-orange"
+                  : "text-navy hover:text-orange"
+              }`}
+              aria-expanded={downloadOpen}
+            >
+              <span>Download</span>
+              {(pathname === "/catalogue" || pathname === "/user-manual") && (
+                <span className="absolute bottom-1 left-0 h-[2.5px] w-full bg-orange" />
+              )}
+            </button>
+            {downloadOpen && (
+              <div className="absolute top-full right-0 z-[60] w-max min-w-[180px] max-w-[min(92vw,16rem)] overflow-hidden border-t-2 border-orange bg-white shadow-[0_16px_36px_rgba(11,31,51,0.14)]">
+                <div className="flex flex-col py-2">
+                  <Link
+                    href="/catalogue"
+                    className="px-4 py-2 text-[13px] font-medium text-navy transition hover:bg-paper hover:text-orange"
+                  >
+                    Catalogue
+                  </Link>
+                  <Link
+                    href="/user-manual"
+                    className="px-4 py-2 text-[13px] font-medium text-navy transition hover:bg-paper hover:text-orange"
+                  >
+                    User Manual
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Right: Compact Header Live Search & Mobile Toggle */}
@@ -801,6 +852,37 @@ export function NavBar() {
                 </Link>
               );
             })}
+            <div>
+              <button
+                type="button"
+                className={`flex w-full items-center justify-between py-3 font-display text-[14px] font-bold uppercase tracking-wider transition ${
+                  downloadOpen || pathname === "/catalogue" || pathname === "/user-manual"
+                    ? "text-orange"
+                    : "text-navy"
+                }`}
+                onClick={() => setDownloadOpen((v) => !v)}
+              >
+                <span>Download</span>
+              </button>
+              {downloadOpen && (
+                <div className="space-y-2 pb-3">
+                  <Link
+                    href="/catalogue"
+                    onClick={() => setOpen(false)}
+                    className="block py-0.5 text-[13px] font-medium text-navy"
+                  >
+                    Catalogue
+                  </Link>
+                  <Link
+                    href="/user-manual"
+                    onClick={() => setOpen(false)}
+                    className="block py-0.5 text-[13px] font-medium text-navy"
+                  >
+                    User Manual
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -808,98 +890,27 @@ export function NavBar() {
   );
 }
 
-function ServiceNavIcon({ label }: { label: string }) {
-  const key = label.toLowerCase();
-  const kind = key.includes("plc") || key.includes("program")
-    ? "plc"
-    : key.includes("motor") || key.includes("drive")
-      ? "motor"
-      : key.includes("panel") || key.includes("control")
-        ? "panel"
-        : key.includes("sensor") || key.includes("automation")
-          ? "sensor"
-          : key.includes("spare") || key.includes("sourc") || key.includes("parts")
-            ? "parts"
-            : key.includes("robot")
-              ? "robot"
-              : key.includes("install") || key.includes("factory")
-                ? "factory"
-                : key.includes("technical") || key.includes("service")
-                  ? "tool"
-                  : key.includes("machin")
-                    ? "machine"
-                    : "gear";
+function ServiceNavIcon({ label: _label }: { label: string }) {
+  return <NavChevronIcon />;
+}
 
+function CategoryNavIcon({ label: _label }: { label: string }) {
+  return <NavChevronIcon />;
+}
+
+function NavChevronIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
-      className="h-4 w-4 shrink-0 fill-none stroke-current text-orange"
-      strokeWidth="1.7"
+      className="h-4 w-4 shrink-0 fill-none stroke-[#22c55e]"
+      strokeWidth="2.6"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
     >
-      {kind === "plc" && (
-        <>
-          <rect x="6" y="3" width="12" height="6" rx="1" />
-          <rect x="5" y="11" width="14" height="10" rx="1.5" />
-          <path d="M9 15h6M9 18h4" />
-        </>
-      )}
-      {kind === "motor" && (
-        <>
-          <circle cx="12" cy="12" r="8" />
-          <circle cx="12" cy="12" r="2.5" />
-          <path d="M12 4v2.5M12 17.5V20M4 12h2.5M17.5 12H20" />
-        </>
-      )}
-      {kind === "panel" && (
-        <>
-          <rect x="3.5" y="4" width="17" height="16" rx="1.5" />
-          <path d="M8 9h2.5M8 13h2.5M14 9h3.5M14 13h3.5M8 17h8" />
-        </>
-      )}
-      {kind === "sensor" && (
-        <>
-          <circle cx="12" cy="14" r="4" />
-          <path d="M12 4v3M6.2 7.2l2 2M17.8 7.2l-2 2" />
-        </>
-      )}
-      {kind === "parts" && (
-        <>
-          <path d="M3.5 8.5 12 4l8.5 4.5L12 13 3.5 8.5z" />
-          <path d="M3.5 12.2 12 16.7l8.5-4.5M3.5 15.8 12 20.3l8.5-4.5" />
-        </>
-      )}
-      {kind === "robot" && (
-        <>
-          <rect x="7" y="8" width="10" height="9" rx="1.5" />
-          <path d="M12 8V5M9 21v-2.5M15 21v-2.5M5 12.5h2M17 12.5h2" />
-          <circle cx="10" cy="12.5" r="0.8" fill="currentColor" />
-          <circle cx="14" cy="12.5" r="0.8" fill="currentColor" />
-        </>
-      )}
-      {kind === "factory" && <path d="M3 21V10l5 3.5V10l5 3.5V6l6 4v11H3z" />}
-      {kind === "tool" && (
-        <path d="M14.7 6.3a3.8 3.8 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a3.8 3.8 0 0 0 5.4-5.4l-2.1 2.1-3-3 2.1-2.1z" />
-      )}
-      {kind === "machine" && (
-        <>
-          <rect x="3.5" y="9" width="17" height="10" rx="1.2" />
-          <path d="M8 9V6h8v3M8.5 14h7" />
-        </>
-      )}
-      {kind === "gear" && (
-        <>
-          <circle cx="12" cy="12" r="3.2" />
-          <path d="M12 3.5v2.4M12 18.1v2.4M4.4 7.1l1.8 1.8M17.8 15.1l1.8 1.8M3.5 12h2.4M18.1 12h2.4M4.4 16.9l1.8-1.8M17.8 8.9l1.8-1.8" />
-        </>
-      )}
+      <path d="M9 5.5 16.5 12 9 18.5" />
     </svg>
   );
 }
 
-function CategoryNavIcon({ label }: { label: string }) {
-  return <ServiceNavIcon label={label} />;
-}
 

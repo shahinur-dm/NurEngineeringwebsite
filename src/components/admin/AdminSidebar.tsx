@@ -88,6 +88,7 @@ const navGroups: NavGroup[] = [
     title: "ASSETS & MEDIA",
     entries: [
       { type: "link", label: "Media Library", href: "/admin/media", Icon: ImageIcon },
+      { type: "link", label: "Downloads", href: "/admin/downloads", Icon: FolderIcon },
     ],
   },
   {

@@ -48,7 +48,7 @@ export default async function ContactPage({
       <div className="section-label">Contact</div>
       <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
         <div className="flex h-full flex-col border border-line bg-navy p-3.5 text-white sm:p-5">
-          <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold uppercase leading-tight">
+          <h1 className="text-xl sm:text-2xl md:text-[1.75rem] font-semibold tracking-normal leading-snug">
             Send a part number or photo
           </h1>
           <p className="mt-1.5 text-sm leading-5 text-white/70">
@@ -64,8 +64,8 @@ export default async function ContactPage({
                   </svg>
                 </span>
                 <div className="min-w-0">
-                  <dt className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-orange-bright">Phone</dt>
-                  <dd className="mt-1 space-y-0.5 font-display text-base sm:text-lg leading-none">
+                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">Phone</dt>
+                  <dd className="mt-1 space-y-0.5 text-[15px] sm:text-base font-medium leading-snug">
                     <div><a href={`tel:${settings.phone}`}>{settings.phone}</a></div>
                     {settings.phone2 ? (
                       <div><a href={`tel:${settings.phone2}`}>{settings.phone2}</a></div>
@@ -84,7 +84,7 @@ export default async function ContactPage({
                   </svg>
                 </span>
                 <div className="min-w-0">
-                  <dt className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-orange-bright">Email</dt>
+                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">Email</dt>
                   <dd className="mt-1 break-words text-[15px] sm:text-[17px] font-medium leading-snug">
                     <a href={`mailto:${settings.email}`}>{settings.email}</a>
                   </dd>
@@ -98,7 +98,7 @@ export default async function ContactPage({
                   </svg>
                 </span>
                 <div className="min-w-0">
-                  <dt className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-orange-bright">Address</dt>
+                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">Address</dt>
                   <dd className="mt-1 text-[15px] sm:text-base leading-snug text-white/95">
                     <div className="font-semibold">{settings.brandName}</div>
                     {settings.addressHouse ? <div>House {settings.addressHouse}</div> : null}
@@ -116,7 +116,7 @@ export default async function ContactPage({
                   </svg>
                 </span>
                 <div className="min-w-0">
-                  <dt className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-orange-bright">Hours</dt>
+                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">Hours</dt>
                   <dd className="mt-1 text-[15px] sm:text-base font-medium">{settings.hours}</dd>
                 </div>
               </div>
@@ -134,8 +134,8 @@ export default async function ContactPage({
                         <div className="grid h-full w-full place-items-center bg-[#25D366] text-[9px] font-bold uppercase text-white">WA</div>
                       )}
                     </div>
-                    <span className="mt-1 text-center font-display text-[9px] font-bold uppercase leading-tight tracking-wider text-white/85">
-                      WhatsApp QR Scan
+                    <span className="mt-1 w-[7.25rem] text-center text-[10.5px] font-medium leading-tight tracking-normal text-white/90">
+                      WhatsApp: +8801713798987
                     </span>
                   </div>
                 )}
@@ -149,12 +149,9 @@ export default async function ContactPage({
                         <div className="grid h-full w-full place-items-center bg-[#07C160] text-[9px] font-bold uppercase text-white">WeChat</div>
                       )}
                     </div>
-                    <span className="mt-1 text-center font-display text-[9px] font-bold uppercase leading-tight tracking-wider text-white/85">
-                      WeChat QR Scan
+                    <span className="mt-1 w-[7.25rem] text-center text-[10.5px] font-medium leading-tight tracking-normal text-white/90">
+                      Wechat: nurul01713798987
                     </span>
-                    {settings.wechatId ? (
-                      <span className="mt-0.5 text-center text-[10px] text-white/75">{settings.wechatId}</span>
-                    ) : null}
                   </div>
                 )}
               </div>

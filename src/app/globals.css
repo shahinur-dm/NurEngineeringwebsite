@@ -298,7 +298,7 @@ button {
   width: max-content;
   white-space: nowrap;
   will-change: transform;
-  animation: notice-ticker-loop 32s linear infinite;
+  animation: notice-ticker-loop 42s linear infinite;
 }
 
 .notice-ticker-group {

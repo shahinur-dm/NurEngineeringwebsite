@@ -2,6 +2,50 @@ import Link from "next/link";
 import { Img } from "@/components/Img";
 import type { PopulatedProduct } from "@/lib/data";
 
+const TECH_ABBR = new Set([
+  "PLC",
+  "VFD",
+  "HMI",
+  "AC",
+  "DC",
+  "PPR",
+  "SMPS",
+  "DIN",
+  "LED",
+  "USB",
+  "IP",
+  "NC",
+  "NO",
+  "HP",
+  "KW",
+  "MM",
+  "MM²",
+  "MM2",
+  "CNC",
+  "PET",
+  "IMM",
+  "BMM",
+  "RGB",
+  "RMG",
+  "EEE",
+  "M18",
+]);
+
+function displayProductName(name: string) {
+  return name.split(/(\s+)/).map((token) => {
+    if (!token.trim()) return token;
+    const letters = token.replace(/[^A-Za-z0-9²]/g, "").toUpperCase();
+    if (TECH_ABBR.has(letters) || TECH_ABBR.has(token.toUpperCase())) {
+      return token.replace(/[A-Za-z0-9²]+/g, (part) =>
+        TECH_ABBR.has(part.toUpperCase()) ? part.toUpperCase() : part
+      );
+    }
+    if (/[0-9]/.test(token)) return token;
+    if (token.length <= 1) return token.toUpperCase();
+    return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase();
+  }).join("");
+}
+
 export function ProductCard({
   product,
   size = "md",
@@ -45,12 +89,12 @@ export function ProductCard({
             {category || "Industrial Machine Parts"}
           </p>
           <h3
-            className={`mt-1 font-display font-bold uppercase leading-snug tracking-wide text-navy transition group-hover:text-orange line-clamp-2 min-h-[2.6em] ${
-              size === "sm" ? "text-[12px] sm:text-[13px]" : "text-[13px] sm:text-[14px]"
+            className={`mt-1 font-medium normal-case leading-[1.35] tracking-normal text-navy transition group-hover:text-orange line-clamp-2 min-h-[2.6em] ${
+              size === "sm" ? "text-[12.5px] sm:text-[13.5px]" : "text-[13.5px] sm:text-[14.5px]"
             }`}
             title={product.name}
           >
-            {product.name}
+            {displayProductName(product.name)}
           </h3>
           {size !== "sm" && product.shortDescription && (
             <p className="mt-1 hidden sm:line-clamp-2 text-[11.5px] leading-relaxed text-steel">
