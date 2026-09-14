@@ -257,7 +257,7 @@ export function NavBar() {
         </Link>
 
         {/* Center-Left: Desktop Navigation Links (Slightly Larger Font & Shifted Left) */}
-        <nav className="hidden items-center gap-2.5 md:gap-3 lg:gap-4 xl:gap-7 md:flex mr-auto min-w-0 shrink">
+        <nav className="hidden items-center gap-2.5 md:gap-3.5 lg:gap-4 xl:gap-6 2xl:gap-7 md:flex mr-3 xl:mr-4 shrink-0">
           {nav.map((link) => {
             const active = isActive(link.href);
             const isProducts = link.href === "/products";
@@ -274,7 +274,7 @@ export function NavBar() {
                   <Link
                     href="/use-cases"
                     onClick={(e) => handleMenuClick(e, "services")}
-                    className={`relative flex items-center gap-1 py-3.5 font-display text-[14px] lg:text-[14.5px] xl:text-[15px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
+                    className={`relative flex items-center gap-1 py-3.5 font-display text-[14.5px] lg:text-[15px] xl:text-[15.5px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
                       active
                         ? "text-orange"
                         : "text-navy hover:text-orange"
@@ -323,7 +323,7 @@ export function NavBar() {
                   <Link
                     href={link.href}
                     onClick={(e) => handleMenuClick(e, "products")}
-                    className={`relative flex items-center gap-1 py-3.5 font-display text-[14px] lg:text-[14.5px] xl:text-[15px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
+                    className={`relative flex items-center gap-1 py-3.5 font-display text-[14.5px] lg:text-[15px] xl:text-[15.5px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
                       active
                         ? "text-orange"
                         : "text-navy hover:text-orange"
@@ -407,7 +407,7 @@ export function NavBar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative flex items-center gap-1 py-3.5 font-display text-[14px] lg:text-[14.5px] xl:text-[15px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
+                className={`relative flex items-center gap-1 py-3.5 font-display text-[14.5px] lg:text-[15px] xl:text-[15.5px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
                   active
                     ? "text-orange"
                     : "text-navy hover:text-orange"
@@ -429,7 +429,7 @@ export function NavBar() {
             <button
               type="button"
               onClick={(e) => handleMenuClick(e, "download")}
-              className={`relative flex items-center gap-1 py-3.5 font-display text-[14px] lg:text-[14.5px] xl:text-[15px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
+              className={`relative flex items-center gap-1 py-3.5 font-display text-[14.5px] lg:text-[15px] xl:text-[15.5px] font-bold uppercase tracking-[0.05em] whitespace-nowrap shrink-0 transition ${
                 pathname === "/catalogue" || pathname === "/user-manual"
                   ? "text-orange"
                   : "text-navy hover:text-orange"
@@ -463,12 +463,12 @@ export function NavBar() {
         </nav>
 
         {/* Right: Compact Header Live Search & Mobile Toggle */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 justify-end">
           {/* Desktop / Laptop Live Search Input & Dropdown */}
-          <div className="relative hidden md:block min-w-0" ref={searchRef}>
+          <div className="relative hidden md:block min-w-0 w-full max-w-none" ref={searchRef}>
             <form
               onSubmit={handleSearchSubmit}
-              className="flex items-center rounded-[2px] border-2 border-navy bg-white overflow-hidden h-[34px] md:h-[36px] w-[min(180px,30vw)] md:w-[min(195px,20vw)] lg:w-[min(240px,22vw)] xl:w-[340px] max-w-full shadow-[0_1px_2px_rgba(11,31,51,0.06)] transition focus-within:border-orange"
+              className="flex items-center rounded-[2px] border-2 border-navy bg-white overflow-hidden h-[34px] md:h-[36px] w-full min-w-0 shadow-[0_1px_2px_rgba(11,31,51,0.06)] transition focus-within:border-orange"
             >
               <input
                 type="text"
@@ -510,7 +510,7 @@ export function NavBar() {
                   <circle cx="11" cy="11" r="6.5" />
                   <path d="m20 20-3.5-3.5" />
                 </svg>
-                <span className="hidden sm:inline">SEARCH</span>
+                <span className="hidden md:inline">SEARCH</span>
               </button>
             </form>
 
