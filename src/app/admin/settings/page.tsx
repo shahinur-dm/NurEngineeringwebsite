@@ -22,13 +22,14 @@ export default function AdminSettingsPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerField, setPickerField] = useState<"logo" | "favicon" | "wechatQr" | "whatsappQr">("logo");
+  const [pickerField, setPickerField] = useState<"logo" | "footerLogo" | "favicon" | "wechatQr" | "whatsappQr">("logo");
 
   // Settings state across all tabs
   const [brandName, setBrandName] = useState("Nur Engineering Solution");
   const [tagline, setTagline] = useState("Machine, spare parts and Technical service provider");
   const [description, setDescription] = useState("");
   const [logo, setLogo] = useState("");
+  const [footerLogo, setFooterLogo] = useState("");
   const [favicon, setFavicon] = useState("");
   const [phone, setPhone] = useState("+8801805030940");
   const [phone2, setPhone2] = useState("01805030941");
@@ -92,6 +93,7 @@ export default function AdminSettingsPage() {
           if (s.tagline) setTagline(s.tagline);
           if (s.description) setDescription(s.description);
           if (s.logoUrl || s.logo) setLogo(s.logoUrl || s.logo);
+          if (s.footerLogoUrl !== undefined) setFooterLogo(s.footerLogoUrl || "");
           if (s.favicon) setFavicon(s.favicon);
           if (s.phone) setPhone(s.phone);
           if (s.phone2 !== undefined) setPhone2(s.phone2 || "");
@@ -138,6 +140,7 @@ export default function AdminSettingsPage() {
 
   function handleSelectMedia(url: string) {
     if (pickerField === "logo") setLogo(url);
+    if (pickerField === "footerLogo") setFooterLogo(url);
     if (pickerField === "favicon") setFavicon(url);
     if (pickerField === "wechatQr") setWechatQr(url);
     if (pickerField === "whatsappQr") setWhatsappQr(url);
@@ -162,6 +165,7 @@ export default function AdminSettingsPage() {
           description,
           logoUrl: logo,
           logo,
+          footerLogoUrl: footerLogo,
           favicon,
           phone,
           phone2,
@@ -336,7 +340,7 @@ export default function AdminSettingsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-navy">Custom Logo Image (Optional)</label>
+              <label className="block text-xs font-bold uppercase text-navy">Header Logo (Optional)</label>
               <div className="flex flex-wrap sm:flex-nowrap gap-2 mt-1">
                 <input
                   type="text"
@@ -370,13 +374,59 @@ export default function AdminSettingsPage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-navy">Active Logo Preview</p>
-                    <p className="text-[10.5px] text-steel">This logo is live on your header and footer.</p>
+                    <p className="text-[10.5px] text-steel">This logo is live on your header.</p>
                     <button
                       type="button"
                       onClick={() => setLogo("")}
                       className="mt-1 text-[10.5px] font-bold text-red-600 hover:underline"
                     >
                       Reset to Default Badge
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-navy">Footer Logo (Optional)</label>
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 mt-1">
+                <input
+                  type="text"
+                  value={footerLogo}
+                  onChange={(e) => setFooterLogo(e.target.value)}
+                  placeholder="Paste URL or select from Media Library..."
+                  className="flex-1 min-w-0 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono text-[11px]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPickerField("footerLogo");
+                    setPickerOpen(true);
+                  }}
+                  className="btn-navy px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5"
+                >
+                  <ImageIcon size={16} />
+                  <span>Media Library</span>
+                </button>
+              </div>
+              <p className="mt-1.5 text-[10.5px] text-mist">
+                Managed separately from the header logo. If blank, the header logo is used in the footer.
+              </p>
+              {footerLogo && (
+                <div className="mt-3 flex items-center gap-3 p-3 rounded border border-line bg-paper/30">
+                  <div className="relative h-14 w-14 shrink-0 rounded-full border-2 border-orange/40 bg-white p-1 shadow-sm overflow-hidden flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={footerLogo} alt="Footer Logo Preview" className="max-h-full max-w-full object-contain" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-navy">Footer Logo Preview</p>
+                    <p className="text-[10.5px] text-steel">This logo is live in the footer only.</p>
+                    <button
+                      type="button"
+                      onClick={() => setFooterLogo("")}
+                      className="mt-1 text-[10.5px] font-bold text-red-600 hover:underline"
+                    >
+                      Clear Footer Logo
                     </button>
                   </div>
                 </div>

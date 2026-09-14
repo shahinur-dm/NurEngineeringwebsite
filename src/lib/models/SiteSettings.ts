@@ -17,6 +17,7 @@ export interface ISiteSettings {
   hours: string;
   mapEmbedUrl: string;
   logoUrl?: string;
+  footerLogoUrl?: string;
   favicon?: string;
   notice?: string;
   noticeBn?: string;
@@ -71,6 +72,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     hours: { type: String, default: "Sat–Thu 9:00–18:00" },
     mapEmbedUrl: { type: String, default: "" },
     logoUrl: { type: String, default: "" },
+    footerLogoUrl: { type: String, default: "" },
     favicon: { type: String, default: "" },
     notice: {
       type: String,

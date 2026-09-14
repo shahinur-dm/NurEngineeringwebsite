@@ -71,6 +71,8 @@ export const fallbackSettings: ISiteSettings = {
   hours: "Sat–Thu 9:00–18:00",
   mapEmbedUrl:
     "https://maps.google.com/maps?q=Dhaka%2C%20Bangladesh&t=&z=13&ie=UTF8&iwloc=&output=embed",
+  logoUrl: "",
+  footerLogoUrl: "",
   notice: "Out of stock products will be delivered within 3–5 days.",
   noticeBn:
     "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★",
@@ -195,6 +197,7 @@ export async function getSettings(): Promise<ISiteSettings> {
     hours: (merged.hours as string) || fallbackSettings.hours,
     mapEmbedUrl: (merged.mapEmbedUrl as string) || fallbackSettings.mapEmbedUrl,
     logoUrl: ((merged.logoUrl || merged.logo) as string) || "",
+    footerLogoUrl: (merged.footerLogoUrl as string) || "",
     favicon: (merged.favicon as string) || "",
     notice:
       (merged.notice as string) ||

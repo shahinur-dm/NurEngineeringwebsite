@@ -37,6 +37,7 @@ export function SiteProvider({
               ...prev,
               ...data.settings,
               logoUrl: data.settings.logoUrl || data.settings.logo || prev.logoUrl,
+              footerLogoUrl: data.settings.footerLogoUrl ?? prev.footerLogoUrl,
               favicon: data.settings.favicon || prev.favicon,
             }));
 

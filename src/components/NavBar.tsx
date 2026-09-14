@@ -238,10 +238,10 @@ export function NavBar() {
   }
 
   return (
-    <header className="relative sticky top-[50px] md:top-0 z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)] w-full max-w-full">
+    <header className="relative sticky top-[50px] md:top-0 z-40 border-b border-line bg-white shadow-[0_2px_12px_rgba(11,31,51,0.04)] w-full max-w-full overflow-x-clip">
       <div className="shell flex items-center justify-between py-2 md:py-2.5 gap-2 sm:gap-3 w-full max-w-full min-w-0">
         {/* Left: Logo & Company Name Branding (Slightly Larger) */}
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0 md:shrink-0 mr-1 sm:mr-2 md:mr-4 lg:mr-6">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0 shrink md:shrink-0 mr-1 sm:mr-2 md:mr-2 lg:mr-3 xl:mr-6">
           <div className="shrink-0">
             <Logo size={58} src={site.logoUrl || (site as unknown as { logo?: string }).logo} />
           </div>
@@ -257,7 +257,7 @@ export function NavBar() {
         </Link>
 
         {/* Center-Left: Desktop Navigation Links (Slightly Larger Font & Shifted Left) */}
-        <nav className="hidden items-center gap-3.5 md:gap-4 lg:gap-5.5 xl:gap-7 md:flex mr-auto shrink-0">
+        <nav className="hidden items-center gap-2.5 md:gap-3 lg:gap-4 xl:gap-7 md:flex mr-auto min-w-0 shrink">
           {nav.map((link) => {
             const active = isActive(link.href);
             const isProducts = link.href === "/products";
@@ -463,12 +463,12 @@ export function NavBar() {
         </nav>
 
         {/* Right: Compact Header Live Search & Mobile Toggle */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
           {/* Desktop / Laptop Live Search Input & Dropdown */}
-          <div className="relative hidden md:block shrink-0" ref={searchRef}>
+          <div className="relative hidden md:block min-w-0" ref={searchRef}>
             <form
               onSubmit={handleSearchSubmit}
-              className="flex items-center rounded-[2px] border-2 border-navy bg-white overflow-hidden h-[34px] md:h-[36px] w-[180px] md:w-[195px] lg:w-[300px] xl:w-[340px] shadow-[0_1px_2px_rgba(11,31,51,0.06)] transition focus-within:border-orange shrink-0"
+              className="flex items-center rounded-[2px] border-2 border-navy bg-white overflow-hidden h-[34px] md:h-[36px] w-[min(180px,30vw)] md:w-[min(195px,20vw)] lg:w-[min(240px,22vw)] xl:w-[340px] max-w-full shadow-[0_1px_2px_rgba(11,31,51,0.06)] transition focus-within:border-orange"
             >
               <input
                 type="text"
