@@ -33,7 +33,7 @@ export default function AdminSettingsPage() {
   const [favicon, setFavicon] = useState("");
   const [phone, setPhone] = useState("+8801805030940");
   const [phone2, setPhone2] = useState("01805030941");
-  const [phone3, setPhone3] = useState("01805030947");
+  const [phone3, setPhone3] = useState("");
   const [wechatId, setWechatId] = useState("nurul01713798987");
   const [email, setEmail] = useState("ceo@nurengineering.bd.com");
   const [hours, setHours] = useState("Sat–Thu 9:00–18:00");

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { Feature } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
@@ -28,6 +29,9 @@ export async function PUT(
     if (body.active !== undefined) feature.active = Boolean(body.active);
 
     await feature.save();
+
+    revalidatePath("/", "layout");
+    revalidatePath("/");
 
     await logActivity({
       action: "FEATURE_UPDATE",
@@ -63,6 +67,9 @@ export async function DELETE(
     if (!feature) {
       return NextResponse.json({ error: "Feature not found" }, { status: 404 });
     }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/");
 
     await logActivity({
       action: "FEATURE_DELETE",

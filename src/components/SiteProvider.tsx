@@ -29,7 +29,7 @@ export function SiteProvider({
   // Client-side dynamic synchronization for live logo, favicon and branding updates
   useEffect(() => {
     function fetchLatestSettings() {
-      fetch("/api/settings")
+      fetch("/api/settings", { cache: "no-store" })
         .then((res) => res.json())
         .then((data) => {
           if (data.settings) {

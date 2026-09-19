@@ -60,7 +60,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     email: { type: String, default: "ceo@nurengineering.bd.com" },
     phone: { type: String, default: "+8801805030940" },
     phone2: { type: String, default: "01805030941" },
-    phone3: { type: String, default: "01805030947" },
+    phone3: { type: String, default: "" },
     wechatId: { type: String, default: "nurul01713798987" },
     address: {
       type: String,

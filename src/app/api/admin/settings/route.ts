@@ -5,6 +5,7 @@ import { SiteSettings, CompanyProfile } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
 import { fallbackSettings } from "@/lib/data";
 import { serialize } from "@/lib/serialize";
+import { isRetiredPhone } from "@/lib/official-contact";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export async function GET() {
     const db = await connectDB();
     if (db) {
       const [settingsDoc, profileDoc] = await Promise.all([
-        SiteSettings.findOne().lean(),
+        SiteSettings.findOne().sort({ updatedAt: -1 }).lean(),
         CompanyProfile.findOne().lean(),
       ]);
       if (settingsDoc) doc = serialize(settingsDoc) as unknown as Record<string, unknown>;
@@ -50,6 +51,10 @@ export async function GET() {
     },
   };
 
+  if (isRetiredPhone(String(merged.phone3 || ""))) {
+    merged.phone3 = "";
+  }
+
   return NextResponse.json({ settings: merged, profile });
 }
 
@@ -71,7 +76,10 @@ export async function PUT(req: Request) {
     }
 
     if (settings) {
-      const existing = await SiteSettings.findOne();
+      if (isRetiredPhone(String(settings.phone3 || ""))) {
+        settings.phone3 = "";
+      }
+      const existing = await SiteSettings.findOne().sort({ updatedAt: -1 });
       if (existing) {
         const resDoc = await SiteSettings.findByIdAndUpdate(
           existing._id,
@@ -130,6 +138,7 @@ export async function PUT(req: Request) {
       revalidatePath("/services");
       revalidatePath("/use-cases");
       revalidatePath("/blog");
+      revalidatePath("/api/settings");
     } catch {
       // ignore
     }

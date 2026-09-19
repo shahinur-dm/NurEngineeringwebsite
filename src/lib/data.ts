@@ -139,7 +139,7 @@ export async function getSettings(): Promise<ISiteSettings> {
   try {
     const db = await connectDB();
     if (db) {
-      const found = await SiteSettings.findOne().lean<ISiteSettings | null>();
+      const found = await SiteSettings.findOne().sort({ updatedAt: -1 }).lean<ISiteSettings | null>();
       if (found) doc = serialize(found) as unknown as Record<string, unknown>;
     }
   } catch (err) {
@@ -179,7 +179,7 @@ export async function getSettings(): Promise<ISiteSettings> {
     email: officialOrExisting(merged.email as string, fallbackSettings.email),
     phone: officialOrExisting(merged.phone as string, fallbackSettings.phone),
     phone2: officialOrExisting(merged.phone2 as string, fallbackSettings.phone2 || ""),
-    phone3: officialOrExisting(merged.phone3 as string, fallbackSettings.phone3 || ""),
+    phone3: officialOrExisting(merged.phone3 as string | undefined, fallbackSettings.phone3 || ""),
     wechatId: officialOrExisting(merged.wechatId as string, fallbackSettings.wechatId || ""),
     address: officialOrExisting(merged.address as string, fallbackSettings.address),
     addressHouse: officialOrExisting(

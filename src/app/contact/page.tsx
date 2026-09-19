@@ -135,7 +135,7 @@ export default async function ContactPage({
                       )}
                     </div>
                     <span className="mt-1 w-[7.25rem] text-center text-[10.5px] font-medium leading-tight tracking-normal text-white/90">
-                      WhatsApp: +8801713798987
+                      WhatsApp: {settings.social?.whatsapp || "+8801713798987"}
                     </span>
                   </div>
                 )}
@@ -150,7 +150,7 @@ export default async function ContactPage({
                       )}
                     </div>
                     <span className="mt-1 w-[7.25rem] text-center text-[10.5px] font-medium leading-tight tracking-normal text-white/90">
-                      Wechat: nurul01713798987
+                      Wechat: {settings.wechatId || "nurul01713798987"}
                     </span>
                   </div>
                 )}

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { Service } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
@@ -32,6 +33,12 @@ export async function PUT(
     if (body.published !== undefined) service.published = Boolean(body.published);
 
     await service.save();
+
+    revalidatePath("/", "layout");
+    revalidatePath("/");
+    revalidatePath("/services");
+    if (service.slug) revalidatePath(`/services/${service.slug}`);
+    revalidatePath("/use-cases");
 
     await logActivity({
       action: "SERVICE_UPDATE",
@@ -67,6 +74,11 @@ export async function DELETE(
     if (!service) {
       return NextResponse.json({ error: "Service not found" }, { status: 404 });
     }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/");
+    revalidatePath("/services");
+    revalidatePath("/use-cases");
 
     await logActivity({
       action: "SERVICE_DELETE",

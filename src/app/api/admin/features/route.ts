@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { Feature } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
@@ -62,6 +63,9 @@ export async function POST(req: Request) {
         role: admin.role,
       },
     });
+
+    revalidatePath("/", "layout");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true, feature });
   } catch (err) {
