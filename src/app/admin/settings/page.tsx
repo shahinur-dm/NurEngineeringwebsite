@@ -22,7 +22,9 @@ export default function AdminSettingsPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerField, setPickerField] = useState<"logo" | "footerLogo" | "favicon" | "wechatQr" | "whatsappQr">("logo");
+  const [pickerField, setPickerField] = useState<
+    "logo" | "footerLogo" | "favicon" | "wechatQr" | "whatsappQr" | "hero1" | "hero2" | "hero3"
+  >("logo");
 
   // Settings state across all tabs
   const [brandName, setBrandName] = useState("Nur Engineering Solution");
@@ -60,6 +62,15 @@ export default function AdminSettingsPage() {
   const [whatsappQr, setWhatsappQr] = useState("");
   const [whatsappQrLabel, setWhatsappQrLabel] = useState("WHATSAPP QR SCAN");
   const [whatsappQrEnabled, setWhatsappQrEnabled] = useState(true);
+
+  const [heroBanner1, setHeroBanner1] = useState("");
+  const [heroBanner2, setHeroBanner2] = useState("");
+  const [heroBanner3, setHeroBanner3] = useState("");
+  const [heroSizeWarning, setHeroSizeWarning] = useState<{
+    1?: string;
+    2?: string;
+    3?: string;
+  }>({});
 
   // SEO & Analytics state
   const [seoTitle, setSeoTitle] = useState("Nur Engineering Solution | Machine Parts & Technical Service");
@@ -132,11 +143,38 @@ export default function AdminSettingsPage() {
 
           if (s.analytics?.gaMeasurementId) setGaMeasurementId(s.analytics.gaMeasurementId);
           if (s.analytics?.googleSiteVerification) setGoogleSiteVerification(s.analytics.googleSiteVerification);
+
+          if (s.heroBanners) {
+            if (s.heroBanners.banner1 !== undefined) setHeroBanner1(s.heroBanners.banner1 || "");
+            if (s.heroBanners.banner2 !== undefined) setHeroBanner2(s.heroBanners.banner2 || "");
+            if (s.heroBanners.banner3 !== undefined) setHeroBanner3(s.heroBanners.banner3 || "");
+          }
         }
       })
       .catch((err) => console.error("Error fetching settings:", err))
       .finally(() => setLoading(false));
   }, []);
+
+  function checkHeroBannerSize(url: string, slot: 1 | 2 | 3) {
+    if (!url) {
+      setHeroSizeWarning((prev) => ({ ...prev, [slot]: undefined }));
+      return;
+    }
+    const img = new window.Image();
+    img.onload = () => {
+      const matches = img.naturalWidth === 1920 && img.naturalHeight === 500;
+      setHeroSizeWarning((prev) => ({
+        ...prev,
+        [slot]: matches
+          ? undefined
+          : `Uploaded ${img.naturalWidth} × ${img.naturalHeight} px. Recommended size: 1920 × 500 px`,
+      }));
+    };
+    img.onerror = () => {
+      setHeroSizeWarning((prev) => ({ ...prev, [slot]: undefined }));
+    };
+    img.src = url;
+  }
 
   function handleSelectMedia(url: string) {
     if (pickerField === "logo") setLogo(url);
@@ -144,6 +182,18 @@ export default function AdminSettingsPage() {
     if (pickerField === "favicon") setFavicon(url);
     if (pickerField === "wechatQr") setWechatQr(url);
     if (pickerField === "whatsappQr") setWhatsappQr(url);
+    if (pickerField === "hero1") {
+      setHeroBanner1(url);
+      checkHeroBannerSize(url, 1);
+    }
+    if (pickerField === "hero2") {
+      setHeroBanner2(url);
+      checkHeroBannerSize(url, 2);
+    }
+    if (pickerField === "hero3") {
+      setHeroBanner3(url);
+      checkHeroBannerSize(url, 3);
+    }
   }
 
   async function handleSave(e?: React.FormEvent) {
@@ -193,6 +243,11 @@ export default function AdminSettingsPage() {
             whatsappQr,
             whatsappQrLabel,
             whatsappQrEnabled,
+          },
+          heroBanners: {
+            banner1: heroBanner1,
+            banner2: heroBanner2,
+            banner3: heroBanner3,
           },
           seo: {
             defaultTitle: seoTitle,
@@ -288,6 +343,7 @@ export default function AdminSettingsPage() {
           { id: "location", label: "Location & Maps", Icon: MapPinIcon },
           { id: "social", label: "Social Links", Icon: GlobeIcon },
           { id: "footer", label: "Footer & QR Codes", Icon: ImageIcon },
+          { id: "hero", label: "Hero Banners", Icon: ImageIcon },
           { id: "general", label: "General & SEO", Icon: SettingsIcon },
         ].map((t) => {
           const ActiveIcon = t.Icon;
@@ -474,6 +530,83 @@ export default function AdminSettingsPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {tab === "hero" && (
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-6 shadow-xs space-y-5">
+            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
+              Hero Banners
+            </h3>
+            <p className="text-[10.5px] text-mist">
+              Recommended size: 1920 × 500 px. Images are used as the existing homepage Hero Slider backgrounds. Leave a slot empty to keep the current default banner.
+            </p>
+            {(
+              [
+                { n: 1 as const, value: heroBanner1, set: setHeroBanner1, field: "hero1" as const },
+                { n: 2 as const, value: heroBanner2, set: setHeroBanner2, field: "hero2" as const },
+                { n: 3 as const, value: heroBanner3, set: setHeroBanner3, field: "hero3" as const },
+              ]
+            ).map((slot) => (
+              <div key={slot.n} className="rounded border border-line bg-paper/30 p-4 space-y-3">
+                <label className="block text-xs font-bold uppercase text-navy">
+                  Banner {slot.n}
+                </label>
+                {slot.value ? (
+                  <div className="relative h-28 w-full overflow-hidden rounded border border-line bg-navy">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={slot.value}
+                      alt={`Banner ${slot.n} preview`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-28 items-center justify-center rounded border border-dashed border-line bg-white text-[11px] text-steel">
+                    No custom image — live site uses the default Banner {slot.n}
+                  </div>
+                )}
+                <div className="flex flex-wrap sm:flex-nowrap gap-2">
+                  <input
+                    type="text"
+                    value={slot.value}
+                    onChange={(e) => {
+                      slot.set(e.target.value);
+                      checkHeroBannerSize(e.target.value, slot.n);
+                    }}
+                    placeholder="Paste URL or select from Media Library..."
+                    className="flex-1 min-w-0 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono text-[11px]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPickerField(slot.field);
+                      setPickerOpen(true);
+                    }}
+                    className="btn-navy px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5"
+                  >
+                    <ImageIcon size={16} />
+                    <span>{slot.value ? "Change Image" : "Upload / Change Image"}</span>
+                  </button>
+                </div>
+                <p className="text-[10.5px] text-mist">Recommended size: 1920 × 500 px</p>
+                {heroSizeWarning[slot.n] && (
+                  <p className="text-[10.5px] font-bold text-amber-700">{heroSizeWarning[slot.n]}</p>
+                )}
+                {slot.value && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      slot.set("");
+                      checkHeroBannerSize("", slot.n);
+                    }}
+                    className="text-[10.5px] font-bold text-red-600 hover:underline"
+                  >
+                    Clear and use default Banner {slot.n}
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         )}
 

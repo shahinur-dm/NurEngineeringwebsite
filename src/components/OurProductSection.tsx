@@ -150,7 +150,9 @@ export function OurProductSection({
                 <span>Loading more products...</span>
               </>
             ) : (
-              <span>View More Product →</span>
+              <span>
+                View More Product <span className="inline-block align-middle text-[24px] leading-none">→</span>
+              </span>
             )}
           </button>
         </div>

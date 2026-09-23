@@ -301,6 +301,12 @@ button {
   animation: notice-ticker-loop 42s linear infinite;
 }
 
+@media (max-width: 639px) {
+  .notice-ticker-track {
+    animation-duration: 56s;
+  }
+}
+
 .notice-ticker-group {
   display: flex;
   align-items: center;

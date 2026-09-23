@@ -41,6 +41,10 @@ export async function GET() {
       ...fallbackSettings.footerQr,
       ...((doc?.footerQr as Record<string, unknown>) || {}),
     },
+    heroBanners: {
+      ...fallbackSettings.heroBanners,
+      ...((doc?.heroBanners as Record<string, string>) || {}),
+    },
     seo: {
       ...fallbackSettings.seo,
       ...((doc?.seo as Record<string, unknown>) || {}),

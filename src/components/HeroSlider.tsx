@@ -43,10 +43,9 @@ export function HeroSlider({ banners }: { banners: IBanner[] }) {
         alt={slide.title}
         fill
         priority
-        className="object-cover opacity-50"
+        className="object-cover"
         sizes="(max-width: 1024px) 100vw, 75vw"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/80 to-navy/25" />
 
       {/* Main Content Area */}
       <div className="relative flex min-h-[190px] sm:min-h-[210px] md:min-h-[220px] lg:min-h-[230px] flex-col justify-center px-4 py-4 sm:px-8 md:px-10 md:py-5">

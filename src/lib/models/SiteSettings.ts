@@ -36,6 +36,11 @@ export interface ISiteSettings {
     whatsappQrLabel?: string;
     whatsappQrEnabled?: boolean;
   };
+  heroBanners?: {
+    banner1?: string;
+    banner2?: string;
+    banner3?: string;
+  };
   seo: {
     defaultTitle: string;
     defaultDescription: string;
@@ -97,6 +102,11 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
       whatsappQr: { type: String, default: "" },
       whatsappQrLabel: { type: String, default: "WHATSAPP QR SCAN" },
       whatsappQrEnabled: { type: Boolean, default: true },
+    },
+    heroBanners: {
+      banner1: { type: String, default: "" },
+      banner2: { type: String, default: "" },
+      banner3: { type: String, default: "" },
     },
     seo: {
       defaultTitle: {

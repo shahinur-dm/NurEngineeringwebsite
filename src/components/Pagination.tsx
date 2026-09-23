@@ -102,14 +102,14 @@ export function Pagination({
             onClick={() => onPageChange(currentPage + 1)}
             className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider border border-line bg-white text-navy hover:border-orange hover:text-orange transition rounded-[2px] disabled:opacity-50 cursor-pointer"
           >
-            NEXT →
+            NEXT <span className="inline-block align-middle text-[22px] leading-none">→</span>
           </button>
         ) : (
           <Link
             href={createPageUrl(currentPage + 1)}
             className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider border border-line bg-white text-navy hover:border-orange hover:text-orange transition rounded-[2px]"
           >
-            NEXT →
+            NEXT <span className="inline-block align-middle text-[22px] leading-none">→</span>
           </Link>
         ))}
     </nav>

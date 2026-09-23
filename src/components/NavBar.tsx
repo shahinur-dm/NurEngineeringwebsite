@@ -334,10 +334,10 @@ export function NavBar() {
                     <span>{link.label}</span>
                     <svg
                       viewBox="0 0 24 24"
-                      width="12"
-                      height="12"
-                      className="h-3 w-3 fill-none stroke-current opacity-70 shrink-0"
-                      strokeWidth="2.5"
+                      width="24"
+                      height="24"
+                      className="h-6 w-6 fill-none stroke-current opacity-70 shrink-0"
+                      strokeWidth="2.8"
                     >
                       <path d="m6 9 6 6 6-6" />
                     </svg>

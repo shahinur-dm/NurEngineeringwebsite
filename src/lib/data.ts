@@ -91,6 +91,11 @@ export const fallbackSettings: ISiteSettings = {
     whatsappQrLabel: "WHATSAPP QR SCAN",
     whatsappQrEnabled: true,
   },
+  heroBanners: {
+    banner1: "",
+    banner2: "",
+    banner3: "",
+  },
   seo: {
     defaultTitle:
       "Nur Engineering Solution | Machine Parts & Technical Service",
@@ -216,6 +221,11 @@ export async function getSettings(): Promise<ISiteSettings> {
         rawSocial.whatsapp,
         fallbackSettings.social?.whatsapp || OFFICIAL_CONTACT.whatsapp
       ),
+    },
+    heroBanners: {
+      banner1: ((merged.heroBanners as { banner1?: string } | undefined)?.banner1 as string) || "",
+      banner2: ((merged.heroBanners as { banner2?: string } | undefined)?.banner2 as string) || "",
+      banner3: ((merged.heroBanners as { banner3?: string } | undefined)?.banner3 as string) || "",
     },
     footerQr: {
       wechatQr: (rawFooterQr.wechatQr as string) || "",
@@ -354,18 +364,35 @@ export async function getBrands(): Promise<IBrand[]> {
 
 
 export async function getBanners(): Promise<IBanner[]> {
+  let banners: IBanner[] = serialize(mockBanners);
   try {
     const db = await connectDB();
     if (db) {
       const docs = await Banner.find({ active: true })
         .sort({ order: 1 })
         .lean<IBanner[]>();
-      if (docs.length) return serialize(docs);
+      if (docs.length) banners = serialize(docs);
     }
   } catch {
-    // fall through to mock
+    banners = serialize(mockBanners);
   }
-  return serialize(mockBanners);
+
+  try {
+    const settings = await getSettings();
+    const overrides = [
+      settings.heroBanners?.banner1,
+      settings.heroBanners?.banner2,
+      settings.heroBanners?.banner3,
+    ];
+    banners = banners.map((banner, index) => {
+      const image = overrides[index];
+      return image ? { ...banner, image } : banner;
+    });
+  } catch {
+    // keep default banner images
+  }
+
+  return banners;
 }
 
 export async function getServices(opts?: {

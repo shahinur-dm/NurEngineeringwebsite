@@ -258,15 +258,15 @@ export function CategorySidebar({
         onMouseEnter={handlePanelMouseEnter}
         onMouseLeave={handlePanelMouseLeave}
       >
-        <aside className="overflow-hidden border border-line bg-white shadow-[0_1px_0_rgba(11,31,51,0.03)] rounded-[2px]">
-          <div className="flex items-center justify-between bg-navy px-3 py-2.5">
+        <aside className="flex max-h-[calc(100dvh-5rem)] flex-col overflow-hidden border border-line bg-white shadow-[0_1px_0_rgba(11,31,51,0.03)] rounded-[2px]">
+          <div className="flex shrink-0 items-center justify-between bg-navy px-3 py-2.5">
             <p className="font-display text-[12px] font-bold uppercase tracking-[0.14em] text-white">
               Category
             </p>
             <span className="h-px w-6 bg-orange" />
           </div>
 
-          <ul className="max-h-[380px] xl:max-h-[420px] overflow-y-auto divide-y divide-line/60 scrollbar-thin">
+          <ul className="min-h-0 flex-1 max-h-[380px] xl:max-h-[420px] overflow-y-auto divide-y divide-line/60 scrollbar-thin">
             <li>
               <Link
                 href="/products"
@@ -306,7 +306,7 @@ export function CategorySidebar({
                   >
                     <span className="truncate">{cat.name}</span>
                     {hasSubcategories && (
-                      <span className="text-[10px] text-mist/80 group-hover:text-orange ml-1 shrink-0">
+                      <span className="text-[22px] leading-none text-mist/80 group-hover:text-orange ml-1 shrink-0">
                         ›
                       </span>
                     )}
@@ -317,7 +317,7 @@ export function CategorySidebar({
           </ul>
 
           {/* Desktop Contact Section */}
-          <div className="border-t border-line bg-paper/40">
+          <div className="shrink-0 border-t border-line bg-paper/40">
             <Link
               href="/contact"
               className="block bg-navy px-3 py-1.5 text-center font-display text-[11px] font-bold uppercase tracking-[0.14em] text-white transition hover:bg-orange"

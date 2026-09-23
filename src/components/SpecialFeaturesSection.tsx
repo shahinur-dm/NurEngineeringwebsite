@@ -25,7 +25,13 @@ export function SpecialFeaturesSection({ features, categories }: SpecialFeatures
             onClick={() => setExpanded((prev) => !prev)}
             className="text-[11px] font-bold uppercase tracking-[0.16em] text-orange hover:text-navy transition flex items-center gap-1 cursor-pointer select-none shrink-0"
           >
-            {expanded ? "Show less ←" : "See more →"}
+            {expanded ? (
+              "Show less ←"
+            ) : (
+              <>
+                See more <span className="inline-block align-middle text-[24px] leading-none">→</span>
+              </>
+            )}
           </button>
         )}
       </div>
