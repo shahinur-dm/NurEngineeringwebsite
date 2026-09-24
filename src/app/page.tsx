@@ -44,9 +44,9 @@ export default async function HomePage({
           <div className="section-label !mb-0">Company services</div>
           <Link
             href="/services"
-            className="text-[11px] font-bold uppercase tracking-[0.16em] text-orange transition hover:text-navy shrink-0"
+            className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-orange transition hover:text-navy shrink-0"
           >
-            All services <span className="inline-block align-middle text-[24px] leading-none">→</span>
+            All services <span className="text-[24px] leading-none">→</span>
           </Link>
         </div>
         <div className={`grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 ${homeServices.length >= 6 ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}>
@@ -57,7 +57,7 @@ export default async function HomePage({
               className="group bg-white border border-line px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-[2px] shadow-xs hover:border-orange hover:shadow-sm transition flex items-center justify-start gap-1.5 min-h-[54px] sm:min-h-[56px] min-w-0"
             >
               <ServiceItemIcon label={`${service.title} ${service.slug}`} />
-              <span className="min-w-0 text-[12px] sm:text-[12.5px] font-bold text-navy leading-none max-sm:line-clamp-2 sm:whitespace-nowrap">
+              <span className="min-w-0 text-[13.5px] sm:text-[14px] font-bold text-navy leading-none max-sm:line-clamp-2 sm:whitespace-nowrap">
                 {service.title}
               </span>
             </Link>
@@ -81,7 +81,7 @@ export default async function HomePage({
 
 function ServiceItemIcon({ label: _label }: { label: string }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" aria-hidden>
+    <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" aria-hidden>
       <circle cx="12" cy="12" r="10" fill="#dcfce7" />
       <circle cx="12" cy="12" r="10" fill="none" stroke="#22c55e" strokeWidth="1.6" />
       <path
