@@ -53,11 +53,15 @@ export async function GET() {
       ...fallbackSettings.analytics,
       ...((doc?.analytics as Record<string, string>) || {}),
     },
+    footerQuickLinks:
+      Array.isArray(doc?.footerQuickLinks) && (doc?.footerQuickLinks as unknown[]).length
+        ? (doc?.footerQuickLinks as { label: string; href: string }[])
+        : fallbackSettings.footerQuickLinks,
+    footerServices:
+      Array.isArray(doc?.footerServices) && (doc?.footerServices as unknown[]).length
+        ? (doc?.footerServices as { label: string; href: string }[])
+        : fallbackSettings.footerServices,
   };
-
-  if (isRetiredPhone(String(merged.phone3 || ""))) {
-    merged.phone3 = "";
-  }
 
   return NextResponse.json({ settings: merged, profile });
 }

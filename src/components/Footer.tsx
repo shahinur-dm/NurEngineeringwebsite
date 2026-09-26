@@ -14,10 +14,34 @@ export function Footer() {
   if (pathname?.startsWith("/admin")) {
     return null;
   }
-  const rawNav = site.nav?.length ? site.nav : [];
-  const nav = [...rawNav]
-    .map((item) => (item.href === "/use-cases" ? { ...item, label: "Our Services" } : item))
-    .sort((a, b) => a.order - b.order);
+  const defaultQuickLinks = [
+    { label: "Home", href: "/" },
+    { label: "Products", href: "/products" },
+    { label: "Our Services", href: "/use-cases" },
+    { label: "Services", href: "/services" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
+    { label: "Blog", href: "/blog" },
+  ];
+  const quickLinks =
+    site.footerQuickLinks && site.footerQuickLinks.length > 0
+      ? site.footerQuickLinks
+      : defaultQuickLinks;
+
+  const defaultFooterServices = [
+    { label: "Keep the machine running", href: "/use-cases/machine-downtime-spare-parts" },
+    { label: "Conveyor & packaging control", href: "/use-cases/conveyor-packaging-automation" },
+    { label: "Pump, fan & compressor VFDs", href: "/use-cases/pump-fan-vfd-retrofit" },
+    { label: "Control panel kits", href: "/use-cases/control-panel-kits" },
+    { label: "Textile & RMG utilities", href: "/use-cases/textile-rmg-utility-drives" },
+    { label: "EEE lab & training benches", href: "/use-cases/eee-lab-training-benches" },
+  ];
+  const footerServices =
+    site.footerServices && site.footerServices.length > 0
+      ? site.footerServices
+      : useCases && useCases.length > 0
+        ? useCases.slice(0, 6).map((item) => ({ label: item.title, href: `/use-cases/${item.slug}` }))
+        : defaultFooterServices;
 
   // Safe social links
   const facebookUrl = site.social?.facebook || "https://www.facebook.com/";
@@ -175,8 +199,8 @@ export function Footer() {
             Quick Link
           </p>
           <ul className="mt-4 space-y-2.5 text-sm">
-            {nav.map((link) => (
-              <li key={link.href}>
+            {quickLinks.map((link, idx) => (
+              <li key={`${link.href}-${idx}`}>
                 <Link href={link.href} className="text-white/70 transition hover:text-orange">
                   {link.label}
                 </Link>
@@ -191,13 +215,13 @@ export function Footer() {
             Our Services
           </p>
           <ul className="mt-4 space-y-2.5 text-sm">
-            {useCases.slice(0, 6).map((item) => (
-              <li key={item.slug}>
+            {footerServices.map((item, idx) => (
+              <li key={`${item.href}-${idx}`}>
                 <Link
-                  href={`/use-cases/${item.slug}`}
+                  href={item.href}
                   className="text-white/70 transition hover:text-orange"
                 >
-                  {item.title}
+                  {item.label}
                 </Link>
               </li>
             ))}
@@ -239,7 +263,7 @@ export function Footer() {
             )}
 
             {[site.phone, site.phone2, site.phone3]
-              .filter((num) => Boolean(num) && String(num).replace(/[^\d]/g, "").replace(/^880/, "0") !== "01805030947")
+              .filter((num): num is string => Boolean(num && String(num).trim()))
               .map((num) => (
               <li key={num}>
                 <a

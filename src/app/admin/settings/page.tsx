@@ -10,7 +10,10 @@ import {
   GlobeIcon,
   SettingsIcon,
   ImageIcon,
+  TrashIcon,
+  PlusCircleIcon,
 } from "@/components/admin/AdminIcons";
+import { defaultFooterQuickLinks, defaultFooterServices } from "@/lib/data";
 
 export default function AdminSettingsPage() {
   const searchParams = useSearchParams();
@@ -54,6 +57,14 @@ export default function AdminSettingsPage() {
   const [linkedin, setLinkedin] = useState("https://www.linkedin.com/");
   const [youtube, setYoutube] = useState("https://www.youtube.com/");
   const [whatsapp, setWhatsapp] = useState("+8801713798987");
+
+  // Footer Links state
+  const [footerQuickLinks, setFooterQuickLinks] = useState<{ label: string; href: string }[]>(
+    defaultFooterQuickLinks
+  );
+  const [footerServices, setFooterServices] = useState<{ label: string; href: string }[]>(
+    defaultFooterServices
+  );
 
   // Footer QR Codes state
   const [wechatQr, setWechatQr] = useState("");
@@ -131,6 +142,13 @@ export default function AdminSettingsPage() {
             if (s.footerQr.whatsappQr !== undefined) setWhatsappQr(s.footerQr.whatsappQr);
             if (s.footerQr.whatsappQrLabel) setWhatsappQrLabel(s.footerQr.whatsappQrLabel);
             if (s.footerQr.whatsappQrEnabled !== undefined) setWhatsappQrEnabled(s.footerQr.whatsappQrEnabled);
+          }
+
+          if (Array.isArray(s.footerQuickLinks) && s.footerQuickLinks.length > 0) {
+            setFooterQuickLinks(s.footerQuickLinks);
+          }
+          if (Array.isArray(s.footerServices) && s.footerServices.length > 0) {
+            setFooterServices(s.footerServices);
           }
 
           if (s.seo?.defaultTitle) setSeoTitle(s.seo.defaultTitle);
@@ -230,6 +248,8 @@ export default function AdminSettingsPage() {
           addressRoad,
           addressBlock,
           mapEmbedUrl: mapsEmbed,
+          footerQuickLinks,
+          footerServices,
           social: {
             facebook,
             linkedin,
@@ -862,81 +882,325 @@ export default function AdminSettingsPage() {
                 Footer Settings & QR Scan Codes
               </h3>
               <p className="mt-1 text-xs text-steel">
-                Manage contact information, social links, and WeChat / WhatsApp QR codes displayed in the website Footer.
+                Manage contact information, Quick Links, Our Services list, and WeChat / WhatsApp QR codes displayed in the website Footer.
               </p>
             </div>
 
-            {/* Quick Contact Info Overview */}
+            {/* 1. Contact Information */}
             <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-navy">Footer Contact Information</h4>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex items-center justify-between border-b border-line pb-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                  Footer Contact Information (Column 4 &amp; Info)
+                </h4>
+                <span className="text-[10.5px] font-bold text-steel">Live Footer Contacts</span>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-navy">Phone Number (Clickable tel:)</label>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Company Brand Name</label>
                   <input
                     type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono"
+                    value={brandName}
+                    onChange={(e) => setBrandName(e.target.value)}
+                    placeholder="Nur Engineering Solution"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-bold text-navy"
                   />
                 </div>
+
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-navy">Email Address (Clickable mailto:)</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                    placeholder="ceo@nurengineering.bd.com"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-navy">Company Address</label>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Primary Phone (Clickable tel:)</label>
                   <input
                     type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+880 1713-798987"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono font-medium"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-navy">House Number</label>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Phone 2 (Additional Number)</label>
                   <input
                     type="text"
-                    value={addressHouse}
-                    onChange={(e) => setAddressHouse(e.target.value)}
-                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                    value={phone2}
+                    onChange={(e) => setPhone2(e.target.value)}
+                    placeholder="01805030941"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono font-medium"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-navy">Road Number</label>
+                  <label className="block text-[11px] font-bold uppercase text-navy">Phone 3 (Additional Number)</label>
                   <input
                     type="text"
-                    value={addressRoad}
-                    onChange={(e) => setAddressRoad(e.target.value)}
-                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                    value={phone3}
+                    onChange={(e) => setPhone3(e.target.value)}
+                    placeholder="01805030947"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono font-medium"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-navy">Block Number</label>
+                  <label className="block text-[11px] font-bold uppercase text-navy">WhatsApp / Contact Number</label>
                   <input
                     type="text"
-                    value={addressBlock}
-                    onChange={(e) => setAddressBlock(e.target.value)}
-                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder="+880 1713-798987"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono font-medium"
                   />
                 </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-navy">WeChat ID / Information</label>
+                  <input
+                    type="text"
+                    value={wechatId}
+                    onChange={(e) => setWechatId(e.target.value)}
+                    placeholder="nurul01713798987"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-navy">Office / Business Hours</label>
                   <input
                     type="text"
                     value={hours}
                     onChange={(e) => setHours(e.target.value)}
-                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                    placeholder="Sat–Thu 9:00–18:00"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Address details */}
+              <div className="border-t border-line/60 pt-3 space-y-3">
+                <label className="block text-[11px] font-bold uppercase text-navy">Company Address Details</label>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <label className="block text-[10.5px] font-bold text-steel">House Number</label>
+                    <input
+                      type="text"
+                      value={addressHouse}
+                      onChange={(e) => setAddressHouse(e.target.value)}
+                      placeholder="e.g. 43-44"
+                      className="mt-1 w-full rounded border border-line px-3 py-1.5 text-xs outline-none focus:border-orange"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10.5px] font-bold text-steel">Road Number</label>
+                    <input
+                      type="text"
+                      value={addressRoad}
+                      onChange={(e) => setAddressRoad(e.target.value)}
+                      placeholder="e.g. Road-1"
+                      className="mt-1 w-full rounded border border-line px-3 py-1.5 text-xs outline-none focus:border-orange"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10.5px] font-bold text-steel">Block Number</label>
+                    <input
+                      type="text"
+                      value={addressBlock}
+                      onChange={(e) => setAddressBlock(e.target.value)}
+                      placeholder="e.g. Block -B"
+                      className="mt-1 w-full rounded border border-line px-3 py-1.5 text-xs outline-none focus:border-orange"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[10.5px] font-bold text-steel">Full / Area Address Text</label>
+                  <textarea
+                    rows={2}
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="House#43-44, Road-1, Block -B, Mirpur-1 (Beside Shah Ali Thana), Dhaka-1216"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium leading-relaxed"
                   />
                 </div>
               </div>
             </div>
 
-            {/* WeChat QR Code */}
+            {/* 2. Quick Links Section */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                    Footer Quick Links (Column 2)
+                  </h4>
+                  <p className="text-[10.5px] text-steel">
+                    Items displayed under the &ldquo;QUICK LINK&rdquo; column in the website footer.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFooterQuickLinks(defaultFooterQuickLinks)}
+                    className="text-[10.5px] font-bold text-steel hover:text-navy hover:underline"
+                  >
+                    Reset Defaults
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFooterQuickLinks((prev) => [...prev, { label: "New Link", href: "/" }])
+                    }
+                    className="btn-navy px-2.5 py-1 text-xs font-bold flex items-center gap-1"
+                  >
+                    <PlusCircleIcon size={14} />
+                    <span>Add Quick Link</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {footerQuickLinks.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-wrap sm:flex-nowrap items-center gap-2 p-2 rounded bg-white border border-line"
+                  >
+                    <span className="text-[10px] font-bold text-mist w-5 text-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1 min-w-[140px]">
+                      <input
+                        type="text"
+                        value={item.label}
+                        onChange={(e) => {
+                          const next = [...footerQuickLinks];
+                          next[idx] = { ...next[idx], label: e.target.value };
+                          setFooterQuickLinks(next);
+                        }}
+                        placeholder="Link Name (e.g. Home)"
+                        className="w-full rounded border border-line px-2.5 py-1.5 text-xs outline-none focus:border-orange font-medium"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[160px]">
+                      <input
+                        type="text"
+                        value={item.href}
+                        onChange={(e) => {
+                          const next = [...footerQuickLinks];
+                          next[idx] = { ...next[idx], href: e.target.value };
+                          setFooterQuickLinks(next);
+                        }}
+                        placeholder="Destination URL / Route (e.g. /products)"
+                        className="w-full rounded border border-line px-2.5 py-1.5 text-xs outline-none focus:border-orange font-mono text-[11px]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFooterQuickLinks((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                      title="Delete link"
+                      className="p-1.5 text-steel hover:text-red-600 rounded hover:bg-paper shrink-0 transition"
+                    >
+                      <TrashIcon size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. Our Services Section */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                    Footer Our Services List (Column 3)
+                  </h4>
+                  <p className="text-[10.5px] text-steel">
+                    Items displayed under the &ldquo;OUR SERVICES&rdquo; column in the website footer.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFooterServices(defaultFooterServices)}
+                    className="text-[10.5px] font-bold text-steel hover:text-navy hover:underline"
+                  >
+                    Reset Defaults
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFooterServices((prev) => [
+                        ...prev,
+                        { label: "New Service", href: "/services" },
+                      ])
+                    }
+                    className="btn-navy px-2.5 py-1 text-xs font-bold flex items-center gap-1"
+                  >
+                    <PlusCircleIcon size={14} />
+                    <span>Add Service Link</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {footerServices.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-wrap sm:flex-nowrap items-center gap-2 p-2 rounded bg-white border border-line"
+                  >
+                    <span className="text-[10px] font-bold text-mist w-5 text-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1 min-w-[160px]">
+                      <input
+                        type="text"
+                        value={item.label}
+                        onChange={(e) => {
+                          const next = [...footerServices];
+                          next[idx] = { ...next[idx], label: e.target.value };
+                          setFooterServices(next);
+                        }}
+                        placeholder="Service Name (e.g. Keep the machine running)"
+                        className="w-full rounded border border-line px-2.5 py-1.5 text-xs outline-none focus:border-orange font-medium"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[160px]">
+                      <input
+                        type="text"
+                        value={item.href}
+                        onChange={(e) => {
+                          const next = [...footerServices];
+                          next[idx] = { ...next[idx], href: e.target.value };
+                          setFooterServices(next);
+                        }}
+                        placeholder="Destination URL / Route (e.g. /services#...)"
+                        className="w-full rounded border border-line px-2.5 py-1.5 text-xs outline-none focus:border-orange font-mono text-[11px]"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFooterServices((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                      title="Delete service link"
+                      className="p-1.5 text-steel hover:text-red-600 rounded hover:bg-paper shrink-0 transition"
+                    >
+                      <TrashIcon size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. WeChat QR Code */}
             <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-navy flex items-center gap-2">
@@ -1011,7 +1275,7 @@ export default function AdminSettingsPage() {
               )}
             </div>
 
-            {/* WhatsApp QR Code */}
+            {/* 5. WhatsApp QR Code */}
             <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-navy flex items-center gap-2">

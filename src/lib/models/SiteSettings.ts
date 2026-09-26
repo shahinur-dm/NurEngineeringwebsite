@@ -51,6 +51,8 @@ export interface ISiteSettings {
     googleSiteVerification?: string;
   };
   nav: { href: string; label: string; order: number }[];
+  footerQuickLinks?: { label: string; href: string }[];
+  footerServices?: { label: string; href: string }[];
 }
 
 const SiteSettingsSchema = new Schema<ISiteSettings>(
@@ -129,6 +131,20 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
         href: { type: String, default: "" },
         label: { type: String, default: "" },
         order: { type: Number, default: 0 },
+        _id: false,
+      },
+    ],
+    footerQuickLinks: [
+      {
+        label: { type: String, default: "" },
+        href: { type: String, default: "" },
+        _id: false,
+      },
+    ],
+    footerServices: [
+      {
+        label: { type: String, default: "" },
+        href: { type: String, default: "" },
         _id: false,
       },
     ],
