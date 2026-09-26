@@ -478,14 +478,32 @@ export async function getFeatures(): Promise<IFeature[]> {
 export async function getServiceBySlug(
   slug: string
 ): Promise<PopulatedService | null> {
+  if (!slug) return null;
+  const raw = String(slug).trim();
+  const decoded = decodeURIComponent(raw).trim();
+  const slugDash = decoded.toLowerCase().replace(/\s+/g, "-");
+  const slugSpace = decoded.toLowerCase().replace(/-/g, " ");
+
   try {
     const db = await connectDB();
     if (db) {
+      const orConditions: Record<string, unknown>[] = [
+        { slug: raw },
+        { slug: decoded },
+        { slug: slugDash },
+        { slug: slugSpace },
+        { slug: { $regex: new RegExp(`^${decoded.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+        { slug: { $regex: new RegExp(`^${slugDash.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+        { slug: { $regex: new RegExp(`^${slugSpace.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+        { title: { $regex: new RegExp(`^${decoded.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+        { title: { $regex: new RegExp(`^${slugSpace.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+      ];
+      if (mongoose.Types.ObjectId.isValid(raw)) {
+        orConditions.push({ _id: raw });
+      }
+
       const doc = await Service.findOne({
-        $or: [
-          { slug },
-          { slug: { $regex: new RegExp(`^${slug}$`, "i") } },
-        ],
+        $or: orConditions,
         published: { $ne: false },
       })
         .populate("category")
@@ -496,7 +514,20 @@ export async function getServiceBySlug(
   } catch (err) {
     console.error("getServiceBySlug DB error:", err);
   }
-  const s = getMockPopulatedServices().find((item) => item.slug === slug);
+
+  const s = getMockPopulatedServices().find((item) => {
+    const itemSlug = (item.slug || "").toLowerCase();
+    const itemTitle = (item.title || "").toLowerCase();
+    return (
+      itemSlug === raw.toLowerCase() ||
+      itemSlug === decoded.toLowerCase() ||
+      itemSlug === slugDash ||
+      itemSlug === slugSpace ||
+      itemTitle === decoded.toLowerCase() ||
+      itemTitle === slugSpace ||
+      item._id === raw
+    );
+  });
   return s ? serialize(s) : null;
 }
 

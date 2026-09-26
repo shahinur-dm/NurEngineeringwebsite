@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { CatalogShell } from "@/components/CatalogShell";
 import { Img } from "@/components/Img";
 import { ProductCard } from "@/components/ProductCard";
@@ -21,7 +21,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const service = await getServiceBySlug(slug);
-  if (!service) return { title: "Service" };
+  if (!service) return { title: "Technical services" };
   return { title: service.title, description: service.shortDescription };
 }
 
@@ -32,7 +32,7 @@ export default async function ServiceDetailPage({
 }) {
   const { slug } = await params;
   const service = await getServiceBySlug(slug);
-  if (!service) notFound();
+  if (!service) redirect("/services");
   const categories = await getCategories("product");
   const related = (service.relatedProducts || []) as unknown as PopulatedProduct[];
 

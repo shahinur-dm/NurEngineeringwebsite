@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { CatalogShell } from "@/components/CatalogShell";
 import { Img } from "@/components/Img";
 import { ProductCard } from "@/components/ProductCard";
@@ -24,7 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const item = await getUseCaseBySlug(slug);
-  if (!item) return { title: "Use case" };
+  if (!item) return { title: "Our Services" };
   return {
     title: item.title,
     description: item.summary,
@@ -38,7 +38,13 @@ export default async function UseCaseDetailPage({
 }) {
   const { slug } = await params;
   const item = await getUseCaseBySlug(slug);
-  if (!item) notFound();
+  if (!item) {
+    const svc = await getServiceBySlug(slug);
+    if (svc) {
+      redirect(`/services/${encodeURIComponent(svc.slug || slug)}`);
+    }
+    redirect("/use-cases");
+  }
 
   const categorySlugs = [...new Set(item.bom.map((row) => row.categorySlug))];
   const [categories, allUseCases, ...productSets] = await Promise.all([

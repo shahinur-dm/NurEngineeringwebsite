@@ -7,6 +7,14 @@ import { useSite } from "@/components/SiteProvider";
 import { Logo } from "@/components/Logo";
 import type { PopulatedProduct } from "@/lib/data";
 
+const defaultNavServices = [
+  { _id: "svc-1", title: "Industrial Machineries", slug: "industrial-machineries" },
+  { _id: "svc-2", title: "Machine Spare parts", slug: "machine-spare-parts" },
+  { _id: "svc-3", title: "Technical Services", slug: "technical-services" },
+  { _id: "svc-4", title: "Industrial Automation", slug: "industrial-automation" },
+  { _id: "svc-5", title: "Robotics", slug: "robotics" },
+];
+
 export function NavBar() {
   const router = useRouter();
   const site = useSite();
@@ -18,7 +26,7 @@ export function NavBar() {
   const [productsOpen, setProductsOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [selectedProductCat, setSelectedProductCat] = useState<string | null>(null);
-  const [navServices, setNavServices] = useState<Array<{ _id: string; title: string; slug: string }>>([]);
+  const [navServices, setNavServices] = useState<Array<{ _id: string; title: string; slug: string }>>(defaultNavServices);
   const [navCatalog, setNavCatalog] = useState<
     Array<{
       name: string;
