@@ -36,7 +36,7 @@ export function HeroSlider({ banners }: { banners: IBanner[] }) {
     setIndex((i) => (i + dir + slides.length) % slides.length);
 
   return (
-    <section className="relative h-[190px] sm:h-[210px] md:h-[220px] lg:h-[230px] overflow-hidden border border-line bg-navy shadow-[0_1px_0_rgba(11,31,51,0.03)]">
+    <section className="relative w-full aspect-[1920/500] overflow-hidden border border-line bg-navy shadow-[0_1px_0_rgba(11,31,51,0.03)]">
       <Img
         src={slide.image}
         alt={slide.title}
