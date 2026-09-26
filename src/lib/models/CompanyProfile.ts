@@ -5,14 +5,15 @@ export interface ICompanyProfile {
   name: string;
   tagline: string;
   about: string;
-  mission: string;
-  vision: string;
-  foundedYear: number;
-  email: string;
-  phone: string;
-  address: string;
+  aboutLabel?: string;
+  mission?: string;
+  vision?: string;
+  foundedYear?: number;
+  email?: string;
+  phone?: string;
+  address?: string;
   coverImage?: string;
-  highlights: { label: string; value: string }[];
+  highlights?: { label: string; value: string }[];
 }
 
 const CompanyProfileSchema = new Schema<ICompanyProfile>(
@@ -20,17 +21,18 @@ const CompanyProfileSchema = new Schema<ICompanyProfile>(
     name: { type: String, required: true },
     tagline: { type: String, required: true },
     about: { type: String, required: true },
-    mission: { type: String, required: true },
-    vision: { type: String, required: true },
-    foundedYear: { type: Number, required: true },
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
-    address: { type: String, required: true },
+    aboutLabel: { type: String, default: "About" },
+    mission: { type: String, default: "" },
+    vision: { type: String, default: "" },
+    foundedYear: { type: Number, default: 2024 },
+    email: { type: String, default: "" },
+    phone: { type: String, default: "" },
+    address: { type: String, default: "" },
     coverImage: String,
     highlights: [
       {
-        label: { type: String, required: true },
-        value: { type: String, required: true },
+        label: { type: String, default: "" },
+        value: { type: String, default: "" },
       },
     ],
   },
@@ -40,3 +42,4 @@ const CompanyProfileSchema = new Schema<ICompanyProfile>(
 export const CompanyProfile =
   models.CompanyProfile ||
   model<ICompanyProfile>("CompanyProfile", CompanyProfileSchema);
+

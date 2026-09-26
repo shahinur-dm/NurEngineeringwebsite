@@ -39,7 +39,7 @@ export default async function AboutPage() {
           <div className="absolute inset-0 bg-navy/50" />
           <div className="absolute bottom-6 left-6">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-bright">
-              About
+              {company?.aboutLabel || "About"}
             </p>
             <h1 className="mt-1 font-display text-3xl font-bold uppercase text-white md:text-4xl">
               {company.name}

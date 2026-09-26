@@ -23,6 +23,7 @@ import {
   ActivityIcon,
   ChevronDownIcon,
   ExternalLinkIcon,
+  FileTextIcon,
 } from "@/components/admin/AdminIcons";
 
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
@@ -74,6 +75,7 @@ const navGroups: NavGroup[] = [
     entries: [
       { type: "link", label: "Company Services", href: "/admin/services", Icon: SlidersIcon },
       { type: "link", label: "Special Features", href: "/admin/features", Icon: TagIcon },
+      { type: "link", label: "About", href: "/admin/about", Icon: FileTextIcon },
     ],
   },
   {

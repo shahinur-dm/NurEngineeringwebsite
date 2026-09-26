@@ -254,17 +254,55 @@ export async function getSettings(): Promise<ISiteSettings> {
   };
 }
 
-export async function getCompany(): Promise<ICompanyProfile | null> {
+export const fallbackCompanyProfile: ICompanyProfile = {
+  _id: "company-profile",
+  name: "Nur Engineering Solution",
+  tagline: "Machine, spare parts and Technical service provider",
+  about:
+    "Nur Engineering Solution is a Bangladesh-based machine parts and technical service desk founded by an Electrical and Electronic Engineering student. We sell PLC, motors, drives, sensors, contactors and workshop spare parts — and we help you pick the right substitute when the original part is gone.",
+  mission:
+    "Supply accurate industrial parts with honest specs, clear prices, and EEE-backed selection help.",
+  vision:
+    "Be the parts partner workshops and small factories in Bangladesh actually call first.",
+  aboutLabel: "About",
+  foundedYear: 2024,
+  email: OFFICIAL_CONTACT.email,
+  phone: OFFICIAL_CONTACT.phone,
+  address: OFFICIAL_CONTACT.address,
+  coverImage: "https://images.unsplash.com/photo-1565043666747-69f6646db940?w=1600&q=80",
+  highlights: [
+    { label: "Founded", value: "2024" },
+    { label: "Focus", value: "EEE machine parts & service" },
+    { label: "Based in", value: "Dhaka, Bangladesh" },
+    { label: "Catalog", value: "PLC to bearings" },
+  ],
+};
+
+export async function getCompany(): Promise<ICompanyProfile> {
+  let doc: ICompanyProfile | null = null;
   try {
     const db = await connectDB();
     if (db) {
-      const doc = await CompanyProfile.findOne().lean<ICompanyProfile | null>();
-      if (doc) return serialize(doc);
+      const found = await CompanyProfile.findOne().lean<ICompanyProfile | null>();
+      if (found) doc = serialize(found);
     }
   } catch (err) {
     console.warn("getCompany DB error:", err);
   }
-  return null;
+
+  if (!doc) {
+    return fallbackCompanyProfile;
+  }
+
+  return {
+    ...fallbackCompanyProfile,
+    ...doc,
+    aboutLabel: doc.aboutLabel || fallbackCompanyProfile.aboutLabel,
+    highlights:
+      Array.isArray(doc.highlights) && doc.highlights.length > 0
+        ? doc.highlights
+        : fallbackCompanyProfile.highlights,
+  };
 }
 
 export async function getCategories(
