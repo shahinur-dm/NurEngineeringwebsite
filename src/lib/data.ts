@@ -53,24 +53,8 @@ export type PopulatedService = Omit<IService, "category" | "relatedProducts"> & 
   relatedProducts: IProduct[];
 };
 
-export const defaultFooterQuickLinks = [
-  { label: "Home", href: "/" },
-  { label: "Products", href: "/products" },
-  { label: "Our Services", href: "/use-cases" },
-  { label: "Services", href: "/services" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-  { label: "Blog", href: "/blog" },
-];
-
-export const defaultFooterServices = [
-  { label: "Keep the machine running", href: "/use-cases/machine-downtime-spare-parts" },
-  { label: "Conveyor & packaging control", href: "/use-cases/conveyor-packaging-automation" },
-  { label: "Pump, fan & compressor VFDs", href: "/use-cases/pump-fan-vfd-retrofit" },
-  { label: "Control panel kits", href: "/use-cases/control-panel-kits" },
-  { label: "Textile & RMG utilities", href: "/use-cases/textile-rmg-utility-drives" },
-  { label: "EEE lab & training benches", href: "/use-cases/eee-lab-training-benches" },
-];
+import { defaultFooterQuickLinks, defaultFooterServices } from "@/lib/footer-defaults";
+export { defaultFooterQuickLinks, defaultFooterServices };
 
 export const fallbackSettings: ISiteSettings = {
   _id: "fallback",

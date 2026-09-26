@@ -9,12 +9,14 @@ declare global {
   var mongooseCache: MongooseCache | undefined;
 }
 
-const cached: MongooseCache = global.mongooseCache ?? {
+const globalForMongoose = globalThis as unknown as { mongooseCache?: MongooseCache };
+
+const cached: MongooseCache = globalForMongoose.mongooseCache ?? {
   conn: null,
   promise: null,
 };
 
-global.mongooseCache = cached;
+globalForMongoose.mongooseCache = cached;
 
 const DEFAULT_MONGODB_URI =
   "mongodb+srv://efootballmadrid25_db_user:ljvpbVMGVJTQPVcH@dawatit.5hxbo9c.mongodb.net/NurCompanyWebsite?appName=dawatit";

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 
@@ -39,12 +39,14 @@ export function AdminShell({
 
   return (
     <div className="min-h-screen bg-[#f4f6f8] text-ink">
-      <AdminSidebar
-        collapsed={collapsed}
-        onToggle={() => setCollapsed((v) => !v)}
-        mobileOpen={mobileOpen}
-        onMobileClose={() => setMobileOpen(false)}
-      />
+      <Suspense fallback={<aside className="fixed inset-y-0 left-0 z-40 w-64 bg-[#071422]" />}>
+        <AdminSidebar
+          collapsed={collapsed}
+          onToggle={() => setCollapsed((v) => !v)}
+          mobileOpen={mobileOpen}
+          onMobileClose={() => setMobileOpen(false)}
+        />
+      </Suspense>
 
       <div
         className={`flex min-h-screen flex-col transition-all duration-300 ${

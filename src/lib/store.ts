@@ -123,9 +123,11 @@ function getInitialState(): UnifiedStoreState {
   };
 }
 
+const globalForStore = globalThis as unknown as { __nes_unified_store?: UnifiedStoreState };
+
 function loadStore(): UnifiedStoreState {
-  if (global.__nes_unified_store) {
-    return global.__nes_unified_store;
+  if (globalForStore.__nes_unified_store) {
+    return globalForStore.__nes_unified_store;
   }
 
   try {
@@ -133,7 +135,7 @@ function loadStore(): UnifiedStoreState {
       const content = fs.readFileSync(STORE_FILE, "utf-8");
       const parsed = JSON.parse(content);
       if (parsed && Array.isArray(parsed.products) && Array.isArray(parsed.categories)) {
-        global.__nes_unified_store = parsed;
+        globalForStore.__nes_unified_store = parsed;
         return parsed;
       }
     }
@@ -142,13 +144,13 @@ function loadStore(): UnifiedStoreState {
   }
 
   const initial = getInitialState();
-  global.__nes_unified_store = initial;
+  globalForStore.__nes_unified_store = initial;
   saveStore(initial);
   return initial;
 }
 
 function saveStore(state: UnifiedStoreState) {
-  global.__nes_unified_store = state;
+  globalForStore.__nes_unified_store = state;
   try {
     fs.writeFileSync(STORE_FILE, JSON.stringify(state), "utf-8");
   } catch {

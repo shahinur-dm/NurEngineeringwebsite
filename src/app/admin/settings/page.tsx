@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal";
 import {
@@ -13,9 +13,9 @@ import {
   TrashIcon,
   PlusCircleIcon,
 } from "@/components/admin/AdminIcons";
-import { defaultFooterQuickLinks, defaultFooterServices } from "@/lib/data";
+import { defaultFooterQuickLinks, defaultFooterServices } from "@/lib/footer-defaults";
 
-export default function AdminSettingsPage() {
+function AdminSettingsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams.get("tab") || "branding";
@@ -1449,3 +1449,18 @@ export default function AdminSettingsPage() {
     </div>
   );
 }
+
+export default function AdminSettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ff6b00] border-t-transparent" />
+        </div>
+      }
+    >
+      <AdminSettingsContent />
+    </Suspense>
+  );
+}
+
