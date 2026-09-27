@@ -43,17 +43,28 @@ export default async function ContactPage({
       ? `Service: ${service.title}`
       : sp.subject;
 
+  const cp = settings.contactPage || {};
+  const heading = cp.heading || "Send a part number or photo";
+  const descText =
+    cp.description ||
+    "We reply with options, stock and pricing. Same desk for products and technical service.";
+  const phoneLabel = cp.phoneLabel || "Phone";
+  const emailLabel = cp.emailLabel || "Email";
+  const addressLabel = cp.addressLabel || "Address";
+  const hoursLabel = cp.hoursLabel || "Hours";
+  const whatsappNumber = settings.social?.whatsapp || settings.phone || "+8801713798987";
+  const wechatNumber = settings.wechatId || "nurul01713798987";
+
   return (
     <CatalogShell categories={categories} showSearch={false}>
       <div className="section-label">Contact</div>
       <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
         <div className="flex h-full flex-col border border-line bg-navy p-3.5 text-white sm:p-5">
           <h1 className="text-xl sm:text-2xl md:text-[1.75rem] font-semibold tracking-normal leading-snug">
-            Send a part number or photo
+            {heading}
           </h1>
           <p className="mt-1.5 text-sm leading-5 text-white/70">
-            We reply with options, stock and pricing. Same desk for products and
-            technical service.
+            {descText}
           </p>
           <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4 min-[480px]:flex-row min-[480px]:items-stretch">
             <dl className="flex min-w-0 flex-1 flex-col justify-between gap-3">
@@ -64,7 +75,7 @@ export default async function ContactPage({
                   </svg>
                 </span>
                 <div className="min-w-0">
-                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">Phone</dt>
+                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">{phoneLabel}</dt>
                   <dd className="mt-1 space-y-0.5 text-[15px] sm:text-base font-medium leading-snug">
                     <div><a href={`tel:${settings.phone}`}>{settings.phone}</a></div>
                     {settings.phone2 ? (
@@ -84,7 +95,7 @@ export default async function ContactPage({
                   </svg>
                 </span>
                 <div className="min-w-0">
-                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">Email</dt>
+                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">{emailLabel}</dt>
                   <dd className="mt-1 break-words text-[15px] sm:text-[17px] font-medium leading-snug">
                     <a href={`mailto:${settings.email}`}>{settings.email}</a>
                   </dd>
@@ -98,7 +109,7 @@ export default async function ContactPage({
                   </svg>
                 </span>
                 <div className="min-w-0">
-                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">Address</dt>
+                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">{addressLabel}</dt>
                   <dd className="mt-1 text-[15px] sm:text-base leading-snug text-white/95">
                     <div className="font-semibold">{settings.brandName}</div>
                     {settings.addressHouse ? <div>House {settings.addressHouse}</div> : null}
@@ -116,8 +127,13 @@ export default async function ContactPage({
                   </svg>
                 </span>
                 <div className="min-w-0">
-                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">Hours</dt>
-                  <dd className="mt-1 text-[15px] sm:text-base font-medium">{settings.hours}</dd>
+                  <dt className="text-[10.5px] font-semibold uppercase tracking-wider text-orange-bright">{hoursLabel}</dt>
+                  <dd className="mt-1 text-[15px] sm:text-base font-medium">
+                    <div>{settings.hours}</div>
+                    {settings.workingDays && settings.workingDays !== settings.hours ? (
+                      <div className="text-xs text-white/70 font-normal">{settings.workingDays}</div>
+                    ) : null}
+                  </dd>
                 </div>
               </div>
             </dl>
@@ -135,7 +151,7 @@ export default async function ContactPage({
                       )}
                     </div>
                     <span className="mt-1 w-[7.25rem] text-center text-[10.5px] font-medium leading-tight tracking-normal text-white/90">
-                      WhatsApp: {settings.social?.whatsapp || "+8801713798987"}
+                      WhatsApp: {whatsappNumber}
                     </span>
                   </div>
                 )}
@@ -150,7 +166,7 @@ export default async function ContactPage({
                       )}
                     </div>
                     <span className="mt-1 w-[7.25rem] text-center text-[10.5px] font-medium leading-tight tracking-normal text-white/90">
-                      Wechat: {settings.wechatId || "nurul01713798987"}
+                      Wechat: {wechatNumber}
                     </span>
                   </div>
                 )}
@@ -168,6 +184,7 @@ export default async function ContactPage({
             defaultSubject={subject}
             productId={product ? String(product._id) : undefined}
             serviceId={service ? String(service._id) : undefined}
+            content={cp}
           />
         </div>
       </div>

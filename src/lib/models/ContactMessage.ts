@@ -6,7 +6,7 @@ export interface IContactMessage {
   email: string;
   phone?: string;
   company?: string;
-  inquiryType?: "product" | "sourcing" | "service" | "partnership" | "other";
+  inquiryType?: string;
   subject: string;
   message: string;
   product?: Types.ObjectId | string;
@@ -23,7 +23,8 @@ const ContactMessageSchema = new Schema<IContactMessage>(
     company: { type: String, trim: true },
     inquiryType: {
       type: String,
-      enum: ["product", "sourcing", "service", "partnership", "other"],
+      trim: true,
+      default: "product",
     },
     subject: { type: String, required: true, trim: true },
     message: { type: String, required: true, trim: true },

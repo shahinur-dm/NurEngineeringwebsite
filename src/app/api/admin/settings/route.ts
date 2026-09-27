@@ -33,6 +33,10 @@ export async function GET() {
   const merged = {
     ...fallbackSettings,
     ...(doc || {}),
+    contactPage: {
+      ...fallbackSettings.contactPage,
+      ...((doc?.contactPage as Record<string, unknown>) || {}),
+    },
     social: {
       ...fallbackSettings.social,
       ...((doc?.social as Record<string, string>) || {}),
@@ -87,6 +91,25 @@ export async function PUT(req: Request) {
       if (isRetiredPhone(String(settings.phone3 || ""))) {
         settings.phone3 = "";
       }
+
+      // Auto-resolve Google Maps link if provided
+      const rawMapLink = (settings.mapEmbedUrl || settings.mapShareUrl || "").trim();
+      if (rawMapLink) {
+        try {
+          const { resolveGoogleMapsUrlServer } = await import("@/lib/google-maps");
+          const mapZoom = typeof settings.mapZoom === "number" ? settings.mapZoom : undefined;
+          const parsed = await resolveGoogleMapsUrlServer(rawMapLink, mapZoom, settings.address);
+          if (parsed.embedUrl) {
+            settings.mapEmbedUrl = parsed.embedUrl;
+            if (!settings.mapShareUrl && !rawMapLink.includes("output=embed")) {
+              settings.mapShareUrl = rawMapLink;
+            }
+          }
+        } catch (mapErr) {
+          console.warn("Map resolve warning during save:", mapErr);
+        }
+      }
+
       const existing = await SiteSettings.findOne().sort({ updatedAt: -1 });
       if (existing) {
         const resDoc = await SiteSettings.findByIdAndUpdate(

@@ -105,6 +105,7 @@ const navGroups: NavGroup[] = [
           { label: "Logo & Branding", href: "/admin/settings?tab=branding", Icon: PaletteIcon },
           { label: "Header & Contacts", href: "/admin/settings?tab=header", Icon: PhoneIcon },
           { label: "Location & Maps", href: "/admin/settings?tab=location", Icon: MapPinIcon },
+          { label: "Contact Page", href: "/admin/settings?tab=contact", Icon: FileTextIcon },
           { label: "Social Links", href: "/admin/settings?tab=social", Icon: GlobeIcon },
           { label: "Hero Banners", href: "/admin/settings?tab=hero", Icon: ImageIcon },
           { label: "General & SEO", href: "/admin/settings?tab=general", Icon: SlidersIcon },

@@ -1,14 +1,15 @@
 "use client";
 
 import { useSite } from "@/components/SiteProvider";
+import { getValidMapEmbedUrl } from "@/lib/google-maps";
 
 export function GoogleMap() {
   const site = useSite();
-  let src = site.mapEmbedUrl?.trim();
-  if (!src) {
-    const q = encodeURIComponent(site.address || "Dhaka, Bangladesh");
-    src = `https://maps.google.com/maps?q=${q}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
-  }
+  const src = getValidMapEmbedUrl(
+    site.mapEmbedUrl || site.mapShareUrl,
+    site.mapZoom,
+    site.address
+  );
 
   return (
     <div className="relative w-full overflow-hidden border border-line bg-paper">

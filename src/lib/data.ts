@@ -72,8 +72,32 @@ export const fallbackSettings: ISiteSettings = {
   addressRoad: OFFICIAL_CONTACT.addressRoad,
   addressBlock: OFFICIAL_CONTACT.addressBlock,
   hours: "Sat–Thu 9:00–18:00",
+  workingDays: "Saturday – Thursday",
   mapEmbedUrl:
-    "https://maps.google.com/maps?q=Dhaka%2C%20Bangladesh&t=&z=13&ie=UTF8&iwloc=&output=embed",
+    "https://maps.google.com/maps?q=House%2343-44%2C%20Road-1%2C%20Block%20-B%2C%20Mirpur-1%20%28Beside%20Shah%20Ali%20Thana%29%2C%20Dhaka-1216&t=&z=16&ie=UTF8&iwloc=&output=embed",
+  mapShareUrl: "",
+  mapZoom: 16,
+  contactPage: {
+    heading: "Send a part number or photo",
+    description:
+      "We reply with options, stock and pricing. Same desk for products and technical service.",
+    phoneLabel: "Phone",
+    emailLabel: "Email",
+    addressLabel: "Address",
+    hoursLabel: "Hours",
+    formHeading: "",
+    nameLabel: "Name",
+    emailFieldLabel: "Email",
+    phoneFieldLabel: "Phone",
+    companyFieldLabel: "Company / Workshop",
+    inquiryTypeLabel: "Inquiry type",
+    inquiryTypeOptions: ["Product quote", "Parts sourcing", "Technical service", "Other"],
+    subjectLabel: "Subject",
+    messageLabel: "Message",
+    submitButtonText: "Send inquiry",
+    successMessage: "Message received. We will reply shortly.",
+    errorMessage: "Failed to send message. Please try again.",
+  },
   logoUrl: "",
   footerLogoUrl: "",
   favicon: "",
@@ -164,6 +188,11 @@ export async function getSettings(): Promise<ISiteSettings> {
     ...(doc || {}),
   };
 
+  const rawContactPage = {
+    ...fallbackSettings.contactPage,
+    ...((doc?.contactPage as Record<string, unknown>) || {}),
+  };
+
   const rawSocial = {
     ...fallbackSettings.social,
     ...((doc?.social as Record<string, string>) || {}),
@@ -208,7 +237,63 @@ export async function getSettings(): Promise<ISiteSettings> {
       fallbackSettings.addressBlock || ""
     ),
     hours: (merged.hours as string) || fallbackSettings.hours,
+    workingDays: (merged.workingDays as string) || fallbackSettings.workingDays || "Saturday – Thursday",
     mapEmbedUrl: (merged.mapEmbedUrl as string) || fallbackSettings.mapEmbedUrl,
+    mapShareUrl: (merged.mapShareUrl as string) || "",
+    mapZoom:
+      typeof merged.mapZoom === "number" && !isNaN(merged.mapZoom)
+        ? merged.mapZoom
+        : (fallbackSettings.mapZoom || 16),
+    contactPage: {
+      heading:
+        (rawContactPage.heading as string) ||
+        fallbackSettings.contactPage?.heading ||
+        "Send a part number or photo",
+      description:
+        (rawContactPage.description as string) ||
+        fallbackSettings.contactPage?.description ||
+        "We reply with options, stock and pricing. Same desk for products and technical service.",
+      phoneLabel:
+        (rawContactPage.phoneLabel as string) ||
+        fallbackSettings.contactPage?.phoneLabel ||
+        "Phone",
+      emailLabel:
+        (rawContactPage.emailLabel as string) ||
+        fallbackSettings.contactPage?.emailLabel ||
+        "Email",
+      addressLabel:
+        (rawContactPage.addressLabel as string) ||
+        fallbackSettings.contactPage?.addressLabel ||
+        "Address",
+      hoursLabel:
+        (rawContactPage.hoursLabel as string) ||
+        fallbackSettings.contactPage?.hoursLabel ||
+        "Hours",
+      formHeading: (rawContactPage.formHeading as string) || "",
+      nameLabel: (rawContactPage.nameLabel as string) || "Name",
+      emailFieldLabel: (rawContactPage.emailFieldLabel as string) || "Email",
+      phoneFieldLabel: (rawContactPage.phoneFieldLabel as string) || "Phone",
+      companyFieldLabel: (rawContactPage.companyFieldLabel as string) || "Company / Workshop",
+      inquiryTypeLabel: (rawContactPage.inquiryTypeLabel as string) || "Inquiry type",
+      inquiryTypeOptions:
+        Array.isArray(rawContactPage.inquiryTypeOptions) && rawContactPage.inquiryTypeOptions.length > 0
+          ? (rawContactPage.inquiryTypeOptions as string[])
+          : (fallbackSettings.contactPage?.inquiryTypeOptions || [
+              "Product quote",
+              "Parts sourcing",
+              "Technical service",
+              "Other",
+            ]),
+      subjectLabel: (rawContactPage.subjectLabel as string) || "Subject",
+      messageLabel: (rawContactPage.messageLabel as string) || "Message",
+      submitButtonText: (rawContactPage.submitButtonText as string) || "Send inquiry",
+      successMessage:
+        (rawContactPage.successMessage as string) ||
+        "Message received. We will reply shortly.",
+      errorMessage:
+        (rawContactPage.errorMessage as string) ||
+        "Failed to send message. Please try again.",
+    },
     logoUrl: ((merged.logoUrl || merged.logo) as string) || "",
     footerLogoUrl: (merged.footerLogoUrl as string) || "",
     favicon: (merged.favicon as string) || "",

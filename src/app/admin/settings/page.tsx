@@ -12,9 +12,11 @@ import {
   ImageIcon,
   TrashIcon,
   PlusCircleIcon,
+  FileTextIcon,
 } from "@/components/admin/AdminIcons";
 import { defaultFooterQuickLinks, defaultFooterServices } from "@/lib/footer-defaults";
 import { NoticeTickerItems } from "@/components/NoticeTickerItems";
+import { getValidMapEmbedUrl } from "@/lib/google-maps";
 
 function AdminSettingsContent() {
   const searchParams = useSearchParams();
@@ -43,6 +45,7 @@ function AdminSettingsContent() {
   const [wechatId, setWechatId] = useState("nurul01713798987");
   const [email, setEmail] = useState("ceo@nurengineering.bd.com");
   const [hours, setHours] = useState("Sat–Thu 9:00–18:00");
+  const [workingDays, setWorkingDays] = useState("Saturday – Thursday");
   const [notice, setNotice] = useState("Out of stock products will be delivered within 3–5 days.");
   const [noticeBn, setNoticeBn] = useState(
     "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★"
@@ -55,6 +58,46 @@ function AdminSettingsContent() {
   const [addressRoad, setAddressRoad] = useState("");
   const [addressBlock, setAddressBlock] = useState("");
   const [mapsEmbed, setMapsEmbed] = useState("");
+  const [mapShareUrl, setMapShareUrl] = useState("");
+  const [mapZoom, setMapZoom] = useState(16);
+  const [mapResolving, setMapResolving] = useState(false);
+  const [mapResolveMessage, setMapResolveMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  // Contact Page Content state
+  const [contactHeading, setContactHeading] = useState("Send a part number or photo");
+  const [contactDescription, setContactDescription] = useState(
+    "We reply with options, stock and pricing. Same desk for products and technical service."
+  );
+  const [contactPhoneLabel, setContactPhoneLabel] = useState("Phone");
+  const [contactEmailLabel, setContactEmailLabel] = useState("Email");
+  const [contactAddressLabel, setContactAddressLabel] = useState("Address");
+  const [contactHoursLabel, setContactHoursLabel] = useState("Hours");
+  const [contactFormHeading, setContactFormHeading] = useState("");
+  const [contactNameLabel, setContactNameLabel] = useState("Name");
+  const [contactEmailFieldLabel, setContactEmailFieldLabel] = useState("Email");
+  const [contactPhoneFieldLabel, setContactPhoneFieldLabel] = useState("Phone");
+  const [contactCompanyFieldLabel, setContactCompanyFieldLabel] = useState("Company / Workshop");
+  const [contactInquiryTypeLabel, setContactInquiryTypeLabel] = useState("Inquiry type");
+  const [contactInquiryTypeOptions, setContactInquiryTypeOptions] = useState<string[]>([
+    "Product quote",
+    "Parts sourcing",
+    "Technical service",
+    "Other",
+  ]);
+  const [newInquiryOption, setNewInquiryOption] = useState("");
+  const [contactSubjectLabel, setContactSubjectLabel] = useState("Subject");
+  const [contactMessageLabel, setContactMessageLabel] = useState("Message");
+  const [contactSubmitButtonText, setContactSubmitButtonText] = useState("Send inquiry");
+  const [contactSuccessMessage, setContactSuccessMessage] = useState(
+    "Message received. We will reply shortly."
+  );
+  const [contactErrorMessage, setContactErrorMessage] = useState(
+    "Failed to send message. Please try again."
+  );
+
   const [facebook, setFacebook] = useState("https://www.facebook.com/");
   const [linkedin, setLinkedin] = useState("https://www.linkedin.com/");
   const [youtube, setYoutube] = useState("https://www.youtube.com/");
@@ -125,6 +168,7 @@ function AdminSettingsContent() {
           if (s.wechatId !== undefined) setWechatId(s.wechatId || "");
           if (s.email) setEmail(s.email);
           if (s.hours) setHours(s.hours);
+          if (s.workingDays !== undefined) setWorkingDays(s.workingDays || "");
           if (s.notice) setNotice(s.notice);
           if (s.noticeBn !== undefined) setNoticeBn(s.noticeBn || "");
           if (typeof s.noticeBoardSpeed === "number" && !isNaN(s.noticeBoardSpeed) && s.noticeBoardSpeed > 0) {
@@ -137,6 +181,33 @@ function AdminSettingsContent() {
           if (s.addressRoad !== undefined) setAddressRoad(s.addressRoad || "");
           if (s.addressBlock !== undefined) setAddressBlock(s.addressBlock || "");
           if (s.mapEmbedUrl) setMapsEmbed(s.mapEmbedUrl);
+          if (s.mapShareUrl !== undefined) setMapShareUrl(s.mapShareUrl || "");
+          if (typeof s.mapZoom === "number" && !isNaN(s.mapZoom)) setMapZoom(s.mapZoom);
+
+          if (s.contactPage) {
+            const cp = s.contactPage;
+            if (cp.heading !== undefined) setContactHeading(cp.heading);
+            if (cp.description !== undefined) setContactDescription(cp.description);
+            if (cp.phoneLabel !== undefined) setContactPhoneLabel(cp.phoneLabel);
+            if (cp.emailLabel !== undefined) setContactEmailLabel(cp.emailLabel);
+            if (cp.addressLabel !== undefined) setContactAddressLabel(cp.addressLabel);
+            if (cp.hoursLabel !== undefined) setContactHoursLabel(cp.hoursLabel);
+            if (cp.formHeading !== undefined) setContactFormHeading(cp.formHeading);
+            if (cp.nameLabel !== undefined) setContactNameLabel(cp.nameLabel);
+            if (cp.emailFieldLabel !== undefined) setContactEmailFieldLabel(cp.emailFieldLabel);
+            if (cp.phoneFieldLabel !== undefined) setContactPhoneFieldLabel(cp.phoneFieldLabel);
+            if (cp.companyFieldLabel !== undefined) setContactCompanyFieldLabel(cp.companyFieldLabel);
+            if (cp.inquiryTypeLabel !== undefined) setContactInquiryTypeLabel(cp.inquiryTypeLabel);
+            if (Array.isArray(cp.inquiryTypeOptions) && cp.inquiryTypeOptions.length > 0) {
+              setContactInquiryTypeOptions(cp.inquiryTypeOptions);
+            }
+            if (cp.subjectLabel !== undefined) setContactSubjectLabel(cp.subjectLabel);
+            if (cp.messageLabel !== undefined) setContactMessageLabel(cp.messageLabel);
+            if (cp.submitButtonText !== undefined) setContactSubmitButtonText(cp.submitButtonText);
+            if (cp.successMessage !== undefined) setContactSuccessMessage(cp.successMessage);
+            if (cp.errorMessage !== undefined) setContactErrorMessage(cp.errorMessage);
+          }
+
           if (s.social?.facebook) setFacebook(s.social.facebook);
           if (s.social?.linkedin) setLinkedin(s.social.linkedin);
           if (s.social?.youtube) setYoutube(s.social.youtube);
@@ -221,6 +292,70 @@ function AdminSettingsContent() {
     }
   }
 
+  async function handleResolveMapLink(linkToResolve?: string, zoomOverride?: number) {
+    const inputLink = (linkToResolve !== undefined ? linkToResolve : mapsEmbed).trim();
+    if (!inputLink) {
+      setMapResolveMessage({
+        type: "error",
+        text: "Please enter a Google Maps link or embed code first.",
+      });
+      return;
+    }
+
+    setMapResolving(true);
+    setMapResolveMessage(null);
+
+    try {
+      const res = await fetch("/api/admin/maps/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: inputLink,
+          zoom: zoomOverride ?? mapZoom,
+          address: [
+            addressHouse ? `House ${addressHouse}` : "",
+            addressRoad ? `Road ${addressRoad}` : "",
+            addressBlock ? `Block ${addressBlock}` : "",
+            address,
+          ]
+            .filter(Boolean)
+            .join(", "),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.result) {
+        if (data.result.embedUrl) {
+          setMapsEmbed(data.result.embedUrl);
+          if (!mapShareUrl && !inputLink.includes("output=embed")) {
+            setMapShareUrl(inputLink);
+          }
+          if (data.result.zoom && !zoomOverride) {
+            setMapZoom(data.result.zoom);
+          }
+          setMapResolveMessage({
+            type: "success",
+            text: `✓ Location accurately resolved${
+              data.result.placeName ? `: "${data.result.placeName}"` : ""
+            }! Live map updated below.`,
+          });
+        }
+      } else {
+        setMapResolveMessage({
+          type: "error",
+          text: data.error || "Unable to resolve the provided Google Maps URL.",
+        });
+      }
+    } catch {
+      setMapResolveMessage({
+        type: "error",
+        text: "Failed to resolve Google Maps link. Please verify your connection.",
+      });
+    } finally {
+      setMapResolving(false);
+    }
+  }
+
   async function handleSave(e?: React.FormEvent) {
     if (e) e.preventDefault();
     setSaving(true);
@@ -248,6 +383,7 @@ function AdminSettingsContent() {
           wechatId,
           email,
           hours,
+          workingDays,
           notice,
           noticeBn,
           noticeBoardSpeed: Number(noticeBoardSpeed) || 50,
@@ -257,6 +393,28 @@ function AdminSettingsContent() {
           addressRoad,
           addressBlock,
           mapEmbedUrl: mapsEmbed,
+          mapShareUrl,
+          mapZoom: Number(mapZoom) || 16,
+          contactPage: {
+            heading: contactHeading,
+            description: contactDescription,
+            phoneLabel: contactPhoneLabel,
+            emailLabel: contactEmailLabel,
+            addressLabel: contactAddressLabel,
+            hoursLabel: contactHoursLabel,
+            formHeading: contactFormHeading,
+            nameLabel: contactNameLabel,
+            emailFieldLabel: contactEmailFieldLabel,
+            phoneFieldLabel: contactPhoneFieldLabel,
+            companyFieldLabel: contactCompanyFieldLabel,
+            inquiryTypeLabel: contactInquiryTypeLabel,
+            inquiryTypeOptions: contactInquiryTypeOptions.filter(Boolean),
+            subjectLabel: contactSubjectLabel,
+            messageLabel: contactMessageLabel,
+            submitButtonText: contactSubmitButtonText,
+            successMessage: contactSuccessMessage,
+            errorMessage: contactErrorMessage,
+          },
           footerQuickLinks,
           footerServices,
           social: {
@@ -370,6 +528,7 @@ function AdminSettingsContent() {
           { id: "branding", label: "Logo & Branding", Icon: PaletteIcon },
           { id: "header", label: "Header & Contacts", Icon: PhoneIcon },
           { id: "location", label: "Location & Maps", Icon: MapPinIcon },
+          { id: "contact", label: "Contact Page", Icon: FileTextIcon },
           { id: "social", label: "Social Links", Icon: GlobeIcon },
           { id: "footer", label: "Footer & QR Codes", Icon: ImageIcon },
           { id: "hero", label: "Hero Banners", Icon: ImageIcon },
@@ -686,11 +845,23 @@ function AdminSettingsContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-navy">Business Hours</label>
+                <label className="block text-xs font-bold uppercase text-navy">Business / Office Hours</label>
                 <input
                   type="text"
                   value={hours}
                   onChange={(e) => setHours(e.target.value)}
+                  placeholder="Sat–Thu 9:00–18:00"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Working Days</label>
+                <input
+                  type="text"
+                  value={workingDays}
+                  onChange={(e) => setWorkingDays(e.target.value)}
+                  placeholder="Saturday – Thursday"
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
                 />
               </div>
@@ -863,67 +1034,555 @@ function AdminSettingsContent() {
 
         {/* Tab 3: Location & Maps */}
         {tab === "location" && (
-          <div className="rounded-lg border border-line bg-white p-6 shadow-xs space-y-5">
-            <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy border-b border-line pb-3">
-              Office Location & Maps
-            </h3>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <label className="block text-xs font-bold uppercase text-navy">House Number</label>
-                <input
-                  type="text"
-                  value={addressHouse}
-                  onChange={(e) => setAddressHouse(e.target.value)}
-                  placeholder="e.g. 12"
-                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-navy">Road Number</label>
-                <input
-                  type="text"
-                  value={addressRoad}
-                  onChange={(e) => setAddressRoad(e.target.value)}
-                  placeholder="e.g. 7"
-                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-navy">Block Number</label>
-                <input
-                  type="text"
-                  value={addressBlock}
-                  onChange={(e) => setAddressBlock(e.target.value)}
-                  placeholder="e.g. C"
-                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase text-navy">Other Address Details</label>
-              <textarea
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Area, city, country — existing office address"
-                rows={2}
-                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase text-navy">Google Maps Link / Embed URL</label>
-              <input
-                type="text"
-                value={mapsEmbed}
-                onChange={(e) => setMapsEmbed(e.target.value)}
-                placeholder="https://maps.google.com/..."
-                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none font-mono text-[11px]"
-              />
-              <p className="mt-1 text-[10.5px] text-mist">
-                Provide a Google Maps iframe embed URL or location link for the contact section map.
+          <div className="rounded-lg border border-line bg-white p-6 shadow-xs space-y-6">
+            <div className="border-b border-line pb-3">
+              <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
+                Office Location &amp; Google Maps Configuration
+              </h3>
+              <p className="text-xs text-steel mt-0.5">
+                Set up your official physical address and Google Maps location. Supports Shareable short links (maps.app.goo.gl), Place URLs, coordinate links, and direct iframe embed codes.
               </p>
+            </div>
+
+            {/* Address Details */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                1. Physical Office Address
+              </h4>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">House Number</label>
+                  <input
+                    type="text"
+                    value={addressHouse}
+                    onChange={(e) => setAddressHouse(e.target.value)}
+                    placeholder="e.g. 43-44"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Road Number</label>
+                  <input
+                    type="text"
+                    value={addressRoad}
+                    onChange={(e) => setAddressRoad(e.target.value)}
+                    placeholder="e.g. 1"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Block Number</label>
+                  <input
+                    type="text"
+                    value={addressBlock}
+                    onChange={(e) => setAddressBlock(e.target.value)}
+                    placeholder="e.g. B"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">
+                  Complete Office Address (Area, City, Postal Code)
+                </label>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="House#43-44, Road-1, Block -B, Mirpur-1 (Beside Shah Ali Thana), Dhaka-1216"
+                  rows={2}
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium leading-relaxed"
+                />
+                <p className="mt-1 text-[10.5px] text-mist">
+                  This address is synchronized across the Contact Page, Footer, and fallback Google Map pin.
+                </p>
+              </div>
+            </div>
+
+            {/* Google Maps Link & Resolution */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                  2. Google Maps Shareable Link / Embed URL
+                </h4>
+                <span className="text-[10.5px] font-bold text-orange uppercase tracking-wider">
+                  Universal Google Maps Resolver
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">
+                  Paste Google Maps Link / Share URL / Embed Code
+                </label>
+                <div className="mt-1 flex flex-wrap sm:flex-nowrap gap-2">
+                  <input
+                    type="text"
+                    value={mapsEmbed}
+                    onChange={(e) => {
+                      setMapsEmbed(e.target.value);
+                      setMapResolveMessage(null);
+                    }}
+                    onPaste={(e) => {
+                      const pasted = e.clipboardData.getData("text");
+                      if (pasted) {
+                        setTimeout(() => handleResolveMapLink(pasted), 100);
+                      }
+                    }}
+                    placeholder="e.g. https://maps.app.goo.gl/... or https://www.google.com/maps/place/... or <iframe src='...'></iframe>"
+                    className="flex-1 min-w-0 rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-mono text-[11px]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleResolveMapLink()}
+                    disabled={mapResolving}
+                    className="btn-navy px-4 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {mapResolving ? (
+                      <>
+                        <svg className="animate-spin h-3.5 w-3.5 text-orange" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        <span>Resolving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <MapPinIcon size={15} />
+                        <span>Resolve &amp; Test Link</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                <p className="mt-1.5 text-[10.5px] text-mist">
+                  Paste any share link from your phone or Google Maps app (e.g. <span className="font-mono text-navy">https://maps.app.goo.gl/...</span>), desktop browser URL, or iframe code. It will be automatically converted to the exact embed format.
+                </p>
+
+                {mapResolveMessage && (
+                  <div
+                    className={`mt-2 p-2.5 rounded text-xs font-bold ${
+                      mapResolveMessage.type === "success"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-500/30"
+                        : "bg-red-50 text-red-700 border border-red-500/30"
+                    }`}
+                  >
+                    {mapResolveMessage.text}
+                  </div>
+                )}
+              </div>
+
+              {/* Map Zoom Control */}
+              <div className="border-t border-line/60 pt-3 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="block text-xs font-bold uppercase text-navy">
+                    Map Zoom Level: <span className="font-mono text-orange">{mapZoom}</span>
+                  </label>
+                  <span className="text-[10.5px] text-steel">
+                    {mapZoom <= 12
+                      ? "City Overview"
+                      : mapZoom <= 14
+                      ? "Area / Sub-district"
+                      : mapZoom <= 16
+                      ? "Street Level (Recommended)"
+                      : "Building / Detailed Close-up"}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={10}
+                  max={20}
+                  step={1}
+                  value={mapZoom}
+                  onChange={(e) => {
+                    const newZoom = Number(e.target.value);
+                    setMapZoom(newZoom);
+                    if (mapsEmbed && mapsEmbed.includes("output=embed") && mapsEmbed.includes("z=")) {
+                      setMapsEmbed(mapsEmbed.replace(/z=\d+/, `z=${newZoom}`));
+                    }
+                  }}
+                  className="w-full h-2 bg-line rounded-lg appearance-none cursor-pointer accent-orange focus:outline-none"
+                />
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] font-bold uppercase text-mist mr-1">Presets:</span>
+                  {[
+                    { label: "City (12)", val: 12 },
+                    { label: "Area (14)", val: 14 },
+                    { label: "Street (16 - Default)", val: 16 },
+                    { label: "Close-up (18)", val: 18 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.val}
+                      type="button"
+                      onClick={() => {
+                        setMapZoom(preset.val);
+                        if (mapsEmbed && mapsEmbed.includes("output=embed") && mapsEmbed.includes("z=")) {
+                          setMapsEmbed(mapsEmbed.replace(/z=\d+/, `z=${preset.val}`));
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded text-[11px] font-bold transition border ${
+                        mapZoom === preset.val
+                          ? "bg-orange text-white border-orange shadow-2xs"
+                          : "bg-white text-navy border-line hover:border-orange hover:bg-paper"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Live Interactive Map Preview */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-navy flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-orange animate-pulse"></span>
+                  Live Contact Page Map Preview
+                </h4>
+                <span className="text-[10.5px] font-bold text-steel uppercase">
+                  Exact Frontend Mirror
+                </span>
+              </div>
+              <div className="relative w-full h-64 md:h-72 overflow-hidden rounded border border-line bg-white shadow-inner">
+                <iframe
+                  title="Admin Location Map Preview"
+                  src={getValidMapEmbedUrl(mapsEmbed, mapZoom, address)}
+                  className="h-full w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
+              <p className="text-[10.5px] text-mist">
+                This live preview reflects the exact Google Map iframe rendered on the public <span className="font-semibold text-navy">/contact</span> page. Click &ldquo;Save &amp; Update Live Site&rdquo; above to publish changes.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Contact Page Content Customization */}
+        {tab === "contact" && (
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-6 shadow-xs space-y-6">
+            <div className="border-b border-line pb-3">
+              <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
+                Contact Page Content &amp; Form Customization
+              </h3>
+              <p className="text-xs text-steel mt-0.5">
+                Customize every heading, section label, form field label, inquiry option, submit button text, and notification message on the public Contact page.
+              </p>
+            </div>
+
+            {/* Section 1: Page Header & Description */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                1. Page Header &amp; Subtitle (Left Blue Banner)
+              </h4>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Contact Page Heading</label>
+                <input
+                  type="text"
+                  value={contactHeading}
+                  onChange={(e) => setContactHeading(e.target.value)}
+                  placeholder="Send a part number or photo"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-bold text-navy"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Contact Page Description</label>
+                <textarea
+                  value={contactDescription}
+                  onChange={(e) => setContactDescription(e.target.value)}
+                  placeholder="We reply with options, stock and pricing. Same desk for products and technical service."
+                  rows={2}
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium leading-relaxed"
+                />
+              </div>
+            </div>
+
+            {/* Section 2: Contact Information Section Labels */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                2. Contact Info Labels (Left Card)
+              </h4>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Phone Section Label</label>
+                  <input
+                    type="text"
+                    value={contactPhoneLabel}
+                    onChange={(e) => setContactPhoneLabel(e.target.value)}
+                    placeholder="Phone"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Email Section Label</label>
+                  <input
+                    type="text"
+                    value={contactEmailLabel}
+                    onChange={(e) => setContactEmailLabel(e.target.value)}
+                    placeholder="Email"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Address Section Label</label>
+                  <input
+                    type="text"
+                    value={contactAddressLabel}
+                    onChange={(e) => setContactAddressLabel(e.target.value)}
+                    placeholder="Address"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Hours Section Label</label>
+                  <input
+                    type="text"
+                    value={contactHoursLabel}
+                    onChange={(e) => setContactHoursLabel(e.target.value)}
+                    placeholder="Hours"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-semibold"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Inquiry Form Customization */}
+            <div className="p-4 rounded border border-line bg-paper/30 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                3. Inquiry Form Fields &amp; Labels (Right Card)
+              </h4>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">
+                  Form Heading (Optional — leave empty to show no extra header)
+                </label>
+                <input
+                  type="text"
+                  value={contactFormHeading}
+                  onChange={(e) => setContactFormHeading(e.target.value)}
+                  placeholder="e.g. Send Us An Inquiry"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Name Field Label</label>
+                  <input
+                    type="text"
+                    value={contactNameLabel}
+                    onChange={(e) => setContactNameLabel(e.target.value)}
+                    placeholder="Name"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Email Field Label</label>
+                  <input
+                    type="text"
+                    value={contactEmailFieldLabel}
+                    onChange={(e) => setContactEmailFieldLabel(e.target.value)}
+                    placeholder="Email"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Phone Field Label</label>
+                  <input
+                    type="text"
+                    value={contactPhoneFieldLabel}
+                    onChange={(e) => setContactPhoneFieldLabel(e.target.value)}
+                    placeholder="Phone"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Company / Workshop Field Label</label>
+                  <input
+                    type="text"
+                    value={contactCompanyFieldLabel}
+                    onChange={(e) => setContactCompanyFieldLabel(e.target.value)}
+                    placeholder="Company / Workshop"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Inquiry Type Field Label</label>
+                  <input
+                    type="text"
+                    value={contactInquiryTypeLabel}
+                    onChange={(e) => setContactInquiryTypeLabel(e.target.value)}
+                    placeholder="Inquiry type"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Subject Field Label</label>
+                  <input
+                    type="text"
+                    value={contactSubjectLabel}
+                    onChange={(e) => setContactSubjectLabel(e.target.value)}
+                    placeholder="Subject"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-navy">Message Field Label</label>
+                <input
+                  type="text"
+                  value={contactMessageLabel}
+                  onChange={(e) => setContactMessageLabel(e.target.value)}
+                  placeholder="Message"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+
+              {/* Inquiry Type Dropdown Options Editor */}
+              <div className="border-t border-line/60 pt-3 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-navy">
+                      Inquiry Type Dropdown Options
+                    </label>
+                    <p className="text-[10.5px] text-mist">
+                      Options available for visitors when submitting the Contact Page form.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setContactInquiryTypeOptions([
+                        "Product quote",
+                        "Parts sourcing",
+                        "Technical service",
+                        "Other",
+                      ])
+                    }
+                    className="text-[10.5px] font-bold text-steel hover:text-navy hover:underline"
+                  >
+                    Reset Default Options
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {contactInquiryTypeOptions.map((opt, idx) => (
+                    <div key={idx} className="flex items-center gap-2 p-1.5 rounded bg-white border border-line">
+                      <span className="text-[10.5px] font-bold text-mist w-5 text-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        value={opt}
+                        onChange={(e) => {
+                          const updated = [...contactInquiryTypeOptions];
+                          updated[idx] = e.target.value;
+                          setContactInquiryTypeOptions(updated);
+                        }}
+                        className="flex-1 rounded border border-line px-2.5 py-1 text-xs outline-none focus:border-orange font-medium"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setContactInquiryTypeOptions((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                        className="p-1 text-steel hover:text-red-600 rounded hover:bg-paper shrink-0 transition"
+                        title="Remove option"
+                      >
+                        <TrashIcon size={15} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newInquiryOption}
+                    onChange={(e) => setNewInquiryOption(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        if (newInquiryOption.trim()) {
+                          setContactInquiryTypeOptions((prev) => [...prev, newInquiryOption.trim()]);
+                          setNewInquiryOption("");
+                        }
+                      }
+                    }}
+                    placeholder="Add new inquiry option..."
+                    className="flex-1 rounded border border-line px-3 py-1.5 text-xs outline-none focus:border-orange"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newInquiryOption.trim()) {
+                        setContactInquiryTypeOptions((prev) => [...prev, newInquiryOption.trim()]);
+                        setNewInquiryOption("");
+                      }
+                    }}
+                    className="btn-navy px-3 py-1.5 text-xs font-bold shrink-0 flex items-center gap-1"
+                  >
+                    <PlusCircleIcon size={14} />
+                    <span>Add Option</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button & Feedback Messages */}
+              <div className="border-t border-line/60 pt-3 space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-navy">
+                  4. Submit Button &amp; Feedback Messages
+                </h4>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-navy">Submit Button Text</label>
+                  <input
+                    type="text"
+                    value={contactSubmitButtonText}
+                    onChange={(e) => setContactSubmitButtonText(e.target.value)}
+                    placeholder="Send inquiry"
+                    className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-bold text-orange"
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-navy">Success Message</label>
+                    <input
+                      type="text"
+                      value={contactSuccessMessage}
+                      onChange={(e) => setContactSuccessMessage(e.target.value)}
+                      placeholder="Message received. We will reply shortly."
+                      className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium text-emerald-700"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-navy">Error Message</label>
+                    <input
+                      type="text"
+                      value={contactErrorMessage}
+                      onChange={(e) => setContactErrorMessage(e.target.value)}
+                      placeholder="Failed to send message. Please try again."
+                      className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium text-red-600"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
