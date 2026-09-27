@@ -62,6 +62,16 @@ export function Footer() {
   const whatsappQrImg = footerQr.whatsappQr || "";
   const whatsappQrLabel = footerQr.whatsappQrLabel || "WHATSAPP QR SCAN";
 
+  const tickerDuration =
+    typeof site.noticeSpeed === "number" && !isNaN(site.noticeSpeed) && site.noticeSpeed > 0
+      ? site.noticeSpeed
+      : 84;
+  const mobileTickerDuration = Math.round(tickerDuration * (112 / 84));
+  const tickerStyle = {
+    "--notice-ticker-duration": `${tickerDuration}s`,
+    "--notice-ticker-duration-mobile": `${mobileTickerDuration}s`,
+  } as React.CSSProperties;
+
   return (
     <footer className="mt-8 sm:mt-10 bg-navy text-white">
       <div className="h-[3px] bg-orange" />
@@ -71,6 +81,7 @@ export function Footer() {
         <div
           className="notice-ticker-container shell overflow-hidden flex items-center cursor-default select-none relative"
           title="Notice (Hover to pause)"
+          style={tickerStyle}
         >
           <div className="notice-ticker-track">
             {/* Primary Content Group */}

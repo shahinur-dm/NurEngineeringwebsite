@@ -80,6 +80,7 @@ export const fallbackSettings: ISiteSettings = {
   notice: "Out of stock products will be delivered within 3–5 days.",
   noticeBn:
     "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★",
+  noticeSpeed: 84,
   social: {
     facebook: "https://www.facebook.com/",
     linkedin: "https://www.linkedin.com/",
@@ -218,6 +219,10 @@ export async function getSettings(): Promise<ISiteSettings> {
       (merged.noticeBn as string) ||
       fallbackSettings.noticeBn ||
       "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★",
+    noticeSpeed:
+      typeof merged.noticeSpeed === "number" && !isNaN(merged.noticeSpeed) && merged.noticeSpeed > 0
+        ? merged.noticeSpeed
+        : (fallbackSettings.noticeSpeed || 84),
     social: {
       facebook: rawSocial.facebook || fallbackSettings.social?.facebook || "",
       linkedin: rawSocial.linkedin || fallbackSettings.social?.linkedin || "",

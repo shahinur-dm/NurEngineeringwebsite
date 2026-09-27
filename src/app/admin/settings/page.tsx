@@ -14,6 +14,7 @@ import {
   PlusCircleIcon,
 } from "@/components/admin/AdminIcons";
 import { defaultFooterQuickLinks, defaultFooterServices } from "@/lib/footer-defaults";
+import { NoticeTickerItems } from "@/components/NoticeTickerItems";
 
 function AdminSettingsContent() {
   const searchParams = useSearchParams();
@@ -46,6 +47,7 @@ function AdminSettingsContent() {
   const [noticeBn, setNoticeBn] = useState(
     "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★"
   );
+  const [noticeSpeed, setNoticeSpeed] = useState(84);
   const [address, setAddress] = useState(
     "House#43-44, Road-1, Block -B, Mirpur-1 (Beside Shah Ali Thana), Dhaka-1216"
   );
@@ -125,6 +127,9 @@ function AdminSettingsContent() {
           if (s.hours) setHours(s.hours);
           if (s.notice) setNotice(s.notice);
           if (s.noticeBn !== undefined) setNoticeBn(s.noticeBn || "");
+          if (typeof s.noticeSpeed === "number" && !isNaN(s.noticeSpeed) && s.noticeSpeed > 0) {
+            setNoticeSpeed(s.noticeSpeed);
+          }
           if (s.address) setAddress(s.address);
           if (s.addressHouse !== undefined) setAddressHouse(s.addressHouse || "");
           if (s.addressRoad !== undefined) setAddressRoad(s.addressRoad || "");
@@ -243,6 +248,7 @@ function AdminSettingsContent() {
           hours,
           notice,
           noticeBn,
+          noticeSpeed: Number(noticeSpeed) || 84,
           address,
           addressHouse,
           addressRoad,
@@ -722,20 +728,126 @@ function AdminSettingsContent() {
                   className="w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
                 />
               </div>
-              <div className="rounded border border-line bg-paper/60 p-3 space-y-1.5">
-                <span className="text-[10px] font-bold text-mist uppercase">Preview:</span>
-                <div className="flex items-start gap-2 min-w-0">
-                  <span className="text-[11.5px] font-bold text-amber-500 shrink-0">NOTICE:</span>
-                  <span className="text-[11.5px] font-medium text-navy break-words" lang="bn">
-                    {noticeBn ||
-                      "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★"}
+              {/* Notice Board Speed Control */}
+              <div className="rounded border border-line bg-paper/40 p-3.5 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-navy">
+                      Notice Board Speed
+                    </label>
+                    <p className="text-[10.5px] text-mist">
+                      Adjust how fast or slow the continuous notice marquee moves across the screen.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded bg-navy text-white text-xs font-bold font-mono tracking-wide shadow-2xs">
+                      {noticeSpeed}s
+                    </span>
+                    <span className="text-[11px] font-bold text-orange uppercase tracking-wide">
+                      {noticeSpeed <= 40
+                        ? "Very Fast"
+                        : noticeSpeed <= 65
+                        ? "Fast"
+                        : noticeSpeed <= 95
+                        ? noticeSpeed === 84
+                          ? "Default Speed"
+                          : "Normal"
+                        : noticeSpeed <= 130
+                        ? "Slow"
+                        : "Very Slow"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Slider */}
+                <div className="space-y-1.5">
+                  <input
+                    type="range"
+                    min={20}
+                    max={180}
+                    step={2}
+                    value={noticeSpeed}
+                    onChange={(e) => setNoticeSpeed(Number(e.target.value))}
+                    className="w-full h-2 bg-line rounded-lg appearance-none cursor-pointer accent-orange focus:outline-none"
+                  />
+                  <div className="flex justify-between text-[10px] font-semibold text-mist uppercase tracking-wider">
+                    <span className="text-navy">⚡ Faster (20s)</span>
+                    <button
+                      type="button"
+                      onClick={() => setNoticeSpeed(84)}
+                      className={`hover:text-orange transition ${
+                        noticeSpeed === 84 ? "font-bold text-orange" : "text-steel"
+                      }`}
+                    >
+                      Reset Default (84s)
+                    </button>
+                    <span className="text-navy">🐢 Slower (180s)</span>
+                  </div>
+                </div>
+
+                {/* Preset Buttons */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] font-bold uppercase text-mist mr-1">Presets:</span>
+                  {[
+                    { label: "Very Fast", sec: 35 },
+                    { label: "Fast", sec: 55 },
+                    { label: "Normal (Default)", sec: 84 },
+                    { label: "Slow", sec: 110 },
+                    { label: "Very Slow", sec: 150 },
+                  ].map((preset) => (
+                    <button
+                      key={preset.sec}
+                      type="button"
+                      onClick={() => setNoticeSpeed(preset.sec)}
+                      className={`px-2.5 py-1 rounded text-[11px] font-bold transition border ${
+                        noticeSpeed === preset.sec
+                          ? "bg-orange text-white border-orange shadow-2xs"
+                          : "bg-white text-navy border-line hover:border-orange hover:bg-paper"
+                      }`}
+                    >
+                      {preset.label} ({preset.sec}s)
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded border border-line bg-paper/60 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-mist uppercase">
+                    Live Notice Preview (Hover to pause):
+                  </span>
+                  <span className="text-[10px] font-bold text-orange uppercase tracking-wider">
+                    Duration: {noticeSpeed}s
                   </span>
                 </div>
-                <div className="flex items-start gap-2 min-w-0">
-                  <span className="text-[11.5px] font-bold text-amber-500 shrink-0">NOTICE:</span>
-                  <span className="text-[11.5px] font-medium text-navy break-words">
-                    {notice || "Out of stock products will be delivered within 3–5 days."}
-                  </span>
+                <div
+                  className="notice-ticker-container overflow-hidden relative bg-[#1F456E] text-white py-1 px-2 rounded-[2px]"
+                  style={{
+                    "--notice-ticker-duration": `${noticeSpeed}s`,
+                    "--notice-ticker-duration-mobile": `${Math.round(noticeSpeed * (112 / 84))}s`,
+                  } as React.CSSProperties}
+                  title="Hover to pause preview"
+                >
+                  <div className="notice-ticker-track">
+                    <div className="notice-ticker-group">
+                      {[0, 1].map((i) => (
+                        <NoticeTickerItems
+                          key={`admin-prev1-${i}`}
+                          noticeBn={noticeBn}
+                          noticeEn={notice}
+                        />
+                      ))}
+                    </div>
+                    <div className="notice-ticker-group" aria-hidden="true">
+                      {[0, 1].map((i) => (
+                        <NoticeTickerItems
+                          key={`admin-prev2-${i}`}
+                          noticeBn={noticeBn}
+                          noticeEn={notice}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
               <p className="text-[10.5px] text-mist">

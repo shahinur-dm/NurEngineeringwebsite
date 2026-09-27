@@ -26,10 +26,12 @@ export function SpecialFeaturesSection({ features, categories }: SpecialFeatures
             className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-orange hover:text-navy transition cursor-pointer select-none shrink-0"
           >
             {expanded ? (
-              "Show less ←"
+              <>
+                Show less <span className="text-[24px] leading-none -translate-y-[2px]">←</span>
+              </>
             ) : (
               <>
-                See more <span className="text-[24px] leading-none">→</span>
+                See more <span className="text-[24px] leading-none -translate-y-[2px]">→</span>
               </>
             )}
           </button>

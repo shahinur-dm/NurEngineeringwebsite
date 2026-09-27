@@ -298,12 +298,12 @@ button {
   width: max-content;
   white-space: nowrap;
   will-change: transform;
-  animation: notice-ticker-loop 84s linear infinite;
+  animation: notice-ticker-loop var(--notice-ticker-duration, 84s) linear infinite;
 }
 
 @media (max-width: 639px) {
   .notice-ticker-track {
-    animation-duration: 112s;
+    animation-duration: var(--notice-ticker-duration-mobile, 112s);
   }
 }
 

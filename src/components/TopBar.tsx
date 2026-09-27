@@ -17,6 +17,16 @@ export function TopBar() {
     ? rawWa
     : `https://wa.me/${cleanPhone}`;
 
+  const tickerDuration =
+    typeof site.noticeSpeed === "number" && !isNaN(site.noticeSpeed) && site.noticeSpeed > 0
+      ? site.noticeSpeed
+      : 84;
+  const mobileTickerDuration = Math.round(tickerDuration * (112 / 84));
+  const tickerStyle = {
+    "--notice-ticker-duration": `${tickerDuration}s`,
+    "--notice-ticker-duration-mobile": `${mobileTickerDuration}s`,
+  } as React.CSSProperties;
+
   return (
     <div className="sticky top-0 z-50 md:static bg-[#1F456E] text-white/90 border-b border-white/10">
       {/* Desktop TopBar Layout (Unchanged) */}
@@ -70,6 +80,7 @@ export function TopBar() {
         <div
           className="notice-ticker-container flex-1 overflow-hidden mx-2 sm:mx-4 md:mx-6 min-w-0 flex items-center cursor-default select-none relative"
           title="Notice (Hover to pause)"
+          style={tickerStyle}
         >
           <div className="notice-ticker-track">
             {/* Primary Content Group */}
@@ -239,6 +250,7 @@ export function TopBar() {
           <div
             className="notice-ticker-container shell overflow-hidden flex items-center cursor-default select-none relative w-full max-w-full min-w-0"
             title="Notice"
+            style={tickerStyle}
           >
             <div className="notice-ticker-track">
               {/* Primary Content Group */}
