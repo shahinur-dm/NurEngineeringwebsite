@@ -47,7 +47,7 @@ function AdminSettingsContent() {
   const [noticeBn, setNoticeBn] = useState(
     "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★"
   );
-  const [noticeSpeed, setNoticeSpeed] = useState(84);
+  const [noticeBoardSpeed, setNoticeBoardSpeed] = useState(50);
   const [address, setAddress] = useState(
     "House#43-44, Road-1, Block -B, Mirpur-1 (Beside Shah Ali Thana), Dhaka-1216"
   );
@@ -127,8 +127,10 @@ function AdminSettingsContent() {
           if (s.hours) setHours(s.hours);
           if (s.notice) setNotice(s.notice);
           if (s.noticeBn !== undefined) setNoticeBn(s.noticeBn || "");
-          if (typeof s.noticeSpeed === "number" && !isNaN(s.noticeSpeed) && s.noticeSpeed > 0) {
-            setNoticeSpeed(s.noticeSpeed);
+          if (typeof s.noticeBoardSpeed === "number" && !isNaN(s.noticeBoardSpeed) && s.noticeBoardSpeed > 0) {
+            setNoticeBoardSpeed(s.noticeBoardSpeed);
+          } else if (typeof s.noticeSpeed === "number" && !isNaN(s.noticeSpeed) && s.noticeSpeed > 0 && s.noticeSpeed <= 100) {
+            setNoticeBoardSpeed(s.noticeSpeed);
           }
           if (s.address) setAddress(s.address);
           if (s.addressHouse !== undefined) setAddressHouse(s.addressHouse || "");
@@ -248,7 +250,8 @@ function AdminSettingsContent() {
           hours,
           notice,
           noticeBn,
-          noticeSpeed: Number(noticeSpeed) || 84,
+          noticeBoardSpeed: Number(noticeBoardSpeed) || 50,
+          noticeSpeed: Math.max(5, Math.round((84 * 50) / (Number(noticeBoardSpeed) || 50))),
           address,
           addressHouse,
           addressRoad,
@@ -736,25 +739,25 @@ function AdminSettingsContent() {
                       Notice Board Speed
                     </label>
                     <p className="text-[10.5px] text-mist">
-                      Adjust how fast or slow the continuous notice marquee moves across the screen.
+                      Adjust how fast or slow the continuous notice marquee scrolls across the screen.
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center px-2.5 py-1 rounded bg-navy text-white text-xs font-bold font-mono tracking-wide shadow-2xs">
-                      {noticeSpeed}s
+                      Current: {noticeBoardSpeed}
                     </span>
                     <span className="text-[11px] font-bold text-orange uppercase tracking-wide">
-                      {noticeSpeed <= 40
-                        ? "Very Fast"
-                        : noticeSpeed <= 65
-                        ? "Fast"
-                        : noticeSpeed <= 95
-                        ? noticeSpeed === 84
+                      {noticeBoardSpeed <= 25
+                        ? "Slow"
+                        : noticeBoardSpeed < 45
+                        ? "Medium Slow"
+                        : noticeBoardSpeed <= 55
+                        ? noticeBoardSpeed === 50
                           ? "Default Speed"
                           : "Normal"
-                        : noticeSpeed <= 130
-                        ? "Slow"
-                        : "Very Slow"}
+                        : noticeBoardSpeed <= 80
+                        ? "Fast"
+                        : "Very Fast"}
                     </span>
                   </div>
                 </div>
@@ -763,25 +766,25 @@ function AdminSettingsContent() {
                 <div className="space-y-1.5">
                   <input
                     type="range"
-                    min={20}
-                    max={180}
-                    step={2}
-                    value={noticeSpeed}
-                    onChange={(e) => setNoticeSpeed(Number(e.target.value))}
+                    min={10}
+                    max={100}
+                    step={1}
+                    value={noticeBoardSpeed}
+                    onChange={(e) => setNoticeBoardSpeed(Number(e.target.value))}
                     className="w-full h-2 bg-line rounded-lg appearance-none cursor-pointer accent-orange focus:outline-none"
                   />
                   <div className="flex justify-between text-[10px] font-semibold text-mist uppercase tracking-wider">
-                    <span className="text-navy">⚡ Faster (20s)</span>
+                    <span className="text-navy">🐢 Slower (10)</span>
                     <button
                       type="button"
-                      onClick={() => setNoticeSpeed(84)}
+                      onClick={() => setNoticeBoardSpeed(50)}
                       className={`hover:text-orange transition ${
-                        noticeSpeed === 84 ? "font-bold text-orange" : "text-steel"
+                        noticeBoardSpeed === 50 ? "font-bold text-orange" : "text-steel"
                       }`}
                     >
-                      Reset Default (84s)
+                      Reset Default (50)
                     </button>
-                    <span className="text-navy">🐢 Slower (180s)</span>
+                    <span className="text-navy">⚡ Faster (100)</span>
                   </div>
                 </div>
 
@@ -789,23 +792,23 @@ function AdminSettingsContent() {
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
                   <span className="text-[10px] font-bold uppercase text-mist mr-1">Presets:</span>
                   {[
-                    { label: "Very Fast", sec: 35 },
-                    { label: "Fast", sec: 55 },
-                    { label: "Normal (Default)", sec: 84 },
-                    { label: "Slow", sec: 110 },
-                    { label: "Very Slow", sec: 150 },
+                    { label: "Slow", val: 25 },
+                    { label: "Medium", val: 40 },
+                    { label: "Normal (Default)", val: 50 },
+                    { label: "Fast", val: 75 },
+                    { label: "Very Fast", val: 100 },
                   ].map((preset) => (
                     <button
-                      key={preset.sec}
+                      key={preset.val}
                       type="button"
-                      onClick={() => setNoticeSpeed(preset.sec)}
+                      onClick={() => setNoticeBoardSpeed(preset.val)}
                       className={`px-2.5 py-1 rounded text-[11px] font-bold transition border ${
-                        noticeSpeed === preset.sec
+                        noticeBoardSpeed === preset.val
                           ? "bg-orange text-white border-orange shadow-2xs"
                           : "bg-white text-navy border-line hover:border-orange hover:bg-paper"
                       }`}
                     >
-                      {preset.label} ({preset.sec}s)
+                      {preset.label} ({preset.val})
                     </button>
                   ))}
                 </div>
@@ -817,18 +820,19 @@ function AdminSettingsContent() {
                     Live Notice Preview (Hover to pause):
                   </span>
                   <span className="text-[10px] font-bold text-orange uppercase tracking-wider">
-                    Duration: {noticeSpeed}s
+                    Speed: {noticeBoardSpeed} ({Math.max(5, Math.round((84 * 50) / noticeBoardSpeed))}s loop)
                   </span>
                 </div>
                 <div
                   className="notice-ticker-container overflow-hidden relative bg-[#1F456E] text-white py-1 px-2 rounded-[2px]"
-                  style={{
-                    "--notice-ticker-duration": `${noticeSpeed}s`,
-                    "--notice-ticker-duration-mobile": `${Math.round(noticeSpeed * (112 / 84))}s`,
-                  } as React.CSSProperties}
                   title="Hover to pause preview"
                 >
-                  <div className="notice-ticker-track">
+                  <div
+                    className="notice-ticker-track"
+                    style={{
+                      animationDuration: `${Math.max(5, Math.round((84 * 50) / noticeBoardSpeed))}s`,
+                    }}
+                  >
                     <div className="notice-ticker-group">
                       {[0, 1].map((i) => (
                         <NoticeTickerItems

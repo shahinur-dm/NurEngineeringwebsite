@@ -21,6 +21,7 @@ export interface ISiteSettings {
   favicon?: string;
   notice?: string;
   noticeBn?: string;
+  noticeBoardSpeed?: number;
   noticeSpeed?: number;
   social: {
     facebook?: string;
@@ -90,6 +91,10 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
       type: String,
       default:
         "★ কোন পার্টস স্টকে না থাকলে জরুরী প্রয়োজনে অর্ডার দেওয়ার ০৩ কার্যদিবসের মধ্যে চায়না থেকে আমদানি করে সরবরাহ করা হয় ★",
+    },
+    noticeBoardSpeed: {
+      type: Number,
+      default: 50,
     },
     noticeSpeed: {
       type: Number,

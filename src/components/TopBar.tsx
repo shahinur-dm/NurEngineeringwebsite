@@ -17,15 +17,15 @@ export function TopBar() {
     ? rawWa
     : `https://wa.me/${cleanPhone}`;
 
-  const tickerDuration =
-    typeof site.noticeSpeed === "number" && !isNaN(site.noticeSpeed) && site.noticeSpeed > 0
+  const speed =
+    typeof site.noticeBoardSpeed === "number" && !isNaN(site.noticeBoardSpeed) && site.noticeBoardSpeed > 0
+      ? site.noticeBoardSpeed
+      : typeof site.noticeSpeed === "number" && !isNaN(site.noticeSpeed) && site.noticeSpeed > 0 && site.noticeSpeed <= 100
       ? site.noticeSpeed
-      : 84;
-  const mobileTickerDuration = Math.round(tickerDuration * (112 / 84));
-  const tickerStyle = {
-    "--notice-ticker-duration": `${tickerDuration}s`,
-    "--notice-ticker-duration-mobile": `${mobileTickerDuration}s`,
-  } as React.CSSProperties;
+      : 50;
+
+  const desktopDuration = Math.max(5, Math.round((84 * 50) / speed));
+  const mobileDuration = Math.max(5, Math.round((112 * 50) / speed));
 
   return (
     <div className="sticky top-0 z-50 md:static bg-[#1F456E] text-white/90 border-b border-white/10">
@@ -80,9 +80,8 @@ export function TopBar() {
         <div
           className="notice-ticker-container flex-1 overflow-hidden mx-2 sm:mx-4 md:mx-6 min-w-0 flex items-center cursor-default select-none relative"
           title="Notice (Hover to pause)"
-          style={tickerStyle}
         >
-          <div className="notice-ticker-track">
+          <div className="notice-ticker-track" style={{ animationDuration: `${desktopDuration}s` }}>
             {/* Primary Content Group */}
             <div className="notice-ticker-group">
               {[0, 1].map((i) => (
@@ -250,9 +249,8 @@ export function TopBar() {
           <div
             className="notice-ticker-container shell overflow-hidden flex items-center cursor-default select-none relative w-full max-w-full min-w-0"
             title="Notice"
-            style={tickerStyle}
           >
-            <div className="notice-ticker-track">
+            <div className="notice-ticker-track" style={{ animationDuration: `${mobileDuration}s` }}>
               {/* Primary Content Group */}
               <div className="notice-ticker-group">
                 {[0, 1].map((i) => (
