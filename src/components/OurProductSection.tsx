@@ -152,7 +152,7 @@ export function OurProductSection({
             ) : (
               <span className="inline-flex items-center justify-center gap-1.5">
                 <span>View More Product</span>
-                <span className="inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none transition-transform duration-200 -translate-y-[2.5px]">
+                <span className="relative -top-[3.5px] inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none transition-transform duration-200">
                   →
                 </span>
               </span>

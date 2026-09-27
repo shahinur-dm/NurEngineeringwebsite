@@ -52,7 +52,7 @@ export function Pagination({
             onClick={() => onPageChange(currentPage - 1)}
             className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider border border-line bg-white text-navy hover:border-orange hover:text-orange transition rounded-[2px] disabled:opacity-50 cursor-pointer inline-flex items-center justify-center gap-1.5"
           >
-            <span className="inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none -translate-y-[2.5px]">
+            <span className="relative -top-[3.5px] inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none">
               ←
             </span>
             <span>PREV</span>
@@ -62,7 +62,7 @@ export function Pagination({
             href={createPageUrl(currentPage - 1)}
             className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider border border-line bg-white text-navy hover:border-orange hover:text-orange transition rounded-[2px] inline-flex items-center justify-center gap-1.5"
           >
-            <span className="inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none -translate-y-[2.5px]">
+            <span className="relative -top-[3.5px] inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none">
               ←
             </span>
             <span>PREV</span>
@@ -109,7 +109,7 @@ export function Pagination({
             className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider border border-line bg-white text-navy hover:border-orange hover:text-orange transition rounded-[2px] disabled:opacity-50 cursor-pointer inline-flex items-center justify-center gap-1.5"
           >
             <span>NEXT</span>
-            <span className="inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none -translate-y-[2.5px]">
+            <span className="relative -top-[3.5px] inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none">
               →
             </span>
           </button>
@@ -119,7 +119,7 @@ export function Pagination({
             className="px-2.5 sm:px-3 py-1 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider border border-line bg-white text-navy hover:border-orange hover:text-orange transition rounded-[2px] inline-flex items-center justify-center gap-1.5"
           >
             <span>NEXT</span>
-            <span className="inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none -translate-y-[2.5px]">
+            <span className="relative -top-[3.5px] inline-flex items-center justify-center text-[26px] sm:text-[28px] leading-none select-none">
               →
             </span>
           </Link>
