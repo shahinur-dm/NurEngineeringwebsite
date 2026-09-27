@@ -46,7 +46,7 @@ export default async function HomePage({
             href="/services"
             className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-orange transition hover:text-navy shrink-0"
           >
-            All services <span className="text-[24px] leading-none -translate-y-[2px]">→</span>
+            All services <span className="text-[24px] leading-none relative -top-[3px]">→</span>
           </Link>
         </div>
         <div className={`grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 ${homeServices.length >= 6 ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}>

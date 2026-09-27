@@ -27,11 +27,11 @@ export function SpecialFeaturesSection({ features, categories }: SpecialFeatures
           >
             {expanded ? (
               <>
-                Show less <span className="text-[24px] leading-none -translate-y-[2px]">←</span>
+                Show less <span className="text-[24px] leading-none relative -top-[3px]">←</span>
               </>
             ) : (
               <>
-                See more <span className="text-[24px] leading-none -translate-y-[2px]">→</span>
+                See more <span className="text-[24px] leading-none relative -top-[3px]">→</span>
               </>
             )}
           </button>
