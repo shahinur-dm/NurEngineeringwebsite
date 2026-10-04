@@ -5,6 +5,7 @@ export interface IProduct {
   name: string;
   slug: string;
   sku?: string;
+  itemNameModel?: string;
   brand?: string;
   category: Types.ObjectId | string;
   subCategory?: Types.ObjectId | string;
@@ -12,6 +13,10 @@ export interface IProduct {
   description: string;
   price?: number;
   currency: string;
+  benefitPoint1?: string;
+  benefitPoint2?: string;
+  benefitPoint3?: string;
+  benefitPoint4?: string;
   image: string;
   gallery?: string[];
   videoUrl?: string;
@@ -40,6 +45,7 @@ const ProductSchema = new Schema<IProduct>(
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true },
     sku: String,
+    itemNameModel: String,
     brand: String,
     category: {
       type: Schema.Types.Mixed,
@@ -56,6 +62,10 @@ const ProductSchema = new Schema<IProduct>(
     description: { type: String, required: true },
     price: Number,
     currency: { type: String, default: "BDT" },
+    benefitPoint1: String,
+    benefitPoint2: String,
+    benefitPoint3: String,
+    benefitPoint4: String,
     image: { type: String, required: true },
     gallery: [{ type: String }],
     videoUrl: String,

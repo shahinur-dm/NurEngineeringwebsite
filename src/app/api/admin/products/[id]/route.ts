@@ -103,7 +103,26 @@ export async function PUT(
     }
 
     if (body.price !== undefined) {
-      updateData.price = body.price !== null && body.price !== "" ? Number(body.price) : undefined;
+      updateData.price =
+        body.price !== null && body.price !== "" && !isNaN(Number(body.price))
+          ? Number(body.price)
+          : undefined;
+    }
+
+    if (body.itemNameModel !== undefined) {
+      updateData.itemNameModel = String(body.itemNameModel).trim();
+    }
+    if (body.benefitPoint1 !== undefined) {
+      updateData.benefitPoint1 = String(body.benefitPoint1).trim();
+    }
+    if (body.benefitPoint2 !== undefined) {
+      updateData.benefitPoint2 = String(body.benefitPoint2).trim();
+    }
+    if (body.benefitPoint3 !== undefined) {
+      updateData.benefitPoint3 = String(body.benefitPoint3).trim();
+    }
+    if (body.benefitPoint4 !== undefined) {
+      updateData.benefitPoint4 = String(body.benefitPoint4).trim();
     }
 
     let updatedProduct: IProduct | null = null;

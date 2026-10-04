@@ -68,8 +68,14 @@ export default async function ProductDetailPage({
     product.videoUrl
   );
 
+  const itemModelDisplay = product.itemNameModel?.trim() || product.sku?.trim() || "On quote";
+  const priceDisplay =
+    product.price !== undefined && product.price !== null && !isNaN(Number(product.price)) && Number(product.price) > 0
+      ? `${product.currency || "BDT"} ${product.price}`
+      : "On quote";
+
   const facts = [
-    ["SKU", product.sku || "On quote"],
+    ["Item Name/Model", itemModelDisplay],
     ["Brand / class", product.brand || "As quoted"],
     ["Category", categoryName || "—"],
     [
@@ -80,7 +86,7 @@ export default async function ProductDetailPage({
     ["Condition", product.condition || extra?.condition || "As quoted"],
     ["Packing", product.packing || extra?.packing || "Carton"],
     ["Warranty", product.warranty || extra?.warranty || "As quoted"],
-    ["Currency", product.currency || "BDT"],
+    ["Price", priceDisplay],
   ];
 
   return (
@@ -131,7 +137,7 @@ export default async function ProductDetailPage({
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <path d="m9 12 2 2 4-4" />
                 </svg>
-                <span>100% genuine, authorised stock</span>
+                <span>{product.benefitPoint1 || "100% genuine, authorised stock"}</span>
               </div>
 
               <div className="flex items-center gap-2 text-xs sm:text-[12.5px] font-semibold text-slate-700">
@@ -145,7 +151,7 @@ export default async function ProductDetailPage({
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <path d="m9 12 2 2 4-4" />
                 </svg>
-                <span>12-month manufacturer warranty</span>
+                <span>{product.benefitPoint2 || "12-month manufacturer warranty"}</span>
               </div>
 
               <div className="flex items-center gap-2 text-xs sm:text-[12.5px] font-semibold text-slate-700">
@@ -161,7 +167,7 @@ export default async function ProductDetailPage({
                   <circle cx="5.5" cy="18.5" r="2.5" />
                   <circle cx="18.5" cy="18.5" r="2.5" />
                 </svg>
-                <span>Nationwide delivery in 2-4 days</span>
+                <span>{product.benefitPoint3 || "Nationwide delivery in 2-4 days"}</span>
               </div>
 
               <div className="flex items-center gap-2 text-xs sm:text-[12.5px] font-semibold text-slate-700">
@@ -176,7 +182,7 @@ export default async function ProductDetailPage({
                   <line x1="2" y1="10" x2="22" y2="10" />
                   <circle cx="8" cy="15" r="1.5" />
                 </svg>
-                <span>Cash on delivery available</span>
+                <span>{product.benefitPoint4 || "Cash on delivery available"}</span>
               </div>
             </div>
           </div>

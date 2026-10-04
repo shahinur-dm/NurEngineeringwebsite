@@ -31,6 +31,7 @@ export async function GET(req: Request) {
       filter.$or = [
         { name: { $regex: q, $options: "i" } },
         { sku: { $regex: q, $options: "i" } },
+        { itemNameModel: { $regex: q, $options: "i" } },
         { brand: { $regex: q, $options: "i" } },
         { shortDescription: { $regex: q, $options: "i" } },
       ];
@@ -148,6 +149,7 @@ export async function POST(req: Request) {
       name: String(body.name).trim(),
       slug,
       sku: body.sku ? String(body.sku).trim() : undefined,
+      itemNameModel: body.itemNameModel ? String(body.itemNameModel).trim() : undefined,
       brand: body.brand ? String(body.brand).trim() : undefined,
       category: categoryRef,
       subCategory: subCategoryRef,
@@ -155,6 +157,10 @@ export async function POST(req: Request) {
       description: body.description ? String(body.description).trim() : String(body.name).trim(),
       price: body.price !== undefined && body.price !== null && body.price !== "" ? Number(body.price) : undefined,
       currency: body.currency || "BDT",
+      benefitPoint1: body.benefitPoint1 ? String(body.benefitPoint1).trim() : undefined,
+      benefitPoint2: body.benefitPoint2 ? String(body.benefitPoint2).trim() : undefined,
+      benefitPoint3: body.benefitPoint3 ? String(body.benefitPoint3).trim() : undefined,
+      benefitPoint4: body.benefitPoint4 ? String(body.benefitPoint4).trim() : undefined,
       image: body.image || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1600&q=80",
       gallery: Array.isArray(body.gallery) ? body.gallery : [],
       videoUrl: body.videoUrl ? String(body.videoUrl).trim() : undefined,

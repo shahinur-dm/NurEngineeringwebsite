@@ -29,6 +29,7 @@ interface ProductFormProps {
     name: string;
     slug?: string;
     sku?: string;
+    itemNameModel?: string;
     brand?: string;
     category: string | { _id: string };
     subCategory?: string | { _id: string };
@@ -36,6 +37,10 @@ interface ProductFormProps {
     description: string;
     price?: number;
     currency: string;
+    benefitPoint1?: string;
+    benefitPoint2?: string;
+    benefitPoint3?: string;
+    benefitPoint4?: string;
     image: string;
     gallery?: string[];
     videoUrl?: string;
@@ -70,6 +75,21 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
   const [name, setName] = useState(initialData?.name || "");
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [sku, setSku] = useState(initialData?.sku || "");
+  const [itemNameModel, setItemNameModel] = useState(
+    initialData?.itemNameModel || ""
+  );
+  const [benefitPoint1, setBenefitPoint1] = useState(
+    initialData?.benefitPoint1 || ""
+  );
+  const [benefitPoint2, setBenefitPoint2] = useState(
+    initialData?.benefitPoint2 || ""
+  );
+  const [benefitPoint3, setBenefitPoint3] = useState(
+    initialData?.benefitPoint3 || ""
+  );
+  const [benefitPoint4, setBenefitPoint4] = useState(
+    initialData?.benefitPoint4 || ""
+  );
   const [brand, setBrand] = useState(initialData?.brand || "");
   const [category, setCategory] = useState(
     typeof initialData?.category === "object"
@@ -317,14 +337,19 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
       const payload = {
         name,
         slug: slug.trim() || undefined,
-        sku,
-        brand,
+        sku: sku.trim(),
+        itemNameModel: itemNameModel.trim(),
+        brand: brand.trim(),
         category,
         subCategory: subCategory || null,
         shortDescription,
         description,
-        price: price ? parseFloat(price) : undefined,
+        price: price !== "" && !isNaN(parseFloat(price)) ? parseFloat(price) : null,
         currency,
+        benefitPoint1: benefitPoint1.trim(),
+        benefitPoint2: benefitPoint2.trim(),
+        benefitPoint3: benefitPoint3.trim(),
+        benefitPoint4: benefitPoint4.trim(),
         image,
         gallery,
         videoUrl: videoUrl.trim() || undefined,
@@ -491,6 +516,19 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Item Name/Model
+                </label>
+                <input
+                  type="text"
+                  value={itemNameModel}
+                  onChange={(e) => setItemNameModel(e.target.value)}
+                  placeholder="e.g. 7-INCH HMI / NES-HMI-7"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium text-navy"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
                   Brand / Class
                 </label>
                 <input
@@ -507,10 +545,12 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                   ))}
                 </datalist>
               </div>
+            </div>
 
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-navy">
-                  SKU / Model Number
+                  SKU (Internal / Legacy Code)
                 </label>
                 <input
                   type="text"
@@ -520,19 +560,19 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                   className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
                 />
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-navy">
-                Custom Slug (Optional)
-              </label>
-              <input
-                type="text"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="auto-generated from name if left empty"
-                className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
-              />
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Custom Slug (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  placeholder="auto-generated from name if left empty"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange"
+                />
+              </div>
             </div>
 
             <div>
@@ -930,6 +970,72 @@ export function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 placeholder="Details on warranty claim, replacement policy, defect inspection and delivery terms..."
                 className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange leading-relaxed"
               />
+            </div>
+          </div>
+
+          {/* Product Benefits / Trust Points (4 Badges) */}
+          <div className="rounded-lg border border-line bg-white p-4 sm:p-5 shadow-xs space-y-4">
+            <div className="border-b border-line pb-3">
+              <h3 className="font-display text-sm font-bold uppercase tracking-wider text-navy">
+                Product Benefits & Trust Points (4 Badges)
+              </h3>
+              <p className="text-[11px] text-steel">
+                Customise the 4 trust points displayed below the product image on the detail page. Leave blank to use defaults.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Point 1 (Genuine Stock)
+                </label>
+                <input
+                  type="text"
+                  value={benefitPoint1}
+                  onChange={(e) => setBenefitPoint1(e.target.value)}
+                  placeholder="100% genuine, authorised stock"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Point 2 (Warranty Support)
+                </label>
+                <input
+                  type="text"
+                  value={benefitPoint2}
+                  onChange={(e) => setBenefitPoint2(e.target.value)}
+                  placeholder="12-month manufacturer warranty"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Point 3 (Nationwide Delivery)
+                </label>
+                <input
+                  type="text"
+                  value={benefitPoint3}
+                  onChange={(e) => setBenefitPoint3(e.target.value)}
+                  placeholder="Nationwide delivery in 2-4 days"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-navy">
+                  Point 4 (Cash on Delivery)
+                </label>
+                <input
+                  type="text"
+                  value={benefitPoint4}
+                  onChange={(e) => setBenefitPoint4(e.target.value)}
+                  placeholder="Cash on delivery available"
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-xs outline-none focus:border-orange font-medium"
+                />
+              </div>
             </div>
           </div>
         </div>
