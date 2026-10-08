@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { CatalogShell } from "@/components/CatalogShell";
 import { HeroSlider } from "@/components/HeroSlider";
 import { SpecialFeaturesSection } from "@/components/SpecialFeaturesSection";
@@ -10,10 +11,28 @@ import {
   getProductsTotalCount,
   getServices,
   getFeatures,
+  getSettings,
 } from "@/lib/data";
+import { buildPageMetadata, toAbsoluteBannerImageUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const [site, banners] = await Promise.all([getSettings(), getBanners()]);
+  const firstBanner =
+    banners[0]?.image?.trim() ||
+    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1600&q=80";
+  const ogImageUrl = toAbsoluteBannerImageUrl(firstBanner);
+
+  return buildPageMetadata({
+    site,
+    title: site.seo?.defaultTitle || site.brandName,
+    description: site.seo?.defaultDescription || site.description,
+    path: "/",
+    image: ogImageUrl,
+  });
+}
 
 export default async function HomePage({
   searchParams,

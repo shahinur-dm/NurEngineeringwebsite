@@ -10,9 +10,11 @@ import {
   getCategories,
   getProducts,
   getServiceBySlug,
+  getSettings,
   getUseCaseBySlug,
   getUseCases,
 } from "@/lib/data";
+import { buildPageMetadata, toAbsoluteImageUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,12 +25,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const item = await getUseCaseBySlug(slug);
+  const [item, site] = await Promise.all([
+    getUseCaseBySlug(slug),
+    getSettings(),
+  ]);
   if (!item) return { title: "Our Services" };
-  return {
+  const itemImage = item.image ? toAbsoluteImageUrl(item.image) : undefined;
+  return buildPageMetadata({
+    site,
     title: item.title,
     description: item.summary,
-  };
+    path: `/use-cases/${item.slug || slug}`,
+    image: itemImage,
+  });
 }
 
 export default async function UseCaseDetailPage({

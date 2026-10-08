@@ -8,8 +8,8 @@ import { Footer } from "@/components/Footer";
 import { SiteProvider } from "@/components/SiteProvider";
 import { JsonLd } from "@/components/JsonLd";
 import { Analytics } from "@/components/Analytics";
-import { getAnalyticsIds, getSiteUrl } from "@/lib/seo";
-import { getSettings, getUseCases } from "@/lib/data";
+import { getAnalyticsIds, getSiteUrl, toAbsoluteBannerImageUrl } from "@/lib/seo";
+import { getBanners, getSettings, getUseCases } from "@/lib/data";
 
 const body = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -35,17 +35,25 @@ export const viewport: Viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const site = await getSettings();
+  const [site, banners] = await Promise.all([getSettings(), getBanners()]);
   const url = getSiteUrl();
   const { searchConsole } = getAnalyticsIds(site);
+
+  const firstBanner =
+    banners[0]?.image?.trim() ||
+    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1600&q=80";
+  const ogImageUrl = toAbsoluteBannerImageUrl(firstBanner);
+
+  const title = site.seo?.defaultTitle || site.brandName;
+  const description = site.seo?.defaultDescription || site.description;
 
   return {
     metadataBase: new URL(url),
     title: {
-      default: site.seo?.defaultTitle || site.brandName,
+      default: title,
       template: `%s | ${site.brandName}`,
     },
-    description: site.seo?.defaultDescription || site.description,
+    description,
     keywords: site.seo?.keywords || [],
     applicationName: site.brandName,
     icons: site.favicon
@@ -60,8 +68,22 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: "en_BD",
       url,
       siteName: site.brandName,
-      title: site.brandName,
-      description: site.description,
+      title,
+      description,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImageUrl],
     },
     ...(searchConsole ? { verification: { google: searchConsole } } : {}),
   };

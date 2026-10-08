@@ -7,7 +7,9 @@ import {
   getBlogPostBySlug,
   getRelatedBlogPosts,
   getBlogPosts,
+  getSettings,
 } from "@/lib/data";
+import { buildPageMetadata, toAbsoluteImageUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,14 +20,21 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
+  const [post, site] = await Promise.all([
+    getBlogPostBySlug(slug),
+    getSettings(),
+  ]);
   if (!post) {
     return { title: "Article Not Found | Nur Engineering Solution" };
   }
-  return {
+  const postImage = post.coverImage ? toAbsoluteImageUrl(post.coverImage) : undefined;
+  return buildPageMetadata({
+    site,
     title: `${post.title} | Nur Engineering Blog`,
     description: post.summary,
-  };
+    path: `/blog/${post.slug || slug}`,
+    image: postImage,
+  });
 }
 
 export default async function BlogDetailsPage({

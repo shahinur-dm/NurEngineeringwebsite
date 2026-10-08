@@ -10,11 +10,13 @@ import { ProductTabs } from "@/components/ProductTabs";
 import { getProductDetail } from "@/lib/product-details";
 import { getProductMedia } from "@/lib/product-media";
 import {
+  getBanners,
   getCategories,
   getProductBySlug,
   getRelatedProducts,
   getSettings,
 } from "@/lib/data";
+import { buildPageMetadata, toAbsoluteProductImageUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,12 +27,30 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const [product, site, banners] = await Promise.all([
+    getProductBySlug(slug),
+    getSettings(),
+    getBanners(),
+  ]);
   if (!product) return { title: "Product" };
-  return {
-    title: product.name,
-    description: product.shortDescription,
-  };
+
+  const fallbackBanner =
+    banners[0]?.image?.trim() ||
+    "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1600&q=80";
+  const ogImageUrl = toAbsoluteProductImageUrl(product, fallbackBanner);
+  const title = product.name;
+  const description =
+    product.shortDescription ||
+    product.description?.slice(0, 160) ||
+    `${product.name} - ${site.brandName}`;
+
+  return buildPageMetadata({
+    site,
+    title,
+    description,
+    path: `/products/${product.slug || slug}`,
+    image: ogImageUrl,
+  });
 }
 
 export default async function ProductDetailPage({

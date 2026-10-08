@@ -8,8 +8,10 @@ import { RelatedSearch } from "@/components/RelatedSearch";
 import {
   getCategories,
   getServiceBySlug,
+  getSettings,
 } from "@/lib/data";
 import type { PopulatedProduct } from "@/lib/data";
+import { buildPageMetadata, toAbsoluteImageUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,9 +22,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const service = await getServiceBySlug(slug);
+  const [service, site] = await Promise.all([
+    getServiceBySlug(slug),
+    getSettings(),
+  ]);
   if (!service) return { title: "Technical services" };
-  return { title: service.title, description: service.shortDescription };
+  const serviceImage = service.image ? toAbsoluteImageUrl(service.image) : undefined;
+  return buildPageMetadata({
+    site,
+    title: service.title,
+    description: service.shortDescription,
+    path: `/services/${service.slug || slug}`,
+    image: serviceImage,
+  });
 }
 
 export default async function ServiceDetailPage({
