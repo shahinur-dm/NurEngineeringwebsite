@@ -1,35 +1,62 @@
 import { NextResponse } from "next/server";
-import { getCategories, getSubCategories, getProducts } from "@/lib/data";
+import { connectDB } from "@/lib/mongodb";
+import { Product } from "@/lib/models";
+import { getCategories, getSubCategories, getCached, setCached } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  try {
-    const [categories, subcategories, products] = await Promise.all([
-      getCategories("product"),
-      getSubCategories(),
-      getProducts(),
-    ]);
-
-    const tree: Record<
-      string,
-      {
+interface CatalogTreeResponse {
+  tree: Record<
+    string,
+    {
+      _id: string;
+      name: string;
+      slug: string;
+      subcategories: Array<{
         _id: string;
         name: string;
         slug: string;
-        subcategories: Array<{
+        products: Array<{
           _id: string;
           name: string;
           slug: string;
-          products: Array<{
-            _id: string;
-            name: string;
-            slug: string;
-            image: string;
-          }>;
+          image: string;
         }>;
-      }
-    > = {};
+      }>;
+    }
+  >;
+}
+
+export async function GET() {
+  try {
+    const cachedTree = getCached<CatalogTreeResponse>("catalog_tree_data");
+    if (cachedTree) {
+      return NextResponse.json(cachedTree, {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      });
+    }
+
+    await connectDB();
+
+    const [categories, subcategories, rawProducts] = await Promise.all([
+      getCategories("product"),
+      getSubCategories(),
+      Product.find({ published: { $ne: false } })
+        .select("_id name slug image category subCategory order")
+        .sort({ order: 1, _id: 1 })
+        .lean<{
+          _id: unknown;
+          name: string;
+          slug: string;
+          image?: string;
+          category?: unknown;
+          subCategory?: unknown;
+        }[]>(),
+    ]);
+
+    const tree: CatalogTreeResponse["tree"] = {};
 
     for (const cat of categories) {
       const catId = String(cat._id);
@@ -47,11 +74,17 @@ export async function GET() {
         slug: cat.slug,
         subcategories: catSubs.map((sub) => {
           const subId = String(sub._id);
-          const subProds = products.filter(
-            (p) =>
-              p.subCategory &&
-              (String(p.subCategory._id) === subId || p.subCategory.slug === sub.slug)
-          );
+          const subProds = rawProducts
+            .filter((p) => {
+              if (!p.subCategory) return false;
+              const pSubId =
+                typeof p.subCategory === "object" && p.subCategory && "_id" in p.subCategory
+                  ? String(p.subCategory._id)
+                  : String(p.subCategory);
+              return pSubId === subId;
+            })
+            .slice(0, 6);
+
           return {
             _id: subId,
             name: sub.name,
@@ -69,14 +102,14 @@ export async function GET() {
       };
     }
 
-    return NextResponse.json(
-      { tree },
-      {
-        headers: {
-          "Cache-Control": "no-store, max-age=0",
-        },
-      }
-    );
+    const responsePayload = { tree };
+    setCached("catalog_tree_data", responsePayload, 60_000);
+
+    return NextResponse.json(responsePayload, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    });
   } catch (err: unknown) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to load catalog tree" },

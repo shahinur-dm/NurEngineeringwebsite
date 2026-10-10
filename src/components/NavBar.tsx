@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { FormEvent, MouseEvent, useEffect, useRef, useState } from "react";
 import { useSite } from "@/components/SiteProvider";
 import { Logo } from "@/components/Logo";
+import { fetchCatalogTreeClient } from "@/lib/catalog-client";
 import type { PopulatedProduct } from "@/lib/data";
 
 const defaultNavServices = [
@@ -58,7 +59,7 @@ export function NavBar() {
     .sort((a, b) => a.order - b.order);
 
   useEffect(() => {
-    fetch("/api/services", { cache: "no-store" })
+    fetch("/api/services")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data.services)) setNavServices(data.services);
@@ -66,8 +67,8 @@ export function NavBar() {
       .catch(() => {});
 
     Promise.all([
-      fetch("/api/categories?type=product", { cache: "no-store" }).then((res) => res.json()),
-      fetch("/api/catalog-tree", { cache: "no-store" }).then((res) => res.json()),
+      fetch("/api/categories?type=product").then((res) => res.json()),
+      fetchCatalogTreeClient(),
     ])
       .then(([catsJson, treeJson]) => {
         const tree = (treeJson?.tree || {}) as Record<

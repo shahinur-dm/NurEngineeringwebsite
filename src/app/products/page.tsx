@@ -3,7 +3,14 @@ import { CatalogShell } from "@/components/CatalogShell";
 import { ProductCard } from "@/components/ProductCard";
 import { SubCategoryBar } from "@/components/SubCategoryBar";
 import { RelatedSearch } from "@/components/RelatedSearch";
-import { getCategories, getSubCategories, getProducts, getSettings } from "@/lib/data";
+import { Pagination } from "@/components/Pagination";
+import {
+  getCategories,
+  getSubCategories,
+  getProducts,
+  getProductsTotalCount,
+  getSettings,
+} from "@/lib/data";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +19,7 @@ export const revalidate = 0;
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; subcategory?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; subcategory?: string; q?: string; page?: string }>;
 }): Promise<Metadata> {
   const sp = await searchParams;
   const site = await getSettings();
@@ -34,19 +41,30 @@ export async function generateMetadata({
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; subcategory?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; subcategory?: string; q?: string; page?: string }>;
 }) {
   const sp = await searchParams;
-  const [categories, subcategories, products] = await Promise.all([
+  const currentPage = Math.max(1, parseInt(sp.page || "1", 10) || 1);
+  const pageSize = 20;
+
+  const [categories, subcategories, products, totalProducts] = await Promise.all([
     getCategories("product"),
     sp.category ? getSubCategories(sp.category) : Promise.resolve([]),
     getProducts({
       categorySlug: sp.category,
       subCategorySlug: sp.subcategory,
       q: sp.q,
+      page: currentPage,
+      limit: pageSize,
+    }),
+    getProductsTotalCount({
+      categorySlug: sp.category,
+      subCategorySlug: sp.subcategory,
+      q: sp.q,
     }),
   ]);
 
+  const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize));
   const activeCategory = categories.find((c) => c.slug === sp.category);
   const activeSubCategory = subcategories.find((s) => s.slug === sp.subcategory);
 
@@ -57,6 +75,13 @@ export default async function ProductsPage({
       : activeCategory
         ? activeCategory.name
         : "All products";
+
+  const startItem = totalProducts > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+  const endItem = Math.min(currentPage * pageSize, totalProducts);
+  const itemsLabel =
+    totalProducts > pageSize
+      ? `Showing ${startItem}–${endItem} of ${totalProducts} items`
+      : `${String(totalProducts).padStart(2, "0")} items`;
 
   return (
     <CatalogShell categories={categories} activeSlug={sp.category}>
@@ -80,7 +105,7 @@ export default async function ProductsPage({
           )}
         </div>
         <p className="pb-1 font-display text-[12px] uppercase tracking-[0.16em] text-mist shrink-0">
-          {String(products.length).padStart(2, "0")} items
+          {itemsLabel}
         </p>
       </div>
 
@@ -89,6 +114,22 @@ export default async function ProductsPage({
           <ProductCard key={String(product._id)} product={product} />
         ))}
       </div>
+
+      {/* Server-side Pagination for Large Collections */}
+      {totalPages > 1 && (
+        <div className="pt-2">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            basePath="/products"
+            queryParams={{
+              category: sp.category,
+              subcategory: sp.subcategory,
+              q: sp.q,
+            }}
+          />
+        </div>
+      )}
 
       <RelatedSearch
         currentHref={

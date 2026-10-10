@@ -56,6 +56,40 @@ export type PopulatedService = Omit<IService, "category" | "relatedProducts"> & 
 import { defaultFooterQuickLinks, defaultFooterServices } from "@/lib/footer-defaults";
 export { defaultFooterQuickLinks, defaultFooterServices };
 
+// --- Memory Cache for Frequently-Requested Public Data (60s TTL) ---
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
+const memCache = new Map<string, CacheEntry<unknown>>();
+
+export function getCached<T>(key: string): T | null {
+  const entry = memCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    memCache.delete(key);
+    return null;
+  }
+  return entry.data as T;
+}
+
+export function setCached<T>(key: string, data: T, ttlMs = 60_000): T {
+  memCache.set(key, { data, expiresAt: Date.now() + ttlMs });
+  return data;
+}
+
+export function clearDataCache() {
+  memCache.clear();
+}
+
+/** Optimized field projection for product cards and listing views */
+export const PRODUCT_CARD_FIELDS =
+  "_id name slug sku itemNameModel brand category subCategory shortDescription price currency image inStock featured published order createdAt availabilityText";
+
+/** Minimal fields for catalog tree flyout */
+export const PRODUCT_TREE_FIELDS =
+  "_id name slug image category subCategory order published";
+
 export const fallbackSettings: ISiteSettings = {
   _id: "fallback",
   brandName: "Nur Engineering Solution",
@@ -172,6 +206,9 @@ function getMockPopulatedServices(): PopulatedService[] {
 }
 
 export async function getSettings(): Promise<ISiteSettings> {
+  const cachedSettings = getCached<ISiteSettings>("site_settings");
+  if (cachedSettings) return cachedSettings;
+
   let doc: Record<string, unknown> | null = null;
   try {
     const db = await connectDB();
@@ -213,7 +250,7 @@ export async function getSettings(): Promise<ISiteSettings> {
     ...((doc?.analytics as Record<string, string>) || {}),
   };
 
-  return {
+  const result: ISiteSettings = {
     _id: (merged._id as string) || "site-settings",
     brandName: (merged.brandName as string) || fallbackSettings.brandName,
     tagline: (merged.tagline as string) || fallbackSettings.tagline,
@@ -361,6 +398,8 @@ export async function getSettings(): Promise<ISiteSettings> {
         ? (merged.footerServices as { label: string; href: string }[])
         : fallbackSettings.footerServices,
   };
+
+  return setCached("site_settings", result, 300_000);
 }
 
 export const fallbackCompanyProfile: ICompanyProfile = {
@@ -417,6 +456,10 @@ export async function getCompany(): Promise<ICompanyProfile> {
 export async function getCategories(
   type?: "product" | "service"
 ): Promise<ICategory[]> {
+  const cacheKey = `categories_${type || "all"}`;
+  const cached = getCached<ICategory[]>(cacheKey);
+  if (cached) return cached;
+
   try {
     const db = await connectDB();
     if (db) {
@@ -430,7 +473,7 @@ export async function getCategories(
         .sort({ order: 1, name: 1 })
         .lean<ICategory[]>();
       if (docs) {
-        return serialize(docs);
+        return setCached(cacheKey, serialize(docs), 60_000);
       }
     }
   } catch (err) {
@@ -443,6 +486,10 @@ export async function getCategories(
 export async function getSubCategories(
   categorySlugOrId?: string
 ): Promise<ISubCategory[]> {
+  const cacheKey = `subcategories_${categorySlugOrId || "all"}`;
+  const cached = getCached<ISubCategory[]>(cacheKey);
+  if (cached) return cached;
+
   try {
     const db = await connectDB();
     if (db) {
@@ -456,7 +503,7 @@ export async function getSubCategories(
               { slug: categorySlugOrId },
               { slug: { $regex: new RegExp(`^${categorySlugOrId}$`, "i") } },
             ],
-          }).lean<ICategory | null>();
+          }).select("_id slug name").lean<ICategory | null>();
           if (cat) {
             filter.$or = [
               { category: cat._id },
@@ -473,7 +520,7 @@ export async function getSubCategories(
         .sort({ order: 1, name: 1 })
         .lean<ISubCategory[]>();
       if (docs) {
-        return serialize(docs);
+        return setCached(cacheKey, serialize(docs), 60_000);
       }
     }
   } catch (err) {
@@ -511,6 +558,9 @@ export async function getBrands(): Promise<IBrand[]> {
 
 
 export async function getBanners(): Promise<IBanner[]> {
+  const cached = getCached<IBanner[]>("banners");
+  if (cached) return cached;
+
   let banners: IBanner[] = serialize(mockBanners);
   try {
     const db = await connectDB();
@@ -539,24 +589,32 @@ export async function getBanners(): Promise<IBanner[]> {
     // keep default banner images
   }
 
-  return banners;
+  return setCached("banners", banners, 60_000);
 }
 
 export async function getServices(opts?: {
   featured?: boolean;
 }): Promise<PopulatedService[]> {
+  const cacheKey = `services_${opts?.featured ? "feat" : "all"}`;
+  const cached = getCached<PopulatedService[]>(cacheKey);
+  if (cached) return cached;
+
   try {
     const db = await connectDB();
     if (db) {
       const filter: Record<string, unknown> = { published: { $ne: false } };
       if (opts?.featured) filter.featured = true;
       const docs = await Service.find(filter)
-        .populate("category")
-        .populate({ path: "relatedProducts", populate: { path: "category" } })
+        .populate("category", "name slug")
+        .populate({
+          path: "relatedProducts",
+          select: PRODUCT_CARD_FIELDS,
+          populate: { path: "category", select: "name slug" },
+        })
         .sort({ order: 1, _id: 1 })
         .lean<PopulatedService[]>();
       if (docs && docs.length > 0) {
-        return serialize(docs);
+        return setCached(cacheKey, serialize(docs), 60_000);
       }
     }
   } catch (err) {
@@ -568,6 +626,9 @@ export async function getServices(opts?: {
 }
 
 export async function getFeatures(): Promise<IFeature[]> {
+  const cached = getCached<IFeature[]>("features");
+  if (cached) return cached;
+
   try {
     const db = await connectDB();
     if (db) {
@@ -575,7 +636,7 @@ export async function getFeatures(): Promise<IFeature[]> {
         .sort({ order: 1, _id: 1 })
         .lean<IFeature[]>();
       if (docs && docs.length > 0) {
-        return serialize(docs);
+        return setCached("features", serialize(docs), 60_000);
       }
     }
   } catch (err) {
@@ -734,10 +795,10 @@ export async function getProducts(opts?: {
       }
 
       let query = Product.find(filter)
-        .populate("category")
-        .populate("subCategory")
-        .populate("relatedServices")
-        .sort({ order: 1, featured: -1, createdAt: -1 });
+        .select(PRODUCT_CARD_FIELDS)
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
+        .sort({ order: 1, featured: -1, createdAt: -1, _id: 1 });
 
       if (opts?.page && opts?.limit) {
         query = query.skip((opts.page - 1) * opts.limit).limit(opts.limit);
@@ -748,14 +809,16 @@ export async function getProducts(opts?: {
       const rawDocs = await query.lean<PopulatedProduct[]>();
 
       if (rawDocs && rawDocs.length > 0) {
-        const allCats = await Category.find().lean<ICategory[]>();
+        const [allCats, allSubs] = await Promise.all([
+          getCategories(),
+          getSubCategories(),
+        ]);
         const catMap = new Map<string, ICategory>();
         for (const c of allCats) {
           catMap.set(String(c._id), c);
           catMap.set(c.slug, c);
         }
 
-        const allSubs = await SubCategory.find().lean<ISubCategory[]>();
         const subMap = new Map<string, ISubCategory>();
         for (const s of allSubs) {
           subMap.set(String(s._id), s);
@@ -780,8 +843,10 @@ export async function getProducts(opts?: {
             sub = subMap.get(subRef) || null;
           }
 
+          const slug = p.slug || (p.name ? p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") : String(p._id));
           return {
             ...p,
+            slug,
             category: cat,
             subCategory: sub,
             relatedServices: p.relatedServices || [],
@@ -938,6 +1003,7 @@ export async function getProductBySlug(
     if (db) {
       const decodedSlug = decodeURIComponent(slug).trim();
       const slugRegex = new RegExp(`^${decodedSlug}$`, "i");
+      const nameRegex = new RegExp(`^${decodedSlug.replace(/-/g, " ").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
 
       let doc = await Product.findOne({
         $or: [
@@ -945,9 +1011,11 @@ export async function getProductBySlug(
           { slug: slugRegex },
           { sku: decodedSlug },
           { sku: slugRegex },
+          { name: nameRegex },
         ],
         published: { $ne: false },
       })
+        .select("-imageUrl -__v")
         .populate("category")
         .populate("subCategory")
         .populate("relatedServices")
@@ -955,6 +1023,7 @@ export async function getProductBySlug(
 
       if (!doc && mongoose.Types.ObjectId.isValid(decodedSlug)) {
         doc = await Product.findOne({ _id: decodedSlug, published: { $ne: false } })
+          .select("-imageUrl -__v")
           .populate("category")
           .populate("subCategory")
           .populate("relatedServices")
@@ -1027,9 +1096,9 @@ export async function getRelatedProducts(
         slug: { $ne: excludeSlug },
         published: { $ne: false },
       })
-        .populate("category")
-        .populate("subCategory")
-        .populate("relatedServices")
+        .select(PRODUCT_CARD_FIELDS)
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
         .sort({ order: 1, _id: 1 })
         .limit(limit)
         .lean<PopulatedProduct[]>();
@@ -1046,13 +1115,12 @@ export async function getRelatedProducts(
         slug: { $ne: excludeSlug },
         published: { $ne: false },
       })
-        .populate("category")
-        .populate("subCategory")
-        .populate("relatedServices")
+        .select(PRODUCT_CARD_FIELDS)
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
         .sort({ featured: -1, order: 1, _id: 1 })
         .limit(extraNeeded)
         .lean<PopulatedProduct[]>();
-
 
       return serialize(
         dedupeRelatedProducts([...(primaryDocs || []), ...(fallbackDocs || [])], excludeSlug)
@@ -1101,16 +1169,22 @@ function toUseCaseDoc(item: (typeof useCaseContent)[number]): IUseCase {
 }
 
 export async function getUseCases(): Promise<IUseCase[]> {
+  const cached = getCached<IUseCase[]>("use_cases");
+  if (cached) return cached;
+
   try {
     await connectDB();
     const docs = await UseCase.find({ published: true })
       .sort({ order: 1 })
       .lean<IUseCase[]>();
-    if (docs.length) return serialize(docs);
+    if (docs.length) {
+      return setCached("use_cases", serialize(docs), 60_000);
+    }
   } catch {
     // fall through to editorial content
   }
-  return useCaseContent.map(toUseCaseDoc);
+  const fallback = useCaseContent.map(toUseCaseDoc);
+  return setCached("use_cases", fallback, 60_000);
 }
 
 export async function getUseCaseBySlug(slug: string): Promise<IUseCase | null> {

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSite } from "@/components/SiteProvider";
+import { fetchCatalogTreeClient } from "@/lib/catalog-client";
 import type { ICategory } from "@/lib/models";
 
 interface SubCategoryItem {
@@ -51,12 +52,11 @@ export function CategorySidebar({
   const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const subTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch catalog tree on mount
+  // Fetch catalog tree on mount (deduplicated)
   useEffect(() => {
-    fetch("/api/catalog-tree", { cache: "no-store" })
-      .then((res) => res.json())
+    fetchCatalogTreeClient()
       .then((data) => {
-        if (data.tree) {
+        if (data?.tree) {
           setTreeData(data.tree);
         }
       })

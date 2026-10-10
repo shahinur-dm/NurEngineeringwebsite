@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import { Product, Category, SubCategory, type ICategory } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
+import { clearDataCache } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,7 @@ export async function GET(req: Request) {
 
     const [items, total] = await Promise.all([
       Product.find(filter)
+        .select("-imageUrl -__v")
         .populate("category", "name slug")
         .populate("subCategory", "name slug")
         .sort({ order: 1, createdAt: -1 })
@@ -196,6 +198,7 @@ export async function POST(req: Request) {
     });
 
     try {
+      clearDataCache();
       revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/products");

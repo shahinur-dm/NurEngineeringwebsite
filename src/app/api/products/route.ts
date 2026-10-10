@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProducts } from "@/lib/data";
+import { getProducts, getProductsTotalCount } from "@/lib/data";
 import { jsonError } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -12,16 +12,35 @@ export async function GET(request: NextRequest) {
     const subCategorySlug = searchParams.get("subcategory") || searchParams.get("subCategory") || undefined;
     const q = searchParams.get("q") || undefined;
     const limitParam = searchParams.get("limit");
-    const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+    const rawLimit = limitParam ? parseInt(limitParam, 10) : undefined;
+    // Bound limit safely between 1 and 60
+    const limit = rawLimit ? Math.max(1, Math.min(rawLimit, 60)) : (searchParams.has("page") ? 20 : undefined);
     const pageParam = searchParams.get("page");
-    const page = pageParam ? parseInt(pageParam, 10) : undefined;
+    const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
 
-    const data = await getProducts({ featured, categorySlug, subCategorySlug, q, limit, page });
+    const [data, total] = await Promise.all([
+      getProducts({ featured, categorySlug, subCategorySlug, q, limit, page }),
+      getProductsTotalCount({ featured, categorySlug, subCategorySlug, q }),
+    ]);
+
+    const effectiveLimit = limit || data.length || 20;
+    const totalPages = Math.max(1, Math.ceil(total / effectiveLimit));
+
     return NextResponse.json(
-      { success: true, data },
+      {
+        success: true,
+        data,
+        pagination: {
+          page,
+          limit: effectiveLimit,
+          total,
+          totalPages,
+          hasMore: page < totalPages,
+        },
+      },
       {
         headers: {
-          "Cache-Control": "no-store, max-age=0",
+          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
         },
       }
     );
@@ -30,5 +49,3 @@ export async function GET(request: NextRequest) {
     return jsonError("Failed to fetch products");
   }
 }
-
-

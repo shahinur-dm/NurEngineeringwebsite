@@ -58,8 +58,28 @@ export async function connectDB() {
       });
   }
 
+let indexesEnsured = false;
+async function ensureIndexesOnce() {
+  if (indexesEnsured) return;
+  indexesEnsured = true;
+  try {
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      const col = mongoose.connection.collection("products");
+      await Promise.all([
+        col.createIndex({ published: 1, order: 1, featured: -1, createdAt: -1, _id: 1 }, { background: true }),
+        col.createIndex({ category: 1, published: 1, order: 1 }, { background: true }),
+        col.createIndex({ subCategory: 1, published: 1, order: 1 }, { background: true }),
+        col.createIndex({ slug: 1 }, { background: true }),
+      ]);
+    }
+  } catch (err) {
+    console.warn("MongoDB index notice:", err);
+  }
+}
+
   try {
     cached.conn = await cached.promise;
+    ensureIndexesOnce().catch(() => {});
     return cached.conn;
   } catch (err) {
     cached.promise = null;
