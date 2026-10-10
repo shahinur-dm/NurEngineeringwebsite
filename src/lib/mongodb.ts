@@ -19,7 +19,7 @@ const cached: MongooseCache = globalForMongoose.mongooseCache ?? {
 globalForMongoose.mongooseCache = cached;
 
 const DEFAULT_MONGODB_URI =
-  "mongodb+srv://efootballmadrid25_db_user:ljvpbVMGVJTQPVcH@dawatit.5hxbo9c.mongodb.net/NurCompanyWebsite?appName=dawatit";
+  "mongodb+srv://nurshop:nurshopbdnet@cluster0.1hwyova.mongodb.net/NurEngWebsite?appName=Cluster0";
 
 /**
  * Next.js catalog site: database connection manager.
