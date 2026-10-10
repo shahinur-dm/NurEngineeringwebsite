@@ -40,3 +40,9 @@ next-env.d.ts
 
 !.env.example
 .env*
+
+# Local Backups & Migration Scripts
+/backup/
+scripts/execute-safe-migration.ts
+scripts/inspect-and-backup.ts
+scripts/validate-production-readiness.ts

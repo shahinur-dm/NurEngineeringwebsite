@@ -69,7 +69,7 @@ async function ensureIndexesOnce() {
         col.createIndex({ published: 1, order: 1, featured: -1, createdAt: -1, _id: 1 }, { background: true }),
         col.createIndex({ category: 1, published: 1, order: 1 }, { background: true }),
         col.createIndex({ subCategory: 1, published: 1, order: 1 }, { background: true }),
-        col.createIndex({ slug: 1 }, { background: true }),
+        col.createIndex({ slug: 1 }, { background: true, unique: true }),
       ]);
     }
   } catch (err) {
