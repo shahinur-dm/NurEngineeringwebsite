@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
@@ -9,6 +9,29 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("admin123456");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/auth/login")
+      .then(async (res) => {
+        if (!cancelled) {
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            setError(data.error || "Admin login is temporarily unavailable.");
+          } else {
+            setError("");
+          }
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError("Admin login is temporarily unavailable.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
