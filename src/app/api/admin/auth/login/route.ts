@@ -79,9 +79,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    // Safely update last login without blocking or failing on version conflicts
+    try {
+      await User.updateOne(
+        { _id: user._id },
+        { $set: { lastLogin: new Date() } }
+      );
+    } catch (saveErr) {
+      console.warn("Could not update lastLogin timestamp:", saveErr);
+    }
 
     const token = signSessionToken({
       userId: String(user._id),
@@ -89,18 +95,22 @@ export async function POST(req: Request) {
       role: user.role,
     });
 
-    await logActivity({
-      action: "USER_LOGIN",
-      entity: "User",
-      entityId: String(user._id),
-      details: `User ${user.email} logged in to admin panel`,
-      user: {
-        _id: String(user._id),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    try {
+      await logActivity({
+        action: "USER_LOGIN",
+        entity: "User",
+        entityId: String(user._id),
+        details: `User ${user.email} logged in to admin panel`,
+        user: {
+          _id: String(user._id),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      });
+    } catch (logErr) {
+      console.warn("Could not log activity:", logErr);
+    }
 
     const response = NextResponse.json({
       success: true,
