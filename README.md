@@ -2,168 +2,147 @@
 
 **Official Website:** [https://nurengineeringbd.com](https://nurengineeringbd.com)  
 **Production Deployment:** [https://nur-company-website.vercel.app](https://nur-company-website.vercel.app)  
-**Vercel Dashboard:** [https://vercel.com/next-gen-technology/nur-company-website](https://vercel.com/next-gen-technology/nur-company-website)  
-**GitHub Repository:** [https://github.com/shahinur-dm/NurEngineeringwebsite](https://github.com/shahinur-dm/NurEngineeringwebsite)  
+**GitHub Repository:** [https://github.com/shahinur-dm/NurShopBD](https://github.com/shahinur-dm/NurShopBD) / [NurEngineeringwebsite](https://github.com/shahinur-dm/NurEngineeringwebsite)  
+**Date:** 15 October 2026
 
 ---
 
-## 📋 আজকের কাজের সারসংক্ষেপ (Today's Work Summary)
+## 📌 আজকের কাজের সারাংশ (Summary of Today's Work)
 
-আজকে ওয়েবসাইটে ২টি প্রধান বড় টেকনিক্যাল সমস্যা সমাধান এবং নতুন আর্কিটেকচার ইমপ্লিমেন্ট করা হয়েছে, ডাটাবেজ কনফিগারেশন আপডেট করা হয়েছে এবং গিটহাব ও ভার্সেলে লাইভ প্রোডাকশনে ডিপ্লয় করা হয়েছে:
+আজকে ওয়েবসাইটে প্রধান দুটি বড় টেকনিক্যাল কাজ সফলভাবে সম্পন্ন ও প্রোডাকশনে ভেরিফাই করা হয়েছে:
 
-1. **টেকনিক্যাল এসইও (Technical SEO) এবং গুগল সার্চ ভিজিবিলিটি ফিক্স:**
-   - সম্পূর্ণ ওয়েবসাইট গুগল সার্চ রেজাল্টে র‍্যাংক করানোর জন্য ডায়নামিক এক্সএমএল সাইটম্যাপ (`/sitemap.xml`) তৈরি করা হয়েছে।
-   - সার্চ ইঞ্জিন ক্রলারদের জন্য স্ট্যান্ডার্ড `robots.txt` কনফিগার করা হয়েছে।
-   - ডুপ্লিকেট কন্টেন্ট রোধে প্রতিটি পেজে ক্যানোনিকাল ট্যাগ (Canonical URLs) যোগ করা হয়েছে।
-   - গুগল রিচ স্নsnippet-এর জন্য JSON-LD Structured Data (Organization, WebSite, Product, Service, BreadcrumbList) যুক্ত করা হয়েছে।
-   - কোম্পানি, পিএলসি অটোমেশন, সার্ভো ড্রাইভ ও মোটর, ইনজেকশন মোল্ডিং মেশিনারিজ সম্পর্কিত মেটা টাইটেল, ডেসক্রিপশন এবং ওজি (Open Graph) ট্যাগ অপটিমাইজ করা হয়েছে।
+1. **টেকনিক্যাল এসইও (Technical SEO) ও সার্চ ইঞ্জিন অপ্টিমাইজেশন:**
+   - **ডাইনামিক সাইটম্যাপ (`/sitemap.xml`):** সমস্ত প্রোডাক্ট, ক্যাটাগরি, সার্ভিস, ব্লগ এবং পেজ ডাটাবেজ থেকে স্বয়ংক্রিয়ভাবে জেনারেট হয়ে সাইটম্যাপে যুক্ত হয়।
+   - **রোবট টেক্সট (`/robots.txt`):** গুগল এবং সকল সার্চ ইঞ্জিন বটদের জন্য সঠিক নির্দেশিকা এবং অ্যাডমিন পাথ সুরক্ষিত রাখা।
+   - **ক্যানোনিকাল ইউআরএল (Canonical URLs):** ডুপ্লিকেট কনটেন্ট সমস্যা দূর করে এসইও র‍্যাঙ্কিং ধরে রাখার জন্য ডায়নামিক ক্যানোনিকাল ট্যাগ যুক্ত।
+   - **JSON-LD স্ট্রাকচার্ড ডাটা (Schema.org):** গুগল রিচ স্নsnippet পাওয়ার জন্য `Organization`, `WebSite`, `Product`, `Service`, এবং `BreadcrumbList` স্কিমা যুক্ত।
+   - **মেটা ট্যাগ ও সোশ্যাল শেয়ারিং (Open Graph):** ফেসবুক ও অন্যান্য সোশ্যাল মিডিয়ায় শেয়ার করার জন্য অপ্টিমাইজড ব্যানার ও বিবরণ।
 
-2. **অ্যাডমিন প্যানেলে ৪MB পিডিএফ আপলোড লিমিট অপসারণ (Remove 4MB PDF Limitation in `/admin/downloads`):**
-   - আগের ৪MB হার্ডকোডেড লিমিট এবং ভার্সেল সার্ভারলেসের ৪.৫MB পেলোড সিলিং (HTTP 413) সমস্যা চিরতরে সমাধান করা হয়েছে।
-   - নতুন **ডাইরেক্ট গ্রিডএফএস চাঙ্ক স্ট্রিমিং আর্কিটেকচার (Direct GridFS Chunk Streaming Architecture)** তৈরি করা হয়েছে।
-   - এখন অ্যাডমিন প্যানেল থেকে **২৫MB+ এবং সর্বোচ্চ ৫০MB** পর্যন্ত যেকোনো বড় সাইজের পিডিএফ ক্যাটালগ ও ইউজার ম্যানুয়াল অনায়াসে আপলোড ও ডাউনলোড করা যায়।
-   - আপলোডের সময় লাইভ পার্সেন্টেজ প্রোগ্রেস বার (0% to 100%) যোগ করা হয়েছে।
-   - সার্ভার মেমোরি ক্র্যাশ প্রতিরোধে স্ট্রিমিং ডাউনলোড ইমপ্লিমেন্ট করা হয়েছে।
-   - সিকিউরিটির জন্য সার্ভার-সাইডে পিডিএফ ফাইল সিগনেচার (`%PDF-`) ভ্যালিডেশন নিশ্চিত করা হয়েছে।
-   - ইউআই/ইউএক্স (UI/UX), ডিজাইন, বাটন বা টেবিল লেআউটে কোনো ধরনের পরিবর্তন না করে ব্যাকএন্ড নিখুঁতভাবে আপগ্রেড করা হয়েছে।
+2. **অ্যাডমিন ডাউনলোডসে ৪ এমবি লিমিট তুলে দিয়ে ৫০ এমবি পর্যন্ত পিডিএফ আপলোড ও স্ট্রিমিং ডাউনলোড:**
+   - **সমস্যা:** ভার্সেল সার্ভারলেস ফাংশনের ৪.৫ এমবি পেলোড লিমিট (HTTP 413) এবং ওল্ড কোডের ৪ এমবি মেমোরি বাফারিংয়ের কারণে বড় ফাইল আপলোড হতো না।
+   - **সমাধান:** **ডাইরেক্ট চাঙ্ক আপলোড ও গ্রিডএফএস স্ট্রিমিং আর্কিটেকচার (Direct GridFS Chunk Streaming)**। ফাইলগুলোকে ক্লায়েন্ট-সাইডে ২.৪৯ এমবি চাঙ্কে ভাগ করে সরাসরি MongoDB GridFS-এ ইনসার্ট করা হয়।
+   - **নতুন সক্ষমতা:** এখন **২৫ এমবি এবং ৫০ এমবি** পর্যন্ত যেকোনো বড় সাইজের পিডিএফ ফাইল অনায়াসে আপলোড ও ডাউনলোড করা যায়।
+   - **রিয়েলটাইম প্রগ্রেস বার:** আপলোডের সময় লাইভ শতাংশ (0% - 100%) দেখা যায়।
+   - **জিরো মেমোরি স্ট্রিমিং ডাউনলোড:** ডাউনলোড করার সময় Web `ReadableStream` ব্যবহারের মাধ্যমে সার্ভার মেমোরিতে কোনো চাপ না ফেলে সরাসরি ডাউনলোড হয়।
+   - **নিরাপত্তা:** সার্ভার সাইডে `%PDF-` ম্যাজিক বাইট ভ্যালিডেশন এবং রোল পারমিশন চেক।
 
-3. **ডাটাবেজ ও ক্লাউড কনফিগারেশন আপডেট:**
-   - ডেডিকেটেড ক্লাস্টার কানেকশন স্ট্রিং (`NurCompanyWebsite`) আপডেট ও কনফিগার করা হয়েছে:
-     `mongodb+srv://efootballmadrid25_db_user:ljvpbVMGVJTQPVcH@dawatit.5hxbo9c.mongodb.net/NurCompanyWebsite?appName=dawatit`
-
-4. **গিট ও ভার্সেল প্রোডাকশন ডিপ্লয়মেন্ট:**
-   - সমস্ত কোড গিটহাবে `main` ব্রাঞ্চে পুশ করা হয়েছে।
-   - ভার্সেল প্রোডাকশনে সম্পূর্ণ বিল্ড সফলভাবে কম্পাইল ও ডিপ্লয় করা হয়েছে (State: READY, Exit Code 0)।
+3. **সফল টেস্টিং ও ভেরিফিকেশন:**
+   - ১.৫ এমবি, ১০ এমবি এবং ২৫ এমবি সাইজের ফাইল দিয়ে সফলভাবে এন্ড-টু-এন্ড আপলোড ও ডাউনলোড টেস্ট সম্পন্ন হয়েছে।
+   - ক্যাটালগ ও ইউজার ম্যানুয়াল ট্যাব ফিল্টারিং এবং পারসিস্টেন্স অক্ষুণ্ণ রয়েছে।
+   - নেক্সট জেএস প্রোডাকশন বিল্ড (`npm run build`) কোনো ত্রুটি ছাড়াই পাস করেছে।
 
 ---
 
-## 🛠️ Detailed Technical Documentation of Today's Work
+## 🚀 বিস্তারিত টেকনিক্যাল ডকুমেন্টেশন (Detailed Technical Implementation)
 
-### 1. Admin Downloads: 50MB PDF Upload & Streaming Architecture
+### ১. অ্যাডমিন ডাউনলোড আর্কিটেকচার (50MB Chunk Streaming Architecture)
 
-#### Root Cause Analysis
-* **Legacy Backend Validation:** Both `/api/admin/downloads` and `/api/admin/downloads/[id]` rejected files exceeding `4 * 1024 * 1024` bytes.
-* **Hosting Platform Constraint:** Vercel Serverless Functions enforce a strict **4.5MB request payload limit** (`HTTP 413: Payload Too Large`). Single-request multipart uploads larger than 4.5MB fail at the network edge.
-* **Legacy Memory Buffering:** The old download handler buffered the entire file into Node.js server RAM using `Buffer.concat`, which caused memory spikes on larger PDFs.
+#### 🔹 সমস্যার কারণ (Root Cause Analysis):
+* **Vercel Serverless Payload Limit:** ভার্সেল প্ল্যাটফর্মে যেকোনো একক HTTP রিকোয়েস্টের সাইজ সর্বোচ্চ ৪.৫ এমবি পর্যন্ত সীমাবদ্ধ (`HTTP 413: Payload Too Large`)। এর চেয়ে বড় ফাইল একক রিকোয়েস্টে পাঠালে সার্ভারে ঢোকার আগেই নেটওয়ার্ক এজ-এ ফেইল করতো।
+* **Old API Validation:** ব্যাকএন্ড রাউটে ফাইল সাইজ `4 * 1024 * 1024` বাইটে হার্ডকোড করা ছিল।
+* **RAM Buffering:** পূর্বে সম্পূর্ণ ফাইল মেমোরিতে বাফার (`Buffer.concat`) করার চেষ্টা করা হতো, যা সার্ভার ক্র্যাশ করাতে পারতো।
 
-#### Architecture Solution Implemented
-* **Client Chunk Size:** Set to `2,611,200 bytes` (~2.49 MB). Safely fits inside Vercel's 4.5MB limit.
-* **Direct GridFS Alignment:** MongoDB GridFS stores files in chunks of 255KB (`261,120 bytes`). Each 2.49MB client chunk slices in Node memory into exactly 10 standard GridFS subchunks (`n = chunkIndex * 10 + subIndex`) and writes directly into MongoDB's native `download_files.chunks` collection using `chunksCol.insertMany(docs)`.
-* **Instantaneous Assembly:** When all chunks finish, `action=finish` does not need to re-read or re-stream multi-megabyte binary data over the network. It writes a single metadata document into `download_files.files`, executing in under **10ms**.
-* **Zero-Memory Streaming Download:** The download route (`/api/downloads/[id]/file`) reads natively via `bucket.openDownloadStream` and pipes a Web `ReadableStream` directly into the HTTP response. Server memory usage remains flat and minimal regardless of file size.
-* **Security & Validation:**
-  - Validates `%PDF-` magic header within the first 1024 bytes on chunk 0.
-  - Rejects non-PDF files and files exceeding 50MB with clear HTTP 400 error responses.
-  - Enforces Super Admin authentication (`role === "viewer"` rejected with HTTP 403).
+#### 🔹 নতুন সমাধান আর্কিটেকচার (Implemented Architecture):
+* **Client-Side Chunking:** ব্রাউজারে ফাইলকে ২,৬১১,২০০ বাইট (~২.৪৯ এমবি) সাইজের চাঙ্কে স্লাইস করা হয়, যা ভার্সেলের লিমিটের অনেক নিচে এবং নিরাপদ।
+* **Direct GridFS Sub-Chunking:** প্রতিটি চাঙ্ক নোড সার্ভারে কোনো ডুপ্লিকেট বাফার না করে সরাসরি MongoDB `download_files.chunks` কালেকশনে GridFS স্ট্যান্ডার্ড (২৫৫ কেবি) সাব-চাঙ্কে রাইট হয়।
+* **Instant Assembly:** আপলোড সম্পন্ন হলে `action=finish` মাত্র ১০ মিলিসেকেন্ডের মধ্যে মেটাডাটা ডিরেক্টরি (`download_files.files`) তৈরি করে।
+* **Zero-RAM Web Streaming:** ডাউনলোডের সময় `bucket.openDownloadStream` ব্যবহার করে সরাসরি Web `ReadableStream`-এ পাইপ করা হয়, ফলে শত শত ইউজার একসঙ্গে ডাউনলোড করলেও সার্ভার মেমরি ফাঁকা থাকে।
 
-#### Verification & Test Results
-A comprehensive test suite was executed against the production Next.js build:
-
-| Test Case | Description | Result | Status |
+#### 🔹 টেস্টিং রেজাল্ট (Test Suite Matrix):
+| টেস্ট কেস | বিবরণ | ফলাফল | স্ট্যাটাস |
 |---|---|---|---|
-| **Test 1** | Unauthorized upload / access protection | HTTP 401 Unauthorized | **PASS** |
-| **Test 2** | Non-PDF file upload rejection (`script.exe`) | HTTP 400 (`Only PDF files (.pdf) are allowed`) | **PASS** |
-| **Test 3** | Oversized file rejection (>50MB) | HTTP 400 (`File size exceeds maximum allowed upload limit of 50MB`) | **PASS** |
-| **Test 4** | Upload & Download PDF < 4MB (**1.5 MB**) | 1,572,864 bytes verified byte-for-byte; valid `%PDF-` | **PASS** |
-| **Test 5** | Upload & Download PDF > 4MB (**10 MB**) | 10,485,760 bytes verified byte-for-byte; valid `%PDF-` | **PASS** |
-| **Test 6** | Upload & Download PDF >= 25MB (**25 MB**) | 26,214,400 bytes verified byte-for-byte; valid `%PDF-` | **PASS** |
-| **Test 7** | Tab persistence & filtering | 10MB in Catalogue; 1.5MB & 25MB in User Manual | **PASS** |
-| **Test 8** | Existing original download links | HTTP 200 without corruption or truncation (828,310 bytes intact) | **PASS** |
-| **Test 9** | Production Next.js build | Exit code 0 (`npm run build`) | **PASS** |
+| **টেস্ট ১** | আনঅথরাইজড আপলোড প্রটেকশন | HTTP 401 Unauthorized | ✅ PASS |
+| **টেস্ট ২** | নন-পিডিএফ ফাইল রিজেকশন (`script.exe`) | HTTP 400 (`Only PDF files allowed`) | ✅ PASS |
+| **টেস্ট ৩** | ৫০ এমবির বেশি ফাইল ব্লক | HTTP 400 (`File exceeds 50MB limit`) | ✅ PASS |
+| **টেস্ট ৪** | ১.৫ এমবি পিডিএফ আপলোড ও ডাউনলোড | ১,৫৭২,৮৬৪ বাইট হুবহু ইন্ট্যাক্ট | ✅ PASS |
+| **টেস্ট ৫** | ১০ এমবি পিডিএফ আপলোড ও ডাউনলোড | ১০,৪৮৫,৭৬০ বাইট হুবহু ইন্ট্যাক্ট | ✅ PASS |
+| **টেস্ট ৬** | ২৫ এমবি পিডিএফ আপলোড ও ডাউনলোড | ২৬,২১৪,৪০০ বাইট হুবহু ইন্ট্যাক্ট | ✅ PASS |
+| **টেস্ট ৭** | ট্যাব ফিল্টারিং ও পারসিস্টেন্স | ক্যাটালগ ও ম্যানুয়াল উভয় ট্যাবে ডাটা সংরক্ষিত | ✅ PASS |
+| **টেস্ট ৮** | নেক্সট জেএস প্রোডাকশন বিল্ড | Exit Code 0 (`npm run build`) | ✅ PASS |
 
 ---
 
-### 2. Technical SEO & Google Search Visibility
+### ২. টেকনিক্যাল এসইও অপ্টিমাইজেশন (Technical SEO Optimization)
 
-#### Implemented Features
-* **Dynamic XML Sitemap (`/sitemap.xml`):** Automatically indexes all static and dynamic pages (products, categories, services, blogs, contact, use-cases) with appropriate `<changefreq>`, `<priority>`, and `<lastmod>` attributes.
-* **Search Engine Directive (`/robots.txt`):** Allows crawling of public routes by Googlebot and all search engines while protecting administrative endpoints.
-* **Canonical URL Implementation:** Added canonical tags across all pages to consolidate link equity and eliminate duplicate content penalties.
-* **JSON-LD Structured Data:**
-  - `Organization` & `WebSite` schema on homepage.
-  - `Product` schema on individual product pages with price, availability, and description.
-  - `Service` schema on service detail pages.
-  - `BreadcrumbList` schema for breadcrumb navigation.
-* **Keyword Optimization:** Tailored titles and descriptions focused on:
-  - Nur Engineering Solution
-  - PLC Automation & Programming (Ai530, Mi530, Hering628, Porcheson)
-  - Servo Motors, Servo Drives & Hydraulic Pumps (Inovance, etc.)
-  - Industrial Machineries & Machine Conversion (Injection Molding, Extrusion Blow Molding, Die Casting, Industrial Chillers).
-* **Social Sharing:** Complete Open Graph (`og:title`, `og:description`, `og:image`, `og:url`) and Twitter card tags.
+#### 🔹 অন্তর্ভুক্ত ফিচারসমূহ:
+1. **ডাইনামিক এক্সএমএল সাইটম্যাপ (`/sitemap.xml`):**
+   - ডাটাবেজ থেকে রিয়েলটাইমে সব সক্রিয় প্রোডাক্ট, সার্ভিস, ক্যাটাগরি, এবং ব্লগের স্লাগ ফেচ করে সাইটম্যাপ তৈরি হয়।
+   - সার্চ ইঞ্জিন ক্রলারদের জন্য সঠিক `<lastmod>`, `<changefreq>`, এবং `<priority>` যুক্ত।
+2. **সার্চ ইঞ্জিন ডিরেক্টিভ (`/robots.txt`):**
+   - পাবলিক পেজগুলো ইনডেক্স করার অনুমতি দেওয়া হয়েছে।
+   - `/admin` ও অ্যাডমিন এপিআই সুরক্ষিত ও ডিস-অ্যালাও করা হয়েছে।
+3. **ক্যানোনিকাল ইউআরএল (Canonical URLs):**
+   - মূল ডোমেইন (`nurengineeringbd.com` / `nurshopbd.net`) অনুযায়ী সব পেজে ক্যানোনিকাল ট্যাগ যুক্ত, যা ডুপ্লিকেট কন্টেন্ট পেনাল্টি দূর করে।
+4. **JSON-LD স্ট্রাকচার্ড ডাটা (Schema Markup):**
+   - **হোমপেজ:** `Organization` এবং `WebSite` স্কিমা।
+   - **প্রোডাক্ট পেজ:** নাম, ছবি, ব্র্যান্ড, মূল্য এবং প্রাপ্যতা সহ `Product` স্কিমা।
+   - **সার্ভিস পেজ:** ইন্ডাস্ট্রিয়াল অটোমেশন এবং মেশিন কনভারশন সেবার জন্য `Service` স্কিমা।
+   - **ন্যাভিগেশন:** গুগল সার্চে লিংক হায়ারার্কি প্রদর্শনের জন্য `BreadcrumbList` স্কিমা।
+5. **কিওয়ার্ড অপ্টিমাইজেশন:**
+   - পিএলসি অটোমেশন ও প্রোগ্রামিং (Ai530, Mi530, Hering628, Porcheson)
+   - সারভো মোটর ও ড্রাইভ (Inovance, ইত্যাদি)
+   - ইন্ডাস্ট্রিয়াল মেশিনারি কনভারশন (ইনজেকশন মোল্ডিং, এক্সট্রুশন, ডাই কাস্টিং)
 
 ---
 
-### 3. Files Modified & Added Today
+### 📂 আজকে পরিবর্তিত ও নতুন ফাইলের তালিকা (Files Modified & Added Today)
 
 ```text
-├── src/
-│   ├── app/
+src/
+├── app/
+│   ├── admin/
+│   │   └── downloads/
+│   │       └── page.tsx              # আপলোড প্রগ্রেস বার, ড্রপজোন ও ৫০ এমবি ভ্যালিডেশন UI
+│   ├── api/
 │   │   ├── admin/
 │   │   │   └── downloads/
-│   │   │       └── page.tsx              # Chunked upload UI with progress bar & 50MB limit
-│   │   ├── api/
-│   │   │   ├── admin/
-│   │   │   │   └── downloads/
-│   │   │   │       ├── route.ts          # Raised fallback limit to 50MB + PDF verification
-│   │   │   │       ├── [id]/
-│   │   │   │       │   └── route.ts      # Raised fallback edit limit to 50MB
-│   │   │   │       └── chunk/
-│   │   │   │           └── route.ts      # [NEW] Chunk upload handling (start/upload/finish/delete)
-│   │   │   └── downloads/
-│   │   │       └── [id]/
-│   │   │           └── file/
-│   │   │               └── route.ts      # Memory-safe Web ReadableStream download handler
-│   │   ├── robots.txt/
-│   │   │   └── route.ts                  # Search engine crawl directives
-│   │   └── sitemap.xml/
-│   │       └── route.ts                  # Dynamic SEO XML Sitemap generator
-│   └── lib/
-│       ├── download-storage.ts           # Direct GridFS chunking, stream reader, PDF validator
-│       ├── mongodb.ts                    # Updated default fallback connection URI
-│       └── models/
-│           ├── DownloadUpload.ts         # [NEW] Upload session tracking schema with 2-hour TTL
-│           └── index.ts                  # Exported DownloadUpload models
-├── .env.local                            # Updated MongoDB connection URI
-└── README.md                             # Comprehensive project & implementation documentation
+│   │   │       ├── route.ts          # ৫০ এমবি ব্যাকএন্ড ফলব্যাক লিমিট ও পিডিএফ চেক
+│   │   │       ├── [id]/route.ts      # এডিট মেটাডাটা ও ৫০ এমবি লিমিট হ্যান্ডলার
+│   │   │       └── chunk/
+│   │   │           └── route.ts      # [নতুন] চাঙ্ক আপলোড হ্যান্ডলার (start, upload, finish, delete)
+│   │   └── downloads/
+│   │       └── [id]/
+│   │           └── file/
+│   │               └── route.ts      # জিরো-মেমোরি Web ReadableStream স্ট্রিমিং ডাউনলোড
+│   ├── robots.ts                     # এসইও ক্রলার ডিরেক্টিভ
+│   ├── sitemap.ts                    # ডায়নামিক এক্সএমএল সাইটম্যাপ জেনারেটর
+│   ├── layout.tsx                    # গ্লোবাল মেটাডাটা ও এসইও বেস কনফিগারেশন
+│   ├── page.tsx                      # হোমপেজ এসইও ও স্কিমা মার্কআপ
+│   └── products/ & services/         # প্রোডাক্ট ও সার্ভিস এসইও ও ক্যানোনিকাল কনফিগারেশন
+├── components/
+│   └── JsonLd.tsx                    # স্ট্রাকচার্ড ডাটা কম্পোনেন্ট
+└── lib/
+    ├── download-storage.ts           # ডাইরেক্ট GridFS চাঙ্কিং, স্ট্রিম রিডার ও পিডিএফ ভ্যালিডেটর
+    ├── seo.ts                        # এসইও মেটাডাটা হেল্পার ও ইউআরএল জেনারেটর
+    └── models/
+        ├── DownloadUploadSession.ts  # [নতুন] চাঙ্ক সেশন ট্র্যাকিং মডেল (2-Hour TTL)
+        └── UploadChunk.ts            # চাঙ্ক স্টোরেজ মডেল
 ```
 
 ---
 
-## 💻 Tech Stack & Architecture
+## 🛠️ প্রযুক্তি স্ট্যাক (Tech Stack)
 
-* **Framework:** Next.js 15 (App Router, Server Components & Route Handlers)
-* **Language:** TypeScript
-* **Styling:** Vanilla CSS + Tailwind CSS 4
-* **Database & Storage:** MongoDB Atlas (Mongoose Models + GridFS Bucket for PDF files)
-* **Hosting:** Vercel Serverless Platform
+* **ফ্রেমওয়ার্ক:** Next.js 15 (App Router, Server Components & Route Handlers)
+* **ল্যাঙ্গুয়েজ:** TypeScript
+* **স্টাইলিং:** Tailwind CSS & Vanilla CSS
+* **ডাটাবেজ ও ফাইল স্টোরেজ:** MongoDB Atlas + GridFS Bucket
+* **ক্লাউড হোস্টিং:** Vercel Serverless Platform
+* **এসইও স্ট্যান্ডার্ড:** Schema.org JSON-LD, Dynamic Sitemap XML, Open Graph Protocol
 
 ---
 
-## 🚀 Setup & Local Development
+## 💻 লোকাল ডেভেলপমেন্ট সেটআপ (Local Setup)
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/shahinur-dm/NurEngineeringwebsite.git
-   cd NurEngineeringwebsite
-   ```
+```bash
+# ডিপেন্ডেন্সি ইন্সটল
+npm install
 
-2. **Configure Environment Variables (`.env.local`):**
-   ```env
-   MONGODB_URI=mongodb+srv://efootballmadrid25_db_user:ljvpbVMGVJTQPVcH@dawatit.5hxbo9c.mongodb.net/NurCompanyWebsite?appName=dawatit
-   ADMIN_JWT_SECRET=super-secret-jwt-key-for-nur-engineering-website-2025
-   ADMIN_API_KEY=nur-admin-api-key-2025
-   NEXT_PUBLIC_SITE_URL=https://nurengineeringbd.com
-   ```
+# ডেভেলপমেন্ট সার্ভার চালু
+npm run dev
 
-3. **Install Dependencies & Run:**
-   ```bash
-   npm install
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+# প্রোডাকশন বিল্ড যাচাই
+npm run build
+```
 
-4. **Build for Production:**
-   ```bash
-   npm run build
-   npm run start
-   ```
+লোকাল সার্ভার ব্রাউজারে দেখতে: [http://localhost:3000](http://localhost:3000)
