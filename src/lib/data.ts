@@ -162,16 +162,26 @@ export const fallbackSettings: ISiteSettings = {
   },
   seo: {
     defaultTitle:
-      "Nur Engineering Solution | Machine Parts & Technical Service",
+      "Nur Engineering Solution | PLC Automation Bangladesh",
     defaultDescription:
-      "Buy PLC, motors, VFD, sensors, contactors and industrial spare parts. Technical service from an EEE engineering desk in Bangladesh.",
+      "Nur Engineering Solution provides PLC automation, servo motors and drives, PLC conversion, robotics, and industrial machinery solutions for injection molding, extrusion blow molding, die casting and industrial equipment.",
     keywords: [
-      "PLC Bangladesh",
-      "machine parts",
-      "VFD",
-      "motors",
-      "sensors",
-      "EEE spare parts",
+      "Nur Engineering Solution",
+      "PLC Automation Bangladesh",
+      "Industrial Automation Solutions",
+      "PLC Conversion Service",
+      "Servo Motor and Servo Drive",
+      "Industrial Servo System",
+      "Hydraulic Pump",
+      "Industrial Robotics and Automation",
+      "Injection Molding Machine Automation",
+      "Vertical Injection Molding Machine",
+      "Extrusion Blow Molding Machine",
+      "Die Casting Machine Automation",
+      "Industrial Chiller",
+      "Industrial Air Compressor",
+      "Overhead Crane Automation",
+      "Industrial Automation Spare Parts",
     ],
   },
   analytics: {},
@@ -1002,13 +1012,21 @@ export async function getProductBySlug(
     const db = await connectDB();
     if (db) {
       const decodedSlug = decodeURIComponent(slug).trim();
+      const slugDash = decodedSlug.toLowerCase().replace(/\s+/g, "-");
+      const slugSpace = decodedSlug.toLowerCase().replace(/-/g, " ");
       const slugRegex = new RegExp(`^${decodedSlug}$`, "i");
-      const nameRegex = new RegExp(`^${decodedSlug.replace(/-/g, " ").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+      const slugDashRegex = new RegExp(`^${slugDash.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+      const slugSpaceRegex = new RegExp(`^${slugSpace.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+      const nameRegex = new RegExp(`^${slugSpace.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
 
       let doc = await Product.findOne({
         $or: [
           { slug: decodedSlug },
+          { slug: slugDash },
+          { slug: slugSpace },
           { slug: slugRegex },
+          { slug: slugDashRegex },
+          { slug: slugSpaceRegex },
           { sku: decodedSlug },
           { sku: slugRegex },
           { name: nameRegex },
@@ -1066,9 +1084,22 @@ export async function getProductBySlug(
     console.error("getProductBySlug DB error:", err);
   }
 
-  const p = getMockPopulatedProducts().find(
-    (item) => item.slug === slug || String(item._id) === slug || item.sku === slug
-  );
+  const raw = String(slug).trim();
+  const decoded = decodeURIComponent(raw).trim();
+  const slugDash = decoded.toLowerCase().replace(/\s+/g, "-");
+  const slugSpace = decoded.toLowerCase().replace(/-/g, " ");
+
+  const p = getMockPopulatedProducts().find((item) => {
+    const islug = (item.slug || "").toLowerCase();
+    return (
+      islug === raw.toLowerCase() ||
+      islug === decoded.toLowerCase() ||
+      islug === slugDash ||
+      islug === slugSpace ||
+      String(item._id) === raw ||
+      (item.sku || "").toLowerCase() === decoded.toLowerCase()
+    );
+  });
   return p ? serialize(p) : null;
 }
 

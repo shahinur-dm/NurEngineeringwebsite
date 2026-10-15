@@ -18,9 +18,17 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSettings();
   return buildPageMetadata({
     site,
-    title: "Contact",
-    description: "Request a quote for machine parts or technical service.",
+    title: "Contact Us | Machine Parts & Technical Service",
+    description:
+      "Contact Nur Engineering Solution for industrial PLC automation, servo drives, hydraulic pumps, spare parts sourcing, and technical engineering support in Bangladesh.",
     path: "/contact",
+    keywords: [
+      "Contact Nur Engineering Solution",
+      "PLC Automation Dhaka",
+      "Machine Spare Parts Bangladesh",
+      "Engineering Technical Service",
+      "Industrial Automation Support",
+    ],
   });
 }
 

@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
 import type { ISiteSettings } from "@/lib/models";
 
-export function getSiteUrl() {
+export const PRIMARY_PRODUCTION_DOMAIN = "https://nurengineeringbd.com";
+
+export function getSiteUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (envUrl) {
-    const withProto = envUrl.startsWith("http://") || envUrl.startsWith("https://") ? envUrl : `https://${envUrl}`;
-    return withProto.replace(/\/$/, "");
+    const isLocal = envUrl.includes("localhost") || envUrl.includes("127.0.0.1");
+    if (!isLocal || process.env.NODE_ENV === "development") {
+      const withProto =
+        envUrl.startsWith("http://") || envUrl.startsWith("https://")
+          ? envUrl
+          : `https://${envUrl}`;
+      return withProto.replace(/\/$/, "");
+    }
   }
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, "")}`;
   }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
-  }
-  return "https://nur-company-website.vercel.app";
+  return PRIMARY_PRODUCTION_DOMAIN;
 }
 
 export function toAbsoluteBannerImageUrl(bannerImage?: string): string {
@@ -92,28 +97,30 @@ export function buildPageMetadata({
   keywords?: string[];
 }): Metadata {
   const url = getSiteUrl();
-  const canonical = `${url}${path === "/" ? "" : path}`;
+  const normalizedPath = path === "/" ? "/" : path.startsWith("/") ? path : `/${path}`;
+  const canonical = `${url}${normalizedPath}`;
   const desc = description || site.seo?.defaultDescription || site.description;
-  const finalTitle = path === "/" ? (site.seo?.defaultTitle || site.brandName) : `${title} | ${site.brandName}`;
+  const isHome = path === "/";
+  const finalTitle = isHome ? title : `${title} | ${site.brandName}`;
   const ogImage = toAbsoluteBannerImageUrl(image);
 
   return {
-    title,
+    title: isHome ? { absolute: title } : title,
     description: desc,
     keywords: keywords?.length ? keywords : site.seo?.keywords || [],
-    alternates: { canonical: path },
+    alternates: { canonical },
     openGraph: {
       type: "website",
       locale: "en_BD",
       url: canonical,
       siteName: site.brandName,
-      title: finalTitle,
+      title: isHome ? title : finalTitle,
       description: desc,
       images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
-      title: finalTitle,
+      title: isHome ? title : finalTitle,
       description: desc,
       images: [ogImage],
     },

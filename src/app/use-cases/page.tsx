@@ -13,17 +13,17 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSettings();
   return buildPageMetadata({
     site,
-    title: "Use cases",
+    title: "Industrial Automation Use Cases & Applications",
     description:
-      "How Nur Engineering Solution is used: spare-part matching, conveyor control, VFD retrofits, panel kits, textile utilities and EEE lab benches.",
+      "Explore industrial applications engineered by Nur Engineering Solution: injection molding automation, conveyor packaging, VFD retrofit, servo conversions, and plant equipment automation in Bangladesh.",
     path: "/use-cases",
     keywords: [
-      "industrial use cases Bangladesh",
-      "PLC conveyor automation",
-      "VFD pump fan retrofit",
-      "control panel kit",
-      "textile RMG drives",
-      "EEE lab bench",
+      "Industrial Automation Use Cases",
+      "Injection Molding Machine Automation",
+      "PLC Conveyor Automation",
+      "VFD Pump Fan Retrofit",
+      "Servo Conversion Bangladesh",
+      "Industrial Control Panel Systems",
     ],
   });
 }

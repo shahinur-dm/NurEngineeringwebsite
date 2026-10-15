@@ -25,12 +25,42 @@ export async function generateMetadata(): Promise<Metadata> {
     "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1600&q=80";
   const ogImageUrl = toAbsoluteBannerImageUrl(firstBanner);
 
+  const homeTitle =
+    site.seo?.defaultTitle &&
+    site.seo.defaultTitle !== "Nur Engineering Solution | Machine Parts & Technical Service"
+      ? site.seo.defaultTitle
+      : "Nur Engineering Solution | PLC Automation Bangladesh";
+
+  const homeDescription =
+    site.seo?.defaultDescription &&
+    !site.seo.defaultDescription.includes("EEE engineering desk")
+      ? site.seo.defaultDescription
+      : "Nur Engineering Solution provides PLC automation, servo motors and drives, PLC conversion, robotics, and industrial machinery solutions for injection molding, extrusion blow molding, die casting and industrial equipment.";
+
   return buildPageMetadata({
     site,
-    title: site.seo?.defaultTitle || site.brandName,
-    description: site.seo?.defaultDescription || site.description,
+    title: homeTitle,
+    description: homeDescription,
     path: "/",
     image: ogImageUrl,
+    keywords: [
+      "Nur Engineering Solution",
+      "PLC Automation Bangladesh",
+      "Industrial Automation Solutions",
+      "PLC Conversion Service",
+      "Servo Motor and Servo Drive",
+      "Industrial Servo System",
+      "Hydraulic Pump",
+      "Industrial Robotics and Automation",
+      "Injection Molding Machine Automation",
+      "Vertical Injection Molding Machine",
+      "Extrusion Blow Molding Machine",
+      "Die Casting Machine Automation",
+      "Industrial Chiller",
+      "Industrial Air Compressor",
+      "Overhead Crane Automation",
+      "Industrial Automation Spare Parts",
+    ],
   });
 }
 
@@ -55,12 +85,15 @@ export default async function HomePage({
 
   return (
     <CatalogShell categories={categories}>
+      <h1 className="sr-only">
+        Nur Engineering Solution - PLC Automation, Servo Systems &amp; Industrial Machinery Bangladesh
+      </h1>
       <HeroSlider banners={banners} />
 
       {/* 1. COMPANY SERVICES — Compact 6 Boxes */}
       <section>
         <div className="mb-1 sm:mb-1.5 flex items-center justify-between gap-4">
-          <div className="section-label !mb-0">Company services</div>
+          <h2 className="section-label !mb-0">Company services</h2>
           <Link
             href="/services"
             className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.16em] text-orange transition hover:text-navy shrink-0"

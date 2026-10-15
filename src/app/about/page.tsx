@@ -12,10 +12,18 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSettings();
   return buildPageMetadata({
     site,
-    title: "About us",
+    title: "About Us | PLC Automation & Machinery Solutions",
     description:
-      "EEE student-built machine parts desk — PLC, motors, drives and technical service in Bangladesh.",
+      "Learn about Nur Engineering Solution: a pioneer in PLC automation, servo systems, PLC conversion, industrial robotics, and machinery spare parts across Bangladesh.",
     path: "/about",
+    keywords: [
+      "Nur Engineering Solution",
+      "About Nur Engineering",
+      "PLC Automation Bangladesh",
+      "Industrial Machinery Solutions",
+      "Servo Systems Bangladesh",
+      "PLC Conversion Specialist",
+    ],
   });
 }
 

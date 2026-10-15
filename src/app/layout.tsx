@@ -44,17 +44,41 @@ export async function generateMetadata(): Promise<Metadata> {
     "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1600&q=80";
   const ogImageUrl = toAbsoluteBannerImageUrl(firstBanner);
 
-  const title = site.seo?.defaultTitle || site.brandName;
-  const description = site.seo?.defaultDescription || site.description;
+  const defaultTitle =
+    site.seo?.defaultTitle &&
+    site.seo.defaultTitle !== "Nur Engineering Solution | Machine Parts & Technical Service"
+      ? site.seo.defaultTitle
+      : "Nur Engineering Solution | PLC Automation Bangladesh";
+
+  const defaultDescription =
+    site.seo?.defaultDescription &&
+    !site.seo.defaultDescription.includes("EEE engineering desk")
+      ? site.seo.defaultDescription
+      : "Nur Engineering Solution provides PLC automation, servo motors and drives, PLC conversion, robotics, and industrial machinery solutions for injection molding, extrusion blow molding, die casting and industrial equipment.";
 
   return {
     metadataBase: new URL(url),
     title: {
-      default: title,
+      default: defaultTitle,
       template: `%s | ${site.brandName}`,
     },
-    description,
-    keywords: site.seo?.keywords || [],
+    description: defaultDescription,
+    alternates: {
+      canonical: `${url}/`,
+    },
+    keywords: site.seo?.keywords?.length
+      ? site.seo.keywords
+      : [
+          "Nur Engineering Solution",
+          "PLC Automation Bangladesh",
+          "Industrial Automation Solutions",
+          "PLC Conversion Service",
+          "Servo Motor and Servo Drive",
+          "Hydraulic Pump",
+          "Injection Molding Machine Automation",
+          "Industrial Robotics and Automation",
+          "Industrial Machine Spare Parts",
+        ],
     applicationName: site.brandName,
     icons: site.favicon
       ? {
@@ -66,23 +90,23 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: "en_BD",
-      url,
+      url: `${url}/`,
       siteName: site.brandName,
-      title,
-      description,
+      title: defaultTitle,
+      description: defaultDescription,
       images: [
         {
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: title,
+          alt: defaultTitle,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
+      title: defaultTitle,
+      description: defaultDescription,
       images: [ogImageUrl],
     },
     ...(searchConsole ? { verification: { google: searchConsole } } : {}),

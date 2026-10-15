@@ -16,7 +16,7 @@ import {
   getRelatedProducts,
   getSettings,
 } from "@/lib/data";
-import { buildPageMetadata, toAbsoluteProductImageUrl } from "@/lib/seo";
+import { buildPageMetadata, getSiteUrl, toAbsoluteProductImageUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -48,7 +48,7 @@ export async function generateMetadata({
     site,
     title,
     description,
-    path: `/products/${product.slug || slug}`,
+    path: `/products/${encodeURI(product.slug || slug)}`,
     image: ogImageUrl,
   });
 }
@@ -109,8 +109,40 @@ export default async function ProductDetailPage({
     ["Price", priceDisplay],
   ];
 
+  const siteUrl = getSiteUrl();
+  const canonicalProductUrl = `${siteUrl}/products/${encodeURI(product.slug || slug)}`;
+  const productImageUrl = product.image ? toAbsoluteProductImageUrl(product) : undefined;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.shortDescription || product.description || product.name,
+    ...(productImageUrl ? { image: productImageUrl } : {}),
+    ...(product.sku ? { sku: product.sku } : {}),
+    ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+    offers: {
+      "@type": "Offer",
+      url: canonicalProductUrl,
+      priceCurrency: product.currency || "BDT",
+      price: typeof product.price === "number" && !isNaN(product.price) ? product.price : 0,
+      availability:
+        product.inStock !== false
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      seller: {
+        "@type": "Organization",
+        name: siteSettings.brandName || "Nur Engineering Solution",
+      },
+    },
+  };
+
   return (
     <CatalogShell categories={categories} activeSlug={categorySlug}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       {/* Breadcrumb Navigation */}
       <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-500 mb-2">
         <Link href="/" className="transition hover:text-orange">

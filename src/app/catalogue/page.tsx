@@ -14,9 +14,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSettings();
   return buildPageMetadata({
     site,
-    title: "Catalogue",
-    description: "Download product catalogues from Nur Engineering Solution.",
+    title: "Product Catalogues & Technical Specs Download",
+    description:
+      "Download official product catalogues, technical brochures, and component specifications for PLC automation, servo drives, motors, and machinery parts from Nur Engineering Solution.",
     path: "/catalogue",
+    keywords: [
+      "PLC Catalog Download",
+      "Servo Drive Brochure",
+      "Industrial Spare Parts Catalogue",
+      "Nur Engineering Solution Downloads",
+    ],
   });
 }
 

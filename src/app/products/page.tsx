@@ -23,18 +23,31 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const sp = await searchParams;
   const site = await getSettings();
-  const title = sp.q
+  const rawTitle = sp.q
     ? `Search: ${sp.q}`
     : sp.subcategory
-      ? sp.subcategory.replace(/-/g, " ")
+      ? `${sp.subcategory.replace(/-/g, " ")} Parts`
       : sp.category
-        ? sp.category.replace(/-/g, " ")
-        : "Products";
+        ? `${sp.category.replace(/-/g, " ")} Automation & Parts`
+        : "Industrial Automation & Machinery Products";
+
+  const description = sp.category
+    ? `Buy genuine ${sp.category.replace(/-/g, " ")} products and spare parts from Nur Engineering Solution. Professional PLC automation and machinery supplies in Bangladesh.`
+    : "Browse industrial automation and machinery spare parts: PLC controllers, servo drives, servo motors, hydraulic pumps, VFDs, and sensors from Nur Engineering Solution.";
+
   return buildPageMetadata({
     site,
-    title,
-    description: "Industrial machine parts catalog — PLC, motors, VFD, sensors and spares.",
+    title: rawTitle,
+    description,
     path: "/products",
+    keywords: [
+      "PLC Automation Bangladesh",
+      "Servo Motor and Servo Drive",
+      "Hydraulic Pump",
+      "Industrial Automation Spare Parts",
+      "VFD Inverter Bangladesh",
+      "Injection Molding Machine Spare Parts",
+    ],
   });
 }
 
@@ -97,7 +110,7 @@ export default async function ProductsPage({
 
       <div className="flex items-end justify-between gap-3">
         <div>
-          <div className="section-label">{heading}</div>
+          <h1 className="section-label">{heading}</h1>
           {activeCategory?.description && !sp.subcategory && (
             <p className="-mt-2 mb-1 max-w-2xl text-xs sm:text-sm leading-5 sm:leading-6 text-steel">
               {activeCategory.description}

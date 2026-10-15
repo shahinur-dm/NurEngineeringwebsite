@@ -35,7 +35,7 @@ export async function generateMetadata({
     site,
     title: item.title,
     description: item.summary,
-    path: `/use-cases/${item.slug || slug}`,
+    path: `/use-cases/${encodeURI(item.slug || slug)}`,
     image: itemImage,
   });
 }

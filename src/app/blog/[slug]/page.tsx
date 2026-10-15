@@ -30,7 +30,7 @@ export async function generateMetadata({
   const postImage = post.coverImage ? toAbsoluteImageUrl(post.coverImage) : undefined;
   return buildPageMetadata({
     site,
-    title: `${post.title} | Nur Engineering Blog`,
+    title: post.title,
     description: post.summary,
     path: `/blog/${post.slug || slug}`,
     image: postImage,

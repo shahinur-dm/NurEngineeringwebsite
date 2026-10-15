@@ -14,9 +14,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSettings();
   return buildPageMetadata({
     site,
-    title: "User Manual",
-    description: "Download user manuals from Nur Engineering Solution.",
+    title: "User Manuals & Installation Guides PDF Download",
+    description:
+      "Download user manuals, wiring diagrams, and installation guides for PLC controllers, servo motors, drives, and industrial machinery systems from Nur Engineering Solution.",
     path: "/user-manual",
+    keywords: [
+      "PLC User Manual Download",
+      "Servo Drive Wiring Diagram",
+      "Industrial Controller Manual PDF",
+      "Nur Engineering Solution User Guides",
+    ],
   });
 }
 

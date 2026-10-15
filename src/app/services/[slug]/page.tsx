@@ -11,7 +11,7 @@ import {
   getSettings,
 } from "@/lib/data";
 import type { PopulatedProduct } from "@/lib/data";
-import { buildPageMetadata, toAbsoluteImageUrl } from "@/lib/seo";
+import { buildPageMetadata, getSiteUrl, toAbsoluteImageUrl } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -32,7 +32,7 @@ export async function generateMetadata({
     site,
     title: service.title,
     description: service.shortDescription,
-    path: `/services/${service.slug || slug}`,
+    path: `/services/${encodeURI(service.slug || slug)}`,
     image: serviceImage,
   });
 }
@@ -47,11 +47,30 @@ export default async function ServiceDetailPage({
   if (!service) redirect("/services");
   const categories = await getCategories("product");
   const related = (service.relatedProducts || []) as unknown as PopulatedProduct[];
+  const siteUrl = getSiteUrl();
+
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    description: service.description || service.shortDescription,
+    provider: {
+      "@type": "Organization",
+      name: "Nur Engineering Solution",
+      url: siteUrl,
+    },
+    url: `${siteUrl}/services/${service.slug || slug}`,
+    ...(service.image ? { image: toAbsoluteImageUrl(service.image) } : {}),
+  };
 
   return (
     <CatalogShell categories={categories}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
       <article className="overflow-hidden border border-line bg-white">
-        {service.image && (
+        {service.image ? (
           <div className="relative h-56 md:h-72">
             <Img
               src={service.image}
@@ -69,6 +88,15 @@ export default async function ServiceDetailPage({
                 {service.title}
               </h1>
             </div>
+          </div>
+        ) : (
+          <div className="bg-navy p-6 md:p-8 text-white">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-bright">
+              Technical service
+            </p>
+            <h1 className="mt-1 font-display text-3xl font-bold uppercase text-white md:text-4xl">
+              {service.title}
+            </h1>
           </div>
         )}
         <div className="p-6 md:p-8">

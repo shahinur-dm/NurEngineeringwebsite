@@ -4,11 +4,25 @@ import { Img } from "@/components/Img";
 import { RelatedSearch } from "@/components/RelatedSearch";
 import { getBlogPosts, getBlogCategories, getSettings, type PopulatedBlogPost } from "@/lib/data";
 
-export const metadata: Metadata = {
-  title: "Engineering Blog & Technical Guides | Nur Engineering Solution",
-  description:
-    "Practical industrial automation, PLC, VFD, sensors, motors and electrical maintenance guides written by electrical engineering practitioners in Bangladesh.",
-};
+import { buildPageMetadata } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSettings();
+  return buildPageMetadata({
+    site,
+    title: "Engineering Blog & Technical Guides",
+    description:
+      "Practical industrial automation, PLC, VFD, sensors, motors and electrical maintenance guides written by engineering practitioners in Bangladesh.",
+    path: "/blog",
+    keywords: [
+      "Industrial Automation Blog Bangladesh",
+      "PLC Programming Guide",
+      "VFD Troubleshooting",
+      "Servo System Maintenance",
+      "Injection Molding Automation Guide",
+    ],
+  });
+}
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

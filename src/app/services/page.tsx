@@ -13,10 +13,19 @@ export async function generateMetadata(): Promise<Metadata> {
   const site = await getSettings();
   return buildPageMetadata({
     site,
-    title: "Technical services",
+    title: "Industrial Automation & Technical Services",
     description:
-      "PLC support, motor-drive matching, panel parts kits and spare-parts sourcing.",
+      "Expert engineering and automation services by Nur Engineering Solution: PLC automation, servo system retrofitting, PLC conversion, robotics, injection molding machine service, and plant maintenance in Bangladesh.",
     path: "/services",
+    keywords: [
+      "PLC Automation Bangladesh",
+      "PLC Conversion Service",
+      "Industrial Automation Solutions",
+      "Servo System Retrofit",
+      "Injection Molding Machine Automation",
+      "Industrial Robotics and Automation",
+      "Technical Engineering Services",
+    ],
   });
 }
 
@@ -28,10 +37,9 @@ export default async function ServicesPage() {
 
   return (
     <CatalogShell categories={categories}>
-      <div className="section-label">Technical service provider</div>
+      <h1 className="section-label">Industrial Automation &amp; Technical Services</h1>
       <p className="-mt-2 mb-4 max-w-2xl text-sm leading-6 text-steel">
-        We sell parts and we help you use them — selection, substitution and
-        panel support from an EEE desk.
+        Complete engineering solutions: PLC automation, servo system retrofit, PLC conversion, machine repair, and technical service for industrial plants across Bangladesh.
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {services.map((service) => (

@@ -179,12 +179,12 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
     seo: {
       defaultTitle: {
         type: String,
-        default: "Nur Engineering Solution | Machine Parts & Technical Service",
+        default: "Nur Engineering Solution | PLC Automation Bangladesh",
       },
       defaultDescription: {
         type: String,
         default:
-          "Buy PLC, motors, VFD, sensors, contactors and industrial spare parts. Technical service from an EEE engineering desk in Bangladesh.",
+          "Nur Engineering Solution provides PLC automation, servo motors and drives, PLC conversion, robotics, and industrial machinery solutions for injection molding, extrusion blow molding, die casting and industrial equipment.",
       },
       keywords: [{ type: String }],
     },
