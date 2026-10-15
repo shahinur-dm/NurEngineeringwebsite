@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { DownloadFile } from "@/lib/models";
 import { getCurrentAdminUser, logActivity } from "@/lib/auth";
-import { isAllowedDownloadFile, storeDownloadBuffer } from "@/lib/download-storage";
+import { isAllowedDownloadFile, isValidPdfBuffer, storeDownloadBuffer } from "@/lib/download-storage";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const MAX_BYTES = 4 * 1024 * 1024;
+const MAX_BYTES = 50 * 1024 * 1024; // 50MB
 
 function serialize(doc: {
   _id: unknown;
@@ -83,12 +83,18 @@ export async function POST(req: Request) {
     }
     if (file.size > MAX_BYTES) {
       return NextResponse.json(
-        { error: "File size exceeds 4MB upload limit. Please upload a smaller PDF." },
+        { error: "File size exceeds maximum upload limit of 50MB. Please upload a smaller PDF." },
         { status: 400 }
       );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    if (!isValidPdfBuffer(buffer)) {
+      return NextResponse.json(
+        { error: "Invalid file content. The file does not appear to be a valid PDF document." },
+        { status: 400 }
+      );
+    }
     const stored = await storeDownloadBuffer({
       filename: file.name,
       mimeType: file.type || "application/pdf",

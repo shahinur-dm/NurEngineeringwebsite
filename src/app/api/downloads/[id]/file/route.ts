@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { DownloadFile, type IDownloadFile } from "@/lib/models";
-import { readDownloadBuffer } from "@/lib/download-storage";
+import { getDownloadFileStream, readDownloadBuffer } from "@/lib/download-storage";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -23,6 +23,24 @@ export async function GET(
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
 
+  // Stream directly from GridFS to client without buffering entire file in server memory
+  const fileStreamData = await getDownloadFileStream(item.gridFsId);
+  if (fileStreamData) {
+    const rawFilename = (item.filename || fileStreamData.filename || "document.pdf").replace(/"/g, "");
+    const disposition = view ? "inline" : "attachment";
+
+    return new NextResponse(fileStreamData.stream, {
+      status: 200,
+      headers: {
+        "Content-Type": item.mimeType || fileStreamData.mimeType || "application/pdf",
+        "Content-Length": String(fileStreamData.length),
+        "Content-Disposition": `${disposition}; filename="${rawFilename}"`,
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
+  }
+
+  // Fallback to buffered read if stream initialization fails
   const stored = await readDownloadBuffer(item.gridFsId);
   if (!stored) {
     return NextResponse.json({ error: "File is missing" }, { status: 404 });

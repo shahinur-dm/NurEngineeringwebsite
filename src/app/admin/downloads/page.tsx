@@ -24,6 +24,7 @@ export default function AdminDownloadsPage() {
   const [order, setOrder] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export default function AdminDownloadsPage() {
     setOrder(items.length + 1);
     setFile(null);
     setError("");
+    setUploadProgress(0);
     setModalOpen(true);
   }
 
@@ -58,6 +60,7 @@ export default function AdminDownloadsPage() {
     setOrder(item.order || 0);
     setFile(null);
     setError("");
+    setUploadProgress(0);
     setModalOpen(true);
   }
 
@@ -65,28 +68,114 @@ export default function AdminDownloadsPage() {
     e.preventDefault();
     setSaving(true);
     setError("");
+    setUploadProgress(0);
+
     try {
       if (!editing && !file) {
         setError("Please choose a PDF file.");
         setSaving(false);
         return;
       }
-      const formData = new FormData();
-      formData.set("title", title);
-      formData.set("kind", kind);
-      formData.set("order", String(order));
-      if (file) formData.set("file", file);
 
-      const url = editing ? `/api/admin/downloads/${editing._id}` : "/api/admin/downloads";
-      const res = await fetch(url, { method: editing ? "PUT" : "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save");
-      setModalOpen(false);
-      loadItems(kind);
+      if (file) {
+        const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+        if (file.size > MAX_SIZE) {
+          setError(
+            `File size (${(file.size / (1024 * 1024)).toFixed(
+              1
+            )}MB) exceeds maximum limit of 50MB. Please choose a smaller PDF.`
+          );
+          setSaving(false);
+          return;
+        }
+
+        const nameLower = file.name.toLowerCase();
+        if (!nameLower.endsWith(".pdf")) {
+          setError("Only PDF files (.pdf) are allowed.");
+          setSaving(false);
+          return;
+        }
+
+        // Chunked upload to seamlessly bypass serverless payload limits (4.5MB Vercel limit)
+        const CHUNK_SIZE = 2611200; // 2.49MB (exact multiple of 10 standard 255KB GridFS chunks)
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+        // 1. Initialize upload session
+        const startRes = await fetch("/api/admin/downloads/chunk?action=start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            kind,
+            filename: file.name,
+            mimeType: file.type || "application/pdf",
+            totalSize: file.size,
+            totalChunks,
+            order: Number(order) || 0,
+          }),
+        });
+
+        const startData = await startRes.json();
+        if (!startRes.ok) throw new Error(startData.error || "Failed to start upload session");
+        const { uploadId } = startData;
+
+        // 2. Upload chunks sequentially
+        for (let i = 0; i < totalChunks; i++) {
+          const start = i * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunkBlob = file.slice(start, end);
+
+          const chunkFormData = new FormData();
+          chunkFormData.append("chunk", chunkBlob, file.name);
+
+          const chunkRes = await fetch(
+            `/api/admin/downloads/chunk?action=upload&uploadId=${encodeURIComponent(
+              uploadId
+            )}&chunkIndex=${i}`,
+            { method: "POST", body: chunkFormData }
+          );
+
+          const chunkData = await chunkRes.json();
+          if (!chunkRes.ok) throw new Error(chunkData.error || `Failed to upload chunk ${i + 1}`);
+
+          setUploadProgress(Math.round(((i + 1) / totalChunks) * 100));
+        }
+
+        // 3. Assemble and finalize
+        const finishUrl = editing
+          ? `/api/admin/downloads/chunk?action=finish&uploadId=${encodeURIComponent(
+              uploadId
+            )}&editId=${encodeURIComponent(editing._id)}`
+          : `/api/admin/downloads/chunk?action=finish&uploadId=${encodeURIComponent(uploadId)}`;
+
+        const finishRes = await fetch(finishUrl, { method: "POST" });
+        const finishData = await finishRes.json();
+        if (!finishRes.ok) throw new Error(finishData.error || "Failed to finalize upload");
+
+        setModalOpen(false);
+        loadItems(kind);
+      } else if (editing) {
+        // Metadata-only update (no new file chosen)
+        const formData = new FormData();
+        formData.set("title", title);
+        formData.set("kind", kind);
+        formData.set("order", String(order));
+
+        const res = await fetch(`/api/admin/downloads/${editing._id}`, {
+          method: "PUT",
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to save");
+
+        setModalOpen(false);
+        loadItems(kind);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setSaving(false);
+      setUploadProgress(0);
     }
   }
 
@@ -225,7 +314,7 @@ export default function AdminDownloadsPage() {
                 Cancel
               </button>
               <button type="submit" disabled={saving} className="btn-orange px-4 py-2 text-xs font-bold uppercase">
-                {saving ? "Saving..." : "Save"}
+                {saving ? (uploadProgress > 0 ? `Uploading (${uploadProgress}%)...` : "Saving...") : "Save"}
               </button>
             </div>
           </form>
